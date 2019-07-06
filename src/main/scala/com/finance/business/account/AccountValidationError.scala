@@ -1,0 +1,6 @@
+package com.finance.business.account
+
+sealed trait AccountValidationError
+
+case object AccountDoesNotExistError extends AccountValidationError
+case object AccountAlreadyExistsError extends AccountValidationError
