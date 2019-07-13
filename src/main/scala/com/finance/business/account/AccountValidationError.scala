@@ -4,3 +4,7 @@ sealed trait AccountValidationError
 
 case object AccountDoesNotExistError extends AccountValidationError
 case object AccountAlreadyExistsError extends AccountValidationError
+case object NameMustBeDefinedError extends AccountValidationError
+case object DescriptionMustBeDefinedError extends AccountValidationError
+case object NameExceedsMaxLengthError extends AccountValidationError
+case object DescriptionExceedsMaxLengthError extends AccountValidationError
