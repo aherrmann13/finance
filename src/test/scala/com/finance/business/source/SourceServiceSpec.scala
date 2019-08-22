@@ -3,6 +3,8 @@ package com.finance.business.source
 import cats.data.EitherT
 import cats.effect.IO
 import cats.Monad
+import com.finance.business.common.errors.{BusinessError, UserDoesNotExistError}
+import com.finance.business.common.{IdRepository, RelationValidator}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FreeSpec, Matchers}
 
@@ -11,15 +13,17 @@ class SourceServiceSpec extends FreeSpec with Matchers with MockFactory {
 
   //https://github.com/paulbutcher/ScalaMock/issues/170
   class SourceValidatorWithIO(repository: SourceRepository[IO]) extends SourceValidator[IO](repository)
+  class RelationValidatorWithIO(repository: IdRepository[IO]) extends RelationValidator[IO](repository)
   private val validator = mock[SourceValidatorWithIO]
+  private val relationValidator = mock[RelationValidatorWithIO]
 
-  private val service = SourceService(repository, validator)
+  private val service = SourceService(repository, validator, relationValidator)
 
   val fakeSource = Source(Option(1), 2, "name", "description")
 
   "Source service" - {
     "create" - {
-      "should return Left(SourceValidationError) error on invalid properties" in {
+      "should return Left(BusinessError) error on invalid properties" in {
         (validator
           .propertiesAreValid(_: Source)(_: Monad[IO]))
           .expects(fakeSource, *)
@@ -29,11 +33,11 @@ class SourceServiceSpec extends FreeSpec with Matchers with MockFactory {
 
         result.value.unsafeRunSync shouldBe Left(NameMustBeDefinedError)
       }
-      "should return Left(SourceValidationError) error when source exists" in {
+      "should return Left(BusinessError) error when source exists" in {
         (validator
           .propertiesAreValid(_: Source)(_: Monad[IO]))
           .expects(fakeSource, *)
-          .returning(EitherT.rightT[IO, SourceValidationError](()))
+          .returning(EitherT.rightT[IO, BusinessError](()))
 
         (validator
           .doesNotExist(_: Source))
@@ -44,16 +48,39 @@ class SourceServiceSpec extends FreeSpec with Matchers with MockFactory {
 
         result.value.unsafeRunSync shouldBe Left(SourceAlreadyExistsError)
       }
-      "should return Right(Source) on success" in {
+      "should return Left(UserDoesNotExistError) when user does not exist" in {
         (validator
           .propertiesAreValid(_: Source)(_: Monad[IO]))
           .expects(fakeSource, *)
-          .returning(EitherT.rightT[IO, SourceValidationError](()))
+          .returning(EitherT.rightT[IO, BusinessError](()))
 
         (validator
           .doesNotExist(_: Source))
           .expects(fakeSource)
-          .returning(EitherT.rightT[IO, SourceValidationError](()))
+          .returning(EitherT.rightT[IO, BusinessError](()))
+
+        (relationValidator.userExists _)
+          .expects(fakeSource)
+          .returning(EitherT.leftT[IO, Unit](UserDoesNotExistError))
+
+        val result = service.create(fakeSource)
+
+        result.value.unsafeRunSync shouldBe Left(UserDoesNotExistError)
+      }
+      "should return Right(Source) on success" in {
+        (validator
+          .propertiesAreValid(_: Source)(_: Monad[IO]))
+          .expects(fakeSource, *)
+          .returning(EitherT.rightT[IO, BusinessError](()))
+
+        (validator
+          .doesNotExist(_: Source))
+          .expects(fakeSource)
+          .returning(EitherT.rightT[IO, BusinessError](()))
+
+        (relationValidator.userExists _)
+          .expects(fakeSource)
+          .returning(EitherT.rightT[IO, BusinessError](()))
 
         (repository.create _ when fakeSource).returns(IO(fakeSource))
 
@@ -63,7 +90,7 @@ class SourceServiceSpec extends FreeSpec with Matchers with MockFactory {
       }
     }
     "update" - {
-      "should return Left(SourceValidationError) error on invalid properties" in {
+      "should return Left(BusinessError) error on invalid properties" in {
         (validator
           .propertiesAreValid(_: Source)(_: Monad[IO]))
           .expects(fakeSource, *)
@@ -73,11 +100,11 @@ class SourceServiceSpec extends FreeSpec with Matchers with MockFactory {
 
         result.value.unsafeRunSync shouldBe Left(NameMustBeDefinedError)
       }
-      "should return Left(SourceValidationError) error when source does not exist" in {
+      "should return Left(BusinessError) error when source does not exist" in {
         (validator
           .propertiesAreValid(_: Source)(_: Monad[IO]))
           .expects(fakeSource, *)
-          .returning(EitherT.rightT[IO, SourceValidationError](()))
+          .returning(EitherT.rightT[IO, BusinessError](()))
 
         (validator
           .exists(_: Source))
@@ -88,16 +115,39 @@ class SourceServiceSpec extends FreeSpec with Matchers with MockFactory {
 
         result.value.unsafeRunSync shouldBe Left(SourceDoesNotExistError)
       }
-      "should return Right(Source) on success" in {
+      "should return Left(UserDoesNotExistError) when user does not exist" in {
         (validator
           .propertiesAreValid(_: Source)(_: Monad[IO]))
           .expects(fakeSource, *)
-          .returning(EitherT.rightT[IO, SourceValidationError](()))
+          .returning(EitherT.rightT[IO, BusinessError](()))
 
         (validator
           .exists(_: Source))
           .expects(fakeSource)
-          .returning(EitherT.rightT[IO, SourceValidationError](()))
+          .returning(EitherT.rightT[IO, BusinessError](()))
+
+        (relationValidator.userExists _)
+          .expects(fakeSource)
+          .returning(EitherT.leftT[IO, Unit](UserDoesNotExistError))
+
+        val result = service.update(fakeSource)
+
+        result.value.unsafeRunSync shouldBe Left(UserDoesNotExistError)
+      }
+      "should return Right(Source) on success" in {
+        (validator
+          .propertiesAreValid(_: Source)(_: Monad[IO]))
+          .expects(fakeSource, *)
+          .returning(EitherT.rightT[IO, BusinessError](()))
+
+        (validator
+          .exists(_: Source))
+          .expects(fakeSource)
+          .returning(EitherT.rightT[IO, BusinessError](()))
+
+        (relationValidator.userExists _)
+          .expects(fakeSource)
+          .returning(EitherT.rightT[IO, BusinessError](()))
 
         (repository.update _ when fakeSource).returns(IO(fakeSource))
 

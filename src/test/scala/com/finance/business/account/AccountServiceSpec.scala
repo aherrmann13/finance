@@ -3,6 +3,8 @@ package com.finance.business.account
 import cats.data.EitherT
 import cats.effect.IO
 import cats.Monad
+import com.finance.business.common.errors.{BusinessError, UserDoesNotExistError}
+import com.finance.business.common.{IdRepository, RelationValidator}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FreeSpec, Matchers}
 
@@ -11,9 +13,11 @@ class AccountServiceSpec extends FreeSpec with Matchers with MockFactory {
 
   //https://github.com/paulbutcher/ScalaMock/issues/170
   class AccountValidatorWithIO(repository: AccountRepository[IO]) extends AccountValidator[IO](repository)
+  class RelationValidatorWithIO(repository: IdRepository[IO]) extends RelationValidator[IO](repository)
   private val validator = mock[AccountValidatorWithIO]
+  private val relationValidator = mock[RelationValidatorWithIO]
 
-  private val service = AccountService(repository, validator)
+  private val service = AccountService(repository, validator, relationValidator)
 
   val fakeAccount = Account(Option(1), 2, "name", "description", Bank)
 
@@ -33,7 +37,7 @@ class AccountServiceSpec extends FreeSpec with Matchers with MockFactory {
         (validator
           .propertiesAreValid(_: Account)(_: Monad[IO]))
           .expects(fakeAccount, *)
-          .returning(EitherT.rightT[IO, AccountValidationError](()))
+          .returning(EitherT.rightT[IO, BusinessError](()))
 
         (validator
           .doesNotExist(_: Account))
@@ -44,16 +48,39 @@ class AccountServiceSpec extends FreeSpec with Matchers with MockFactory {
 
         result.value.unsafeRunSync shouldBe Left(AccountAlreadyExistsError)
       }
-      "should return Right(Account) on success" in {
+      "should return Left(UserDoesNotExistError) when user does not exist" in {
         (validator
           .propertiesAreValid(_: Account)(_: Monad[IO]))
           .expects(fakeAccount, *)
-          .returning(EitherT.rightT[IO, AccountValidationError](()))
+          .returning(EitherT.rightT[IO, BusinessError](()))
 
         (validator
           .doesNotExist(_: Account))
           .expects(fakeAccount)
-          .returning(EitherT.rightT[IO, AccountValidationError](()))
+          .returning(EitherT.rightT[IO, BusinessError](()))
+
+        (relationValidator.userExists _)
+          .expects(fakeAccount)
+          .returning(EitherT.leftT[IO, Unit](UserDoesNotExistError))
+
+        val result = service.create(fakeAccount)
+
+        result.value.unsafeRunSync shouldBe Left(UserDoesNotExistError)
+      }
+      "should return Right(Account) on success" in {
+        (validator
+          .propertiesAreValid(_: Account)(_: Monad[IO]))
+          .expects(fakeAccount, *)
+          .returning(EitherT.rightT[IO, BusinessError](()))
+
+        (validator
+          .doesNotExist(_: Account))
+          .expects(fakeAccount)
+          .returning(EitherT.rightT[IO, BusinessError](()))
+
+        (relationValidator.userExists _)
+          .expects(fakeAccount)
+          .returning(EitherT.rightT[IO, BusinessError](()))
 
         (repository.create _ when fakeAccount).returns(IO(fakeAccount))
 
@@ -77,7 +104,7 @@ class AccountServiceSpec extends FreeSpec with Matchers with MockFactory {
         (validator
           .propertiesAreValid(_: Account)(_: Monad[IO]))
           .expects(fakeAccount, *)
-          .returning(EitherT.rightT[IO, AccountValidationError](()))
+          .returning(EitherT.rightT[IO, BusinessError](()))
 
         (validator
           .exists(_: Account))
@@ -88,16 +115,39 @@ class AccountServiceSpec extends FreeSpec with Matchers with MockFactory {
 
         result.value.unsafeRunSync shouldBe Left(AccountDoesNotExistError)
       }
-      "should return Right(Account) on success" in {
+      "should return Left(UserDoesNotExistError) when user does not exist" in {
         (validator
           .propertiesAreValid(_: Account)(_: Monad[IO]))
           .expects(fakeAccount, *)
-          .returning(EitherT.rightT[IO, AccountValidationError](()))
+          .returning(EitherT.rightT[IO, BusinessError](()))
 
         (validator
           .exists(_: Account))
           .expects(fakeAccount)
-          .returning(EitherT.rightT[IO, AccountValidationError](()))
+          .returning(EitherT.rightT[IO, BusinessError](()))
+
+        (relationValidator.userExists _)
+          .expects(fakeAccount)
+          .returning(EitherT.leftT[IO, Unit](UserDoesNotExistError))
+
+        val result = service.update(fakeAccount)
+
+        result.value.unsafeRunSync shouldBe Left(UserDoesNotExistError)
+      }
+      "should return Right(Account) on success" in {
+        (validator
+          .propertiesAreValid(_: Account)(_: Monad[IO]))
+          .expects(fakeAccount, *)
+          .returning(EitherT.rightT[IO, BusinessError](()))
+
+        (validator
+          .exists(_: Account))
+          .expects(fakeAccount)
+          .returning(EitherT.rightT[IO, BusinessError](()))
+
+        (relationValidator.userExists _)
+          .expects(fakeAccount)
+          .returning(EitherT.rightT[IO, BusinessError](()))
 
         (repository.update _ when fakeAccount).returns(IO(fakeAccount))
 

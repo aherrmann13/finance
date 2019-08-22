@@ -1,10 +1,11 @@
 package com.finance.business.account
 
-import com.finance.business.common.HasId
+import com.finance.business.common.{HasId, HasUserId}
 
 object Account {
   // kindof arbitrary lengths
   def maxNameLength = 128
+
   def maxDescriptionLength = 512
 
   def apply(userId: Int, name: String, description: String, accountType: AccountType) =
@@ -12,4 +13,4 @@ object Account {
 }
 
 case class Account(id: Option[Int], userId: Int, name: String, description: String, accountType: AccountType)
-    extends HasId;
+  extends HasId with HasUserId;

@@ -1,10 +1,16 @@
 package com.finance.business.source
 
-sealed trait SourceValidationError
+import com.finance.business.common.errors.BusinessError
 
-case object SourceDoesNotExistError extends SourceValidationError
-case object SourceAlreadyExistsError extends SourceValidationError
-case object NameMustBeDefinedError extends SourceValidationError
-case object DescriptionMustBeDefinedError extends SourceValidationError
-case object NameExceedsMaxLengthError extends SourceValidationError
-case object DescriptionExceedsMaxLengthError extends SourceValidationError
+
+case object SourceDoesNotExistError extends BusinessError
+
+case object SourceAlreadyExistsError extends BusinessError
+
+case object NameMustBeDefinedError extends BusinessError
+
+case object DescriptionMustBeDefinedError extends BusinessError
+
+case object NameExceedsMaxLengthError extends BusinessError
+
+case object DescriptionExceedsMaxLengthError extends BusinessError

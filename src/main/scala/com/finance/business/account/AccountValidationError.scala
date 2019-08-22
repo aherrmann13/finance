@@ -1,10 +1,15 @@
 package com.finance.business.account
 
-sealed trait AccountValidationError
+import com.finance.business.common.errors.BusinessError
 
-case object AccountDoesNotExistError extends AccountValidationError
-case object AccountAlreadyExistsError extends AccountValidationError
-case object NameMustBeDefinedError extends AccountValidationError
-case object DescriptionMustBeDefinedError extends AccountValidationError
-case object NameExceedsMaxLengthError extends AccountValidationError
-case object DescriptionExceedsMaxLengthError extends AccountValidationError
+case object AccountDoesNotExistError extends BusinessError
+
+case object AccountAlreadyExistsError extends BusinessError
+
+case object NameMustBeDefinedError extends BusinessError
+
+case object DescriptionMustBeDefinedError extends BusinessError
+
+case object NameExceedsMaxLengthError extends BusinessError
+
+case object DescriptionExceedsMaxLengthError extends BusinessError

@@ -2,22 +2,27 @@ package com.finance.business.source
 
 import cats.Monad
 import cats.data.EitherT
+import com.finance.business.common.RelationValidator
+import com.finance.business.common.errors.BusinessError
 
 class SourceService[F[_]](
-    repository: SourceRepository[F],
-    validator: SourceValidator[F]
+  repository: SourceRepository[F],
+  validator: SourceValidator[F],
+  relationValidator: RelationValidator[F]
 ) {
-  def create(source: Source)(implicit M: Monad[F]): EitherT[F, SourceValidationError, Source] =
+  def create(source: Source)(implicit M: Monad[F]): EitherT[F, BusinessError, Source] =
     for {
       _ <- validator.propertiesAreValid(source)
       _ <- validator.doesNotExist(source)
+      _ <- relationValidator.userExists(source)
       saved <- EitherT.liftF(repository.create(source))
     } yield saved
 
-  def update(source: Source)(implicit M: Monad[F]): EitherT[F, SourceValidationError, Source] =
+  def update(source: Source)(implicit M: Monad[F]): EitherT[F, BusinessError, Source] =
     for {
       _ <- validator.propertiesAreValid(source)
       _ <- validator.exists(source)
+      _ <- relationValidator.userExists(source)
       saved <- EitherT.liftF(repository.update(source))
     } yield saved
 
@@ -31,6 +36,10 @@ class SourceService[F[_]](
 }
 
 object SourceService {
-  def apply[F[_]](repository: SourceRepository[F], validator: SourceValidator[F]) =
-    new SourceService[F](repository, validator)
+  def apply[F[_]](
+    repository: SourceRepository[F],
+    validator: SourceValidator[F],
+    relationValidator: RelationValidator[F]
+  ) =
+    new SourceService[F](repository, validator, relationValidator)
 }
