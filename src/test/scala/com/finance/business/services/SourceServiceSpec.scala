@@ -1,10 +1,12 @@
-package com.finance.business.source
+package com.finance.business.services
 
+import cats.Monad
 import cats.data.EitherT
 import cats.effect.IO
-import cats.Monad
-import com.finance.business.common.errors.{BusinessError, UserDoesNotExistError}
 import com.finance.business.common.{IdRepository, RelationValidator}
+import com.finance.business.errors._
+import com.finance.business.model.source._
+import com.finance.business.validators.SourceValidator
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FreeSpec, Matchers}
 

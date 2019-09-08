@@ -1,16 +1,17 @@
-package com.finance.business.account
+package com.finance.business.validators
 
-import cats.{Applicative, Monad}
 import cats.data.EitherT
 import cats.implicits._
-import com.finance.business.common.errors.BusinessError
+import cats.{Applicative, Monad}
+import com.finance.business.errors._
+import com.finance.business.model.account._
 
 object AccountValidator {
-  def apply[F[_] : Applicative](repository: AccountRepository[F]) =
+  def apply[F[_]: Applicative](repository: AccountRepository[F]) =
     new AccountValidator[F](repository)
 }
 
-class AccountValidator[F[_] : Applicative](repository: AccountRepository[F]) {
+class AccountValidator[F[_]: Applicative](repository: AccountRepository[F]) {
 
   def exists(account: Account): EitherT[F, BusinessError, Unit] =
     EitherT {
@@ -20,7 +21,6 @@ class AccountValidator[F[_] : Applicative](repository: AccountRepository[F]) {
             case Some(_) => Right(())
             case _ => Left(AccountDoesNotExistError)
           }
-        //TODO: why does Left(AccountDoesNotExistError) not work?
         case _ => Either.left[BusinessError, Unit](AccountDoesNotExistError).pure[F]
       }
     }

@@ -1,6 +1,12 @@
-package com.finance.business.account
+package com.finance.business.errors
 
-import com.finance.business.common.errors.BusinessError
+trait BusinessError
+
+case object UserDoesNotExistError extends BusinessError
+
+case object SourceDoesNotExistError extends BusinessError
+
+case object SourceAlreadyExistsError extends BusinessError
 
 case object AccountDoesNotExistError extends BusinessError
 

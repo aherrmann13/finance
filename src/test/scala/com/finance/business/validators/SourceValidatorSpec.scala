@@ -1,8 +1,10 @@
-package com.finance.business.source
+package com.finance.business.validators
 
 import cats.effect.IO
-import org.scalatest.{FreeSpec, Matchers}
+import com.finance.business.errors.{DescriptionExceedsMaxLengthError, DescriptionMustBeDefinedError, NameExceedsMaxLengthError, NameMustBeDefinedError, SourceAlreadyExistsError, SourceDoesNotExistError}
+import com.finance.business.model.source._
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.{FreeSpec, Matchers}
 
 class SourceValidatorSpec extends FreeSpec with Matchers with MockFactory {
 

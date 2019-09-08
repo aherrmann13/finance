@@ -1,4 +1,4 @@
-package com.finance.business.source
+package com.finance.business.model.source
 
 import com.finance.business.common.{HasId, HasUserId}
 

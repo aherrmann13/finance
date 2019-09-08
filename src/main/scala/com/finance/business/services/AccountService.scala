@@ -1,9 +1,11 @@
-package com.finance.business.account
+package com.finance.business.services
 
 import cats.Monad
 import cats.data.EitherT
+import com.finance.business.model.account.{Account, AccountRepository}
 import com.finance.business.common.RelationValidator
-import com.finance.business.common.errors.BusinessError
+import com.finance.business.errors.BusinessError
+import com.finance.business.validators.AccountValidator
 
 class AccountService[F[_]](
   repository: AccountRepository[F],

@@ -1,16 +1,17 @@
-package com.finance.business.source
+package com.finance.business.validators
 
-import cats.{Applicative, Monad}
 import cats.data.EitherT
 import cats.implicits._
-import com.finance.business.common.errors.BusinessError
+import cats.{Applicative, Monad}
+import com.finance.business.errors._
+import com.finance.business.model.source._
 
 object SourceValidator {
-  def apply[F[_] : Applicative](repository: SourceRepository[F]) =
+  def apply[F[_]: Applicative](repository: SourceRepository[F]) =
     new SourceValidator[F](repository)
 }
 
-class SourceValidator[F[_] : Applicative](repository: SourceRepository[F]) {
+class SourceValidator[F[_]: Applicative](repository: SourceRepository[F]) {
 
   def exists(source: Source): EitherT[F, BusinessError, Unit] =
     EitherT {

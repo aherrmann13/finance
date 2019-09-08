@@ -1,8 +1,10 @@
-package com.finance.business.account
+package com.finance.business.validators
 
 import cats.effect.IO
-import org.scalatest.{FreeSpec, Matchers}
+import com.finance.business.errors.{AccountAlreadyExistsError, AccountDoesNotExistError, DescriptionExceedsMaxLengthError, DescriptionMustBeDefinedError, NameExceedsMaxLengthError, NameMustBeDefinedError}
+import com.finance.business.model.account._
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.{FreeSpec, Matchers}
 
 
 

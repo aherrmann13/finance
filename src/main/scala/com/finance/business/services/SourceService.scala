@@ -1,9 +1,11 @@
-package com.finance.business.source
+package com.finance.business.services
 
 import cats.Monad
 import cats.data.EitherT
 import com.finance.business.common.RelationValidator
-import com.finance.business.common.errors.BusinessError
+import com.finance.business.errors.BusinessError
+import com.finance.business.model.source.{Source, SourceRepository}
+import com.finance.business.validators.SourceValidator
 
 class SourceService[F[_]](
   repository: SourceRepository[F],

@@ -1,4 +1,4 @@
-package com.finance.business.account
+package com.finance.business.model.account
 
 import com.finance.business.common.Repository
 

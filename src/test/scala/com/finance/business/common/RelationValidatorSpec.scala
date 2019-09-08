@@ -1,7 +1,7 @@
 package com.finance.business.common
 
 import cats.effect.IO
-import com.finance.business.common.errors.UserDoesNotExistError
+import com.finance.business.errors.UserDoesNotExistError
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FreeSpec, Matchers}
 
