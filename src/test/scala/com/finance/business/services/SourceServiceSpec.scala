@@ -6,6 +6,7 @@ import cats.effect.IO
 import com.finance.business.common.{IdRepository, RelationValidator}
 import com.finance.business.errors._
 import com.finance.business.model.source._
+import com.finance.business.model.transaction.TransactionRepository
 import com.finance.business.validators.SourceValidator
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FreeSpec, Matchers}
@@ -14,8 +15,11 @@ class SourceServiceSpec extends FreeSpec with Matchers with MockFactory {
   private val repository = stub[SourceRepository[IO]]
 
   //https://github.com/paulbutcher/ScalaMock/issues/170
-  class SourceValidatorWithIO(repository: SourceRepository[IO]) extends SourceValidator[IO](repository)
+  class SourceValidatorWithIO(sourceRepository: SourceRepository[IO], transactionRepository: TransactionRepository[IO])
+      extends SourceValidator[IO](sourceRepository, transactionRepository)
+
   class RelationValidatorWithIO(repository: IdRepository[IO]) extends RelationValidator[IO](repository)
+
   private val validator = mock[SourceValidatorWithIO]
   private val relationValidator = mock[RelationValidatorWithIO]
 
@@ -159,10 +163,37 @@ class SourceServiceSpec extends FreeSpec with Matchers with MockFactory {
       }
     }
     "delete" - {
-      "should call delete on repository" in {
-        service.delete(fakeSource.userId, fakeSource.id.get)
+      "should return Left(ReferencedByTransactionError) if transaction exists" in {
+        (validator
+          .hasTransactions(_: Source))
+          .expects(fakeSource)
+          .returning(EitherT.leftT[IO, Unit](ReferencedByTransactionError))
 
-        (repository.delete _).verify(fakeSource.userId, fakeSource.id.get)
+        val result = service.delete(fakeSource)
+
+        (repository.delete _).verify(*, *) never
+
+        result.value.unsafeRunSync shouldBe Left(ReferencedByTransactionError)
+      }
+      "should return Right(()) and delete source on success" in {
+        (validator
+          .hasTransactions(_: Source))
+          .expects(fakeSource)
+          .returning(EitherT.rightT[IO, BusinessError](()))
+
+        (repository.delete _).when(fakeSource.userId, fakeSource.id.get).returns(IO(()))
+
+        val result = service.delete(fakeSource)
+
+        result.value.unsafeRunSync shouldBe Right(())
+      }
+
+      "should return Right(()) and skip delete when source has no id" in {
+        val result = service.delete(fakeSource.copy(id = None))
+
+        result.value.unsafeRunSync shouldBe Right(())
+
+        (repository.delete _).verify(*, *) never
       }
     }
     "get" - {

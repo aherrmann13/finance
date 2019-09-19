@@ -12,6 +12,12 @@ case object AccountDoesNotExistError extends BusinessError
 
 case object AccountAlreadyExistsError extends BusinessError
 
+case object TransactionDoesNotExistError extends BusinessError
+
+case object TransactionAlreadyExistsError extends BusinessError
+
+case object ReferencedByTransactionError extends BusinessError
+
 case object NameMustBeDefinedError extends BusinessError
 
 case object DescriptionMustBeDefinedError extends BusinessError

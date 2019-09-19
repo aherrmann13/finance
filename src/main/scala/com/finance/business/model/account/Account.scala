@@ -3,11 +3,6 @@ package com.finance.business.model.account
 import com.finance.business.common.{HasId, HasUserId}
 
 object Account {
-  // kindof arbitrary lengths
-  def maxNameLength = 128
-
-  def maxDescriptionLength = 512
-
   def apply(userId: Int, name: String, description: String, accountType: AccountType) =
     new Account(Option.empty, userId, name, description, accountType)
 }

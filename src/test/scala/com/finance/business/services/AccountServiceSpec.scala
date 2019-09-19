@@ -6,6 +6,7 @@ import cats.effect.IO
 import com.finance.business.common.{IdRepository, RelationValidator}
 import com.finance.business.errors._
 import com.finance.business.model.account._
+import com.finance.business.model.transaction.TransactionRepository
 import com.finance.business.validators.AccountValidator
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FreeSpec, Matchers}
@@ -14,8 +15,13 @@ class AccountServiceSpec extends FreeSpec with Matchers with MockFactory {
   private val repository = stub[AccountRepository[IO]]
 
   //https://github.com/paulbutcher/ScalaMock/issues/170
-  class AccountValidatorWithIO(repository: AccountRepository[IO]) extends AccountValidator[IO](repository)
+  class AccountValidatorWithIO(
+      sourceRepository: AccountRepository[IO],
+      transactionRepository: TransactionRepository[IO])
+      extends AccountValidator[IO](sourceRepository, transactionRepository)
+
   class RelationValidatorWithIO(repository: IdRepository[IO]) extends RelationValidator[IO](repository)
+
   private val validator = mock[AccountValidatorWithIO]
   private val relationValidator = mock[RelationValidatorWithIO]
 
@@ -159,10 +165,37 @@ class AccountServiceSpec extends FreeSpec with Matchers with MockFactory {
       }
     }
     "delete" - {
-      "should call delete on repository" in {
-        service.delete(fakeAccount.userId, fakeAccount.id.get)
+      "should return Left(ReferencedByTransactionError) if transaction exists" in {
+        (validator
+          .hasTransactions(_: Account))
+          .expects(fakeAccount)
+          .returning(EitherT.leftT[IO, Unit](ReferencedByTransactionError))
 
-        (repository.delete _).verify(fakeAccount.userId, fakeAccount.id.get)
+        val result = service.delete(fakeAccount)
+
+        (repository.delete _).verify(*, *) never
+
+        result.value.unsafeRunSync shouldBe Left(ReferencedByTransactionError)
+      }
+      "should return Right(()) and delete account on success" in {
+        (validator
+          .hasTransactions(_: Account))
+          .expects(fakeAccount)
+          .returning(EitherT.rightT[IO, BusinessError](()))
+
+        (repository.delete _).when(fakeAccount.userId, fakeAccount.id.get).returns(IO(()))
+
+        val result = service.delete(fakeAccount)
+
+        result.value.unsafeRunSync shouldBe Right(())
+      }
+
+      "should return Right(()) and skip delete when account has no id" in {
+        val result = service.delete(fakeAccount.copy(id = None))
+
+        result.value.unsafeRunSync shouldBe Right(())
+
+        (repository.delete _).verify(*, *) never
       }
     }
     "get" - {

@@ -7,10 +7,19 @@ import com.finance.business.errors.BusinessError
 import com.finance.business.model.source.{Source, SourceRepository}
 import com.finance.business.validators.SourceValidator
 
+object SourceService {
+  def apply[F[_]](
+      repository: SourceRepository[F],
+      validator: SourceValidator[F],
+      relationValidator: RelationValidator[F]
+  ) =
+    new SourceService[F](repository, validator, relationValidator)
+}
+
 class SourceService[F[_]](
-  repository: SourceRepository[F],
-  validator: SourceValidator[F],
-  relationValidator: RelationValidator[F]
+    repository: SourceRepository[F],
+    validator: SourceValidator[F],
+    relationValidator: RelationValidator[F]
 ) {
   def create(source: Source)(implicit M: Monad[F]): EitherT[F, BusinessError, Source] =
     for {
@@ -28,20 +37,19 @@ class SourceService[F[_]](
       saved <- EitherT.liftF(repository.update(source))
     } yield saved
 
-  def delete(userId: Int, id: Int): F[Unit] = repository.delete(userId, id)
+  def delete(source: Source)(implicit M: Monad[F]): EitherT[F, BusinessError, Unit] =
+    source.id match {
+      case Some(id) =>
+        for {
+          _ <- validator.hasTransactions(source)
+          result <- EitherT.liftF(repository.delete(source.userId, id))
+        } yield result
+      case None => EitherT.rightT[F, BusinessError](())
+    }
 
   def get(userId: Int, id: Int): F[Option[Source]] = repository.get(userId, id)
 
   def getMany(userId: Int, id: Seq[Int]): F[Seq[Source]] = repository.getMany(userId, id)
 
   def getAll(userId: Int): F[Seq[Source]] = repository.getAll(userId)
-}
-
-object SourceService {
-  def apply[F[_]](
-    repository: SourceRepository[F],
-    validator: SourceValidator[F],
-    relationValidator: RelationValidator[F]
-  ) =
-    new SourceService[F](repository, validator, relationValidator)
 }

@@ -7,10 +7,19 @@ import com.finance.business.common.RelationValidator
 import com.finance.business.errors.BusinessError
 import com.finance.business.validators.AccountValidator
 
+object AccountService {
+  def apply[F[_]](
+      repository: AccountRepository[F],
+      validator: AccountValidator[F],
+      relationValidator: RelationValidator[F]
+  ) =
+    new AccountService[F](repository, validator, relationValidator)
+}
+
 class AccountService[F[_]](
-  repository: AccountRepository[F],
-  validator: AccountValidator[F],
-  relationValidator: RelationValidator[F]
+    repository: AccountRepository[F],
+    validator: AccountValidator[F],
+    relationValidator: RelationValidator[F]
 ) {
   def create(account: Account)(implicit M: Monad[F]): EitherT[F, BusinessError, Account] =
     for {
@@ -28,20 +37,19 @@ class AccountService[F[_]](
       saved <- EitherT.liftF(repository.update(account))
     } yield saved
 
-  def delete(userId: Int, id: Int): F[Unit] = repository.delete(userId, id)
+  def delete(account: Account)(implicit M: Monad[F]): EitherT[F, BusinessError, Unit] =
+    account.id match {
+      case Some(id) =>
+        for {
+          _ <- validator.hasTransactions(account)
+          result <- EitherT.liftF(repository.delete(account.userId, id))
+        } yield result
+      case None => EitherT.rightT[F, BusinessError](())
+    }
 
   def get(userId: Int, id: Int): F[Option[Account]] = repository.get(userId, id)
 
   def getMany(userId: Int, id: Seq[Int]): F[Seq[Account]] = repository.getMany(userId, id)
 
   def getAll(userId: Int): F[Seq[Account]] = repository.getAll(userId)
-}
-
-object AccountService {
-  def apply[F[_]](
-    repository: AccountRepository[F],
-    validator: AccountValidator[F],
-    relationValidator: RelationValidator[F]
-  ) =
-    new AccountService[F](repository, validator, relationValidator)
 }
