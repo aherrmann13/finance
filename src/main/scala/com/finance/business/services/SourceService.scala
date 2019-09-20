@@ -2,7 +2,7 @@ package com.finance.business.services
 
 import cats.Monad
 import cats.data.EitherT
-import com.finance.business.common.RelationValidator
+import com.finance.business.common.{RelationValidator, Service}
 import com.finance.business.errors.BusinessError
 import com.finance.business.model.source.{Source, SourceRepository}
 import com.finance.business.validators.SourceValidator
@@ -20,7 +20,7 @@ class SourceService[F[_]](
     repository: SourceRepository[F],
     validator: SourceValidator[F],
     relationValidator: RelationValidator[F]
-) {
+) extends Service[F, Source] {
   def create(source: Source)(implicit M: Monad[F]): EitherT[F, BusinessError, Source] =
     for {
       _ <- validator.propertiesAreValid(source)

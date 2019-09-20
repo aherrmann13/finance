@@ -3,7 +3,7 @@ package com.finance.business.services
 import cats.Monad
 import cats.data.EitherT
 import com.finance.business.model.account.{Account, AccountRepository}
-import com.finance.business.common.RelationValidator
+import com.finance.business.common.{RelationValidator, Service}
 import com.finance.business.errors.BusinessError
 import com.finance.business.validators.AccountValidator
 
@@ -20,7 +20,7 @@ class AccountService[F[_]](
     repository: AccountRepository[F],
     validator: AccountValidator[F],
     relationValidator: RelationValidator[F]
-) {
+) extends Service[F, Account] {
   def create(account: Account)(implicit M: Monad[F]): EitherT[F, BusinessError, Account] =
     for {
       _ <- validator.propertiesAreValid(account)

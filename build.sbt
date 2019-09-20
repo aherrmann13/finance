@@ -26,5 +26,6 @@ coverageMinimum := 100
 coverageFailOnMinimum := true
 
 scalacOptions ++= Seq(
-  "-language:higherKinds"
+  "-language:higherKinds",
+  "-language:postfixOps"
 )
