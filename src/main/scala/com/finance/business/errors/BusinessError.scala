@@ -25,3 +25,14 @@ case object DescriptionMustBeDefinedError extends BusinessError
 case object NameExceedsMaxLengthError extends BusinessError
 
 case object DescriptionExceedsMaxLengthError extends BusinessError
+
+case object ParentCategoryDoesNotExistError extends BusinessError
+
+case object ParentCategoryCannotBeLeaf extends BusinessError
+
+case object CategoryEffectiveTimeOutsideParent extends BusinessError
+
+case object CategoryDoesNotExistError extends BusinessError
+
+case object CategoryAlreadyExistsError extends BusinessError
+

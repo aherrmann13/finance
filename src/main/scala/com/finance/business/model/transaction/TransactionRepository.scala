@@ -6,4 +6,6 @@ trait TransactionRepository[F[_]] extends Repository[F, Transaction] {
   def anyWithAccountId(userId: Int, id: Int): F[Boolean]
 
   def anyWithSourceId(userId: Int, id: Int): F[Boolean]
+
+  def anyWithCategoryId(userId: Int, id: Int): F[Boolean]
 }
