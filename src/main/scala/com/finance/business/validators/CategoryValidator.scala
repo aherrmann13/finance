@@ -4,7 +4,7 @@ import cats.implicits._
 import cats.{Applicative, Monad}
 import cats.data.EitherT
 import com.finance.business.errors._
-import com.finance.business.model.category.{Category, CategoryRepository}
+import com.finance.business.model.category.{Category, CategoryRepository, Range}
 import com.finance.business.model.operations.Category._
 import com.finance.business.model.transaction.TransactionRepository
 import com.finance.business.validators.internal.PropertyValidators._
@@ -86,6 +86,7 @@ class CategoryValidator[F[_]: Applicative](
     for {
       _ <- validateName[F](category.name)
       _ <- validateDesc[F](category.description)
+      _ <- validateTimePeriod(category)
     } yield Right(())
 
   def hasTransactions(category: Category): EitherT[F, BusinessError, Unit] =
@@ -96,6 +97,15 @@ class CategoryValidator[F[_]: Applicative](
             if (_) Left(ReferencedByTransactionError) else Right(())
           }
         case None => Either.right[BusinessError, Unit](()).pure[F]
+      }
+    }
+
+  private def validateTimePeriod(category: Category): EitherT[F, BusinessError, Unit] =
+    EitherT {
+      category.effective match {
+        case Range(from, to) if to < from =>
+          Either.left[BusinessError, Unit](CategoryEffectiveTimeInvalidFormat).pure[F]
+        case _ => Either.right[BusinessError, Unit](()).pure[F]
       }
     }
 }

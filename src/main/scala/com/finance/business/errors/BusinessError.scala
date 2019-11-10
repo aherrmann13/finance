@@ -32,6 +32,8 @@ case object ParentCategoryCannotBeLeaf extends BusinessError
 
 case object CategoryEffectiveTimeOutsideParent extends BusinessError
 
+case object CategoryEffectiveTimeInvalidFormat extends BusinessError
+
 case object CategoryDoesNotExistError extends BusinessError
 
 case object CategoryAlreadyExistsError extends BusinessError

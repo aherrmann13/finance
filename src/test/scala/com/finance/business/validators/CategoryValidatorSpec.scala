@@ -197,6 +197,11 @@ class CategoryValidatorSpec extends FreeSpec with Matchers with MockFactory {
 
         result.value.unsafeRunSync shouldBe Left(DescriptionExceedsMaxLengthError)
       }
+      "should return Left(CategoryEffectiveTimeInvalidFormat) when time range has from < to" in {
+        val result = validator.propertiesAreValid(fakeCategory.copy(effective = Range(4, 2)))
+
+        result.value.unsafeRunSync shouldBe Left(CategoryEffectiveTimeInvalidFormat)
+      }
     }
 
     "hasTransactions" - {
