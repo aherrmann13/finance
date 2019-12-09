@@ -1,0 +1,72 @@
+AccountValue:
+  type: object
+  properties:
+    accountId:
+      type: integer
+      format: int32
+      readOnly: true
+    timePeriodId:
+      type: integer
+      format: int32
+      readOnly: true
+    value:
+      type: number
+      readOnly: true
+  required:
+    - accountId
+    - timePeriodId
+    - value
+
+AccountValueQuery:
+  type: object
+  properties:
+    timePeriods:
+      oneOf:
+        - $ref: "#/TimePeriodRange"
+        - $ref: "#/TimePeriodCollection"
+      writeOnly: true
+    accountIds:
+      type: array
+      items:
+        type: integer
+        format: int32
+      writeOnly: true
+    useReportingDate:
+      type: boolean
+      writeOnly: true
+# TODO: rename
+    countAssetGrowthInPurchaseMonth:
+      type: boolean
+      writeOnly: true
+  required:
+    - timePeriods
+    - accountIds
+    - useReportingDate
+    - countAssetGrowthInPurchaseMonth
+
+TimePeriodRange:
+  type: object
+  properties:
+    from:
+      type: integer
+      format: int32
+      writeOnly: true
+    to:
+      type: integer
+      format: int32
+      writeOnly: true
+  required:
+    - from
+    - to
+
+TimePeriodCollection:
+  type: object
+  properties:
+    items:
+      type: array
+      items:
+        type: integer
+        format: int32
+        writeOnly: true  
+  required:
+    - items

@@ -1,0 +1,52 @@
+Transaction:
+  type: object
+  properties:
+    id:
+      type: integer
+      format: int32
+      readOnly: true
+    amount:
+      type: array
+      items: 
+        $ref: "#/Amount"
+    description:
+      type: string
+    transactionDate:
+      type: string
+      format: date
+    reportingDate:
+      type: string
+      format: date
+    sourceId:
+      type: integer
+      format: int32
+    accountId:
+      type: integer
+      format: int32
+    categoryId:
+      type: integer
+      format: int32
+  required:
+    - id
+    - amount
+    - description
+    - transactionDate
+    - reportingDate
+    - sourceId
+    - accountId
+    - categoryId
+
+Amount:
+  type: object
+  properties:
+    categoryId:
+      type: integer
+      format: int32
+    amount:
+      type: number
+    description:
+      type: string
+  required:
+    - categoryId
+    - amount
+    - description

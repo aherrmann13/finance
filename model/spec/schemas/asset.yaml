@@ -1,0 +1,44 @@
+Asset:
+  type: object
+  properties:
+    id:
+      type: integer
+      format: int32
+      readOnly: true
+    action:
+      type: string
+      enum: [ "Buy", "Sell", "Other" ]
+    units:
+      type: number
+    amount:
+      type: number
+    date:
+      type: string
+      format: date
+    metadata:
+      $ref: "#/StockMetadata"
+  required:
+    - id
+    - action
+    - units
+    - amount
+    - date
+    - metadata
+   
+StockMetadata:  
+  type: object
+  properties:
+    ticker:
+      type: string
+    dividend:
+      type: object
+      properties:
+        amount:
+          type: string
+        type:
+          type: string
+          enum: [ "Cash", "Stock" ]
+      required:
+        - amount
+  required:
+    - ticker

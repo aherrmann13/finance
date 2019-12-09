@@ -1,0 +1,42 @@
+openapi: "3.0.0"
+info:
+  title: "finance api"
+  version: "0.0.1"
+paths:
+  /: {}
+components:
+  schemas:
+    Category:
+      $ref: "schemas/category.yaml#/Category"
+    Budget: 
+      $ref: "schemas/category.yaml#/Budget"
+    AnyPeriod:
+      $ref: "schemas/category.yaml#/AnyPeriod"
+    SinglePeriod:
+      $ref: "schemas/category.yaml#/SinglePeriod"
+    RangePeriod:
+      $ref: "schemas/category.yaml#/RangePeriod"
+    Transaction:
+      $ref: "schemas/transaction.yaml#/Transaction"
+    Amount:
+      $ref: "schemas/transaction.yaml#/Amount"
+    Source:
+      $ref: "schemas/source.yaml#/Source"
+    Account:
+      $ref: "schemas/account.yaml#/Account"
+    Asset:
+      $ref: "schemas/asset.yaml#/Asset"
+    StockMetadata:
+      $ref: "schemas/asset.yaml#/StockMetadata"
+    AccountValue:
+      $ref: "schemas/reporting.yaml#/AccountValue"
+    AccountValueQuery:
+      $ref: "schemas/reporting.yaml#/AccountValueQuery"
+    TimePeriodRange:
+      $ref: "schemas/reporting.yaml#/TimePeriodRange"
+    TimePeriodCollection:
+      $ref: "schemas/reporting.yaml#/TimePeriodCollection"
+    TimePeriod:
+      $ref: "schemas/timeperiod.yaml#/TimePeriod"
+    TimePeriodQuery:
+      $ref: "schemas/timeperiod.yaml#/TimePeriodQuery"

@@ -1,0 +1,11 @@
+{
+  "name": "finance-model",
+  "version": "1.0.0",
+  "scripts": {
+    "validate": "swagger-cli validate ./spec/openapi.yaml",
+    "generate": "swagger-cli bundle -t yaml -o ./dist/model.yaml ./spec/openapi.yaml"  
+  },
+  "devDependencies": {
+    "swagger-cli": "^2.3.4"
+  }
+}
