@@ -1,0 +1,17 @@
+GetAccountValueResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        type: array
+        items:
+          $ref: "../schemas/reporting.yaml#/AccountValue"
+
+GetNetWorthResponse:
+  description: ""
+  content:
+    application/json:
+# TODO is this number optional?
+      schema:
+        type: number
+  

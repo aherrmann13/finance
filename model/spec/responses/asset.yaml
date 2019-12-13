@@ -1,0 +1,22 @@
+CreateAssetResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/asset.yaml#/Asset"
+
+UpdateAssetResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/asset.yaml#/Asset"
+
+GetAssetsResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        type: array
+        items:
+          $ref: "../schemas/asset.yaml#/Asset"

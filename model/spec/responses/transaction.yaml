@@ -1,0 +1,22 @@
+CreateTransactionResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/transaction.yaml#/Transaction"
+
+UpdateTransactionResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/transaction.yaml#/Transaction"
+
+GetTransactionsResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        type: array
+        items:
+          $ref: "../schemas/transaction.yaml#/Transaction"

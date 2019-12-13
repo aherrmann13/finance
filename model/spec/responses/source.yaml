@@ -1,0 +1,22 @@
+CreateSourceResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/source.yaml#/Source"
+
+UpdateSourceResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/source.yaml#/Source"
+
+GetSourcesResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        type: array
+        items:
+          $ref: "../schemas/source.yaml#/Source"

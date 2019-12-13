@@ -1,0 +1,22 @@
+CreateAccountResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/account.yaml#/Account"
+
+UpdateAccountResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/account.yaml#/Account"
+
+GetAccountsResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        type: array
+        items:
+          $ref: "../schemas/account.yaml#/Account"

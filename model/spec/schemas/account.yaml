@@ -12,3 +12,12 @@ Account:
     accountType:
       type: string
       enum: [Bank, Brokerage]
+    value:
+      type: number
+      readOnly: true
+  required:
+    - id
+    - name
+    - description
+    - accountType
+    - value

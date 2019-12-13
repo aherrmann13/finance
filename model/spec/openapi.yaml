@@ -40,3 +40,40 @@ components:
       $ref: "schemas/timeperiod.yaml#/TimePeriod"
     TimePeriodQuery:
       $ref: "schemas/timeperiod.yaml#/TimePeriodQuery"
+  responses:
+    CreateCategoryResponse:
+      $ref: "responses/category.yaml#/CreateCategoryResponse"
+    UpdateCategoryResponse:
+      $ref: "responses/category.yaml#/UpdateCategoryResponse"
+    GetCategoriesResponse:
+      $ref: "responses/category.yaml#/GetCategoriesResponse"
+    CreateTransactionResponse:
+      $ref: "responses/transaction.yaml#/CreateTransactionResponse"
+    UpdateTransactionResponse:
+      $ref: "responses/transaction.yaml#/UpdateTransactionResponse"
+    GetTransactionsResponse:
+      $ref: "responses/transaction.yaml#/GetTransactionsResponse"
+    CreateSourceResponse:
+      $ref: "responses/source.yaml#/CreateSourceResponse"
+    UpdateSourceResponse:
+      $ref: "responses/source.yaml#/UpdateSourceResponse"
+    GetSourcesResponse:
+      $ref: "responses/source.yaml#/GetSourcesResponse"
+    CreateAccountResponse:
+      $ref: "responses/account.yaml#/CreateAccountResponse"
+    UpdateAccountResponse:
+      $ref: "responses/account.yaml#/UpdateAccountResponse"
+    GetAccountsResponse:
+      $ref: "responses/account.yaml#/GetAccountsResponse"
+    CreateAssetResponse:
+      $ref: "responses/asset.yaml#/CreateAssetResponse"
+    UpdateAssetResponse:
+      $ref: "responses/asset.yaml#/UpdateAssetResponse"
+    GetAssetsResponse:
+      $ref: "responses/asset.yaml#/GetAssetsResponse"
+    GetAccountValueResponse:
+      $ref: "responses/reporting.yaml#/GetAccountValueResponse"
+    GetNetWorthResponse:
+      $ref: "responses/reporting.yaml#/GetNetWorthResponse"
+    GetTimePeriodsResponse:
+      $ref: "responses/timeperiod.yaml#/GetTimePeriodsResponse"

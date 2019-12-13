@@ -1,0 +1,22 @@
+CreateCategoryResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/category.yaml#/Category"
+
+UpdateCategoryResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/category.yaml#/Category"
+
+GetCategoriesResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        type: array
+        items:
+          $ref: "../schemas/category.yaml#/Category"
