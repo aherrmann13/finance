@@ -20,8 +20,12 @@ components:
       $ref: "schemas/transaction.yaml#/Transaction"
     Amount:
       $ref: "schemas/transaction.yaml#/Amount"
+    TransactionQuery:
+      $ref: "schemas/transaction.yaml#/TransactionQuery"
     Source:
       $ref: "schemas/source.yaml#/Source"
+    SourceQuery:
+      $ref: "schemas/source.yaml#/SourceQuery"
     Account:
       $ref: "schemas/account.yaml#/Account"
     Asset:

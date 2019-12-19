@@ -50,3 +50,49 @@ Amount:
     - categoryId
     - amount
     - description
+
+TransactionQuery:
+  type: object
+  properties:
+    skip:
+      type: integer
+      format: int32
+      writeOnly: true
+    take:
+      type: integer
+      format: int32
+      writeOnly: true
+    orderBy:
+      type: array
+      items:
+        type: string
+        enum:
+          - TransactionDate
+          - ReportingDate
+          - Source
+          - Category
+          - Account
+      writeOnly: true
+    sortOrder:
+      type: string
+      enum: [ Asc, Desc ]
+      writeOnly: true
+    before:
+      type: string
+      format: date
+      writeOnly: true
+    after:
+      type: string
+      format: date
+      writeOnly: true
+    lessThan:
+      type: number
+      writeOnly: true
+    greaterThan:
+      type: number
+      writeOnly: true
+    accounts:
+      type: array
+      items:
+        type: integer
+        format: int32
