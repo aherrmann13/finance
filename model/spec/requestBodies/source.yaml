@@ -1,0 +1,20 @@
+CreateSourceRequest:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/source.yaml#/Source"
+
+UpdateSourceRequest:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/source.yaml#/Source"
+
+GetSourcesRequest:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/source.yaml#/SourceQuery"

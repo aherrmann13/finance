@@ -1,0 +1,15 @@
+CreateCategoryRequest:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/category.yaml#/Category"
+
+UpdateCategoryRequest:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/category.yaml#/Category"
+
+

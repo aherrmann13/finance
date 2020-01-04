@@ -1,0 +1,13 @@
+CreateAccountRequest:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/account.yaml#/Account"
+
+UpdateAccountRequest:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/account.yaml#/Account"

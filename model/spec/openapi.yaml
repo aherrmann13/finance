@@ -81,3 +81,28 @@ components:
       $ref: "responses/reporting.yaml#/GetNetWorthResponse"
     GetTimePeriodsResponse:
       $ref: "responses/timeperiod.yaml#/GetTimePeriodsResponse"
+  requestBodies:
+    CreateCategoryRequest:
+      $ref: "requestBodies/category.yaml#/CreateCategoryRequest"
+    UpdateCategoryRequest:
+      $ref: "requestBodies/category.yaml#/UpdateCategoryRequest"
+    CreateTransactionRequest:
+      $ref: "requestBodies/transaction.yaml#/CreateTransactionRequest"
+    UpdateTransactionRequest:
+      $ref: "requestBodies/transaction.yaml#/UpdateTransactionRequest"
+    CreateSourceRequest:
+      $ref: "requestBodies/source.yaml#/CreateSourceRequest"
+    UpdateSourceRequest:
+      $ref: "requestBodies/source.yaml#/UpdateSourceRequest"
+    GetSourcesRequest:
+      $ref: "requestBodies/source.yaml#/GetSourcesRequest"
+    CreateAccountRequest:
+      $ref: "requestBodies/account.yaml#/CreateAccountRequest"
+    UpdateAccountRequest:
+      $ref: "requestBodies/account.yaml#/UpdateAccountRequest"
+    CreateAssetRequest:
+      $ref: "requestBodies/asset.yaml#/CreateAssetRequest"
+    UpdateAssetRequest:
+      $ref: "requestBodies/asset.yaml#/UpdateAssetRequest"
+    GetAccountValueRequest:
+      $ref: "requestBodies/reporting.yaml#/GetAccountValueRequest"

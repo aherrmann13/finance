@@ -1,0 +1,13 @@
+CreateTransactionRequest:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/transaction.yaml#/Transaction"
+
+UpdateTransactionRequest:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/transaction.yaml#/Transaction"

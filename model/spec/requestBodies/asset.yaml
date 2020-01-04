@@ -1,0 +1,13 @@
+CreateAssetRequest:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/asset.yaml#/Asset"
+
+UpdateAssetRequest:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/asset.yaml#/Asset"
