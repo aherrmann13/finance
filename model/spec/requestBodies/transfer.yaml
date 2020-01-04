@@ -1,0 +1,13 @@
+CreateTransferRequest:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/transfer.yaml#/Transfer"
+
+UpdateTransferRequest:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/transfer.yaml#/Transfer"

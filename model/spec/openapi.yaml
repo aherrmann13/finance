@@ -20,8 +20,6 @@ components:
       $ref: "schemas/transaction.yaml#/Transaction"
     Amount:
       $ref: "schemas/transaction.yaml#/Amount"
-    TransactionQuery:
-      $ref: "schemas/transaction.yaml#/TransactionQuery"
     Source:
       $ref: "schemas/source.yaml#/Source"
     SourceQuery:
@@ -44,6 +42,8 @@ components:
       $ref: "schemas/timeperiod.yaml#/TimePeriod"
     TimePeriodQuery:
       $ref: "schemas/timeperiod.yaml#/TimePeriodQuery"
+    Transfer:
+      $ref: "schemas/transfer.yaml#/Transfer"
   responses:
     CreateCategoryResponse:
       $ref: "responses/category.yaml#/CreateCategoryResponse"
@@ -55,8 +55,6 @@ components:
       $ref: "responses/transaction.yaml#/CreateTransactionResponse"
     UpdateTransactionResponse:
       $ref: "responses/transaction.yaml#/UpdateTransactionResponse"
-    GetTransactionsResponse:
-      $ref: "responses/transaction.yaml#/GetTransactionsResponse"
     CreateSourceResponse:
       $ref: "responses/source.yaml#/CreateSourceResponse"
     UpdateSourceResponse:
@@ -73,14 +71,16 @@ components:
       $ref: "responses/asset.yaml#/CreateAssetResponse"
     UpdateAssetResponse:
       $ref: "responses/asset.yaml#/UpdateAssetResponse"
-    GetAssetsResponse:
-      $ref: "responses/asset.yaml#/GetAssetsResponse"
     GetAccountValueResponse:
       $ref: "responses/reporting.yaml#/GetAccountValueResponse"
     GetNetWorthResponse:
       $ref: "responses/reporting.yaml#/GetNetWorthResponse"
     GetTimePeriodsResponse:
       $ref: "responses/timeperiod.yaml#/GetTimePeriodsResponse"
+    CreateTransferResponse:
+      $ref: "responses/transfer.yaml#/CreateTransferResponse"
+    UpdateTransferResponse:
+      $ref: "responses/transfer.yaml#/UpdateTransferResponse"
   requestBodies:
     CreateCategoryRequest:
       $ref: "requestBodies/category.yaml#/CreateCategoryRequest"
@@ -106,3 +106,5 @@ components:
       $ref: "requestBodies/asset.yaml#/UpdateAssetRequest"
     GetAccountValueRequest:
       $ref: "requestBodies/reporting.yaml#/GetAccountValueRequest"
+    CreateTransferRequest:
+      $ref: "requestBodies/transfer.yaml#/CreateTransferRequest"
