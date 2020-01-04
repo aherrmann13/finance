@@ -44,6 +44,10 @@ components:
       $ref: "schemas/timeperiod.yaml#/TimePeriodQuery"
     Transfer:
       $ref: "schemas/transfer.yaml#/Transfer"
+    Record:
+      $ref: "schemas/record.yaml#/Record"
+    RecordQuery:
+      $ref: "schemas/record.yaml#/RecordQuery"
   responses:
     CreateCategoryResponse:
       $ref: "responses/category.yaml#/CreateCategoryResponse"
@@ -81,6 +85,8 @@ components:
       $ref: "responses/transfer.yaml#/CreateTransferResponse"
     UpdateTransferResponse:
       $ref: "responses/transfer.yaml#/UpdateTransferResponse"
+    GetRecordsResponse:
+      $ref: "responses/record.yaml#/GetRecordsResponse"
   requestBodies:
     CreateCategoryRequest:
       $ref: "requestBodies/category.yaml#/CreateCategoryRequest"
@@ -108,3 +114,5 @@ components:
       $ref: "requestBodies/reporting.yaml#/GetAccountValueRequest"
     CreateTransferRequest:
       $ref: "requestBodies/transfer.yaml#/CreateTransferRequest"
+    GetRecordsRequest:
+      $ref: "requestBodies/record.yaml#/GetRecordsRequest"

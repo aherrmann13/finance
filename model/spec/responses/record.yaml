@@ -1,0 +1,8 @@
+GetRecordsResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        type: array
+        items: 
+          $ref: "../schemas/record.yaml#/Record"
