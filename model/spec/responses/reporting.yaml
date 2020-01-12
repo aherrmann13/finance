@@ -11,7 +11,6 @@ GetNetWorthResponse:
   description: ""
   content:
     application/json:
-# TODO is this number optional?
       schema:
         type: number
   

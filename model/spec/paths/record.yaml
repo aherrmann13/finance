@@ -1,0 +1,19 @@
+GetRecord:
+  get:
+    operationId: GetRecord
+    summary: "get all transactions, transfers, and assets matching the query"
+    tags:
+      - transaction
+      - transfer
+      - asset
+      - record
+    parameters:
+      - in: query
+        name: filter
+        schema:
+          $ref: "../schemas/record.yaml#/RecordQuery"
+    responses:
+      200:
+        $ref: "../responses/record.yaml#/GetRecordsResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"

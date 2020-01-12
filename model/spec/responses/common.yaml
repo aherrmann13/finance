@@ -1,0 +1,14 @@
+Empty200:
+  description: "OK"
+
+Error:
+  description: ""
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+# TODO: enums w/ errors here?
+          message:
+            type: string
+                  

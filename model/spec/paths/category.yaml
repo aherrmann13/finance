@@ -1,0 +1,61 @@
+CreateGetCategory:
+  post:
+    operationId: CreateCategory
+    summary: "create a category" 
+    tags:
+      - category
+    requestBody:
+      $ref: "../requestBodies/category.yaml#/CreateCategoryRequest"
+    responses:
+      200:
+        $ref: "../responses/category.yaml#/CreateCategoryResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"
+  get:
+    operationId: GetAllCategories
+    summary: "get all categories"
+    tags:
+      - category
+    responses:
+      200:
+        $ref: "../responses/category.yaml#/GetCategoriesResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"
+
+UpdateDeleteCategory:
+  put:
+    operationId: UpdateCategory
+    summary: "update a category"
+    tags:
+      - category
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          format: int32
+        required: true 
+    requestBody:
+      $ref: "../requestBodies/category.yaml#/UpdateCategoryRequest"
+    responses:
+      200:
+        $ref: "../responses/category.yaml#/UpdateCategoryResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"
+  delete:
+    operationId: DeleteCategory
+    summary: "delete a category"
+    tags:
+      - category
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          format: int32
+        required: true 
+    responses:
+      200:
+        $ref: "../responses/common.yaml#/Empty200"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"

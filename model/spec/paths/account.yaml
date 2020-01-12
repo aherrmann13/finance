@@ -1,0 +1,61 @@
+CreateGetAccount:
+  post:
+    operationId: CreateAccount
+    summary: "create an account"
+    tags:
+      - account
+    requestBody:
+      $ref: "../requestBodies/account.yaml#/CreateAccountRequest"
+    responses:
+      200:
+        $ref: "../responses/account.yaml#/CreateAccountResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"
+  get:
+    operationId: GetAllAccounts
+    summary: "get all accounts"
+    tags:
+      - account
+    responses:
+      200:
+        $ref: "../responses/account.yaml#/GetAccountsResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"
+
+UpdateDeleteAccount:
+  put:
+    operationId: UpdateAccount
+    summary: "update an account"
+    tags:
+      - account
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          format: int32
+        required: true 
+    requestBody:
+      $ref: "../requestBodies/account.yaml#/UpdateAccountRequest"
+    responses:
+      200:
+        $ref: "../responses/account.yaml#/UpdateAccountResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"
+  delete:
+    operationId: DeleteAccount
+    summary: "delete an account"
+    tags:
+      - account
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          format: int32
+        required: true
+    responses:
+      200:
+        $ref: "../responses/common.yaml#/Empty200"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"

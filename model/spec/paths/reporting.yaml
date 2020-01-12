@@ -1,0 +1,28 @@
+GetAccountValue:
+  get:
+    operationId: GetAccountValue
+    summary: "gets the value of the specified accounts"
+    tags:
+      - reporting
+    parameters:
+      - in: query
+        name: filter
+        schema:
+          $ref: "../schemas/reporting.yaml#/AccountValueQuery"
+    responses:
+      200:
+        $ref: "../responses/reporting.yaml#/GetAccountValueResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"
+
+GetNetWorth: 
+  get:
+    operationId: GetNetWorth
+    summary: "gets the users net worth"
+    tags:
+      - reporting
+    responses:
+      200:
+        $ref: "../responses/reporting.yaml#/GetNetWorthResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"

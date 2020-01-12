@@ -1,6 +1,0 @@
-GetAccountValueRequest:
-  description: ""
-  content:
-    application/json:
-      schema:
-        $ref: "../schemas/reporting.yaml#/AccountValueQuery"

@@ -1,0 +1,66 @@
+CreateGetSource:
+  post:
+    operationId: CreateSource
+    summary: "create a source"
+    tags:
+      - source
+    requestBody:
+      $ref: "../requestBodies/source.yaml#/CreateSourceRequest"
+    responses:
+      200:
+        $ref: "../responses/source.yaml#/CreateSourceResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"
+  get:
+    operationId: GetSources
+    summary: "get sources matching query"
+    tags:
+      - source
+    parameters:
+      - in: query
+        name: filter
+        schema:
+          $ref: "../schemas/source.yaml#/SourceQuery"
+    responses:
+      200:
+        $ref: "../responses/source.yaml#/GetSourcesResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error" 
+
+UpdateDeleteSource:
+  put:
+    operationId: UpdateSource
+    summary: "update a source"
+    tags:
+      - source
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          format: int32
+        required: true
+    requestBody:
+      $ref: "../requestBodies/source.yaml#/UpdateSourceRequest"
+    responses:
+      200:
+        $ref: "../responses/source.yaml#/UpdateSourceResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"
+  delete:
+    operationId: DeleteSource
+    summary: "delete a source"
+    tags:
+      - source
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          format: int32
+        required: true
+    responses:
+      200:
+        $ref: "../responses/common.yaml#/Empty200"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"

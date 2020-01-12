@@ -1,0 +1,11 @@
+GetTimePeriod:
+  get:
+    operationId: GetAllTimePeriods
+    summary: "get all time periods"
+    tags:
+      - timeperiod
+    responses:
+      200:
+        $ref: "../responses/timeperiod.yaml#/GetTimePeriodsResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"

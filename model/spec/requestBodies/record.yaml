@@ -1,6 +1,0 @@
-GetRecordsRequest:
-  description: ""
-  content:
-    application/json:
-      schema:
-        $ref: "../schemas/record.yaml#/RecordQuery"

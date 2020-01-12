@@ -1,0 +1,51 @@
+CreateAsset:
+  post:
+    operationId: CreateAsset
+    summary: "create an asset"
+    tags:
+      - asset
+    requestBody:
+      $ref: "../requestBodies/asset.yaml#/CreateAssetRequest"
+    responses:
+      200:
+        $ref: "../responses/asset.yaml#/CreateAssetResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"
+
+UpdateDeleteAsset:
+  put:
+    operationId: UpdateAsset
+    summary: "update an asset"
+    tags:
+      - asset
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          format: int32
+        required: true 
+    requestBody:
+      $ref: "../requestBodies/asset.yaml#/UpdateAssetRequest"
+    responses:
+      200:
+        $ref: "../responses/asset.yaml#/UpdateAssetResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error" 
+  delete:
+    operationId: DeleteAsset
+    summary: "delete an asset"
+    tags:
+      - asset
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          format: int32
+        required: true
+    responses:
+      200:
+        $ref: "../responses/common.yaml#/Empty200"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"

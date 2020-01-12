@@ -1,0 +1,51 @@
+CreateTransaction:
+  post:
+    operationId: CreateTransaction
+    summary: "create a transaction"
+    tags:
+      - transaction
+    requestBody:
+      $ref: "../requestBodies/transaction.yaml#/CreateTransactionRequest"
+    responses:
+      200:
+        $ref: "../responses/transaction.yaml#/CreateTransactionResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"
+
+UpdateDeleteTransaction:
+  put:
+    operationId: UpdateTransaction
+    summary: "update a transaction"
+    tags: 
+      - transaction
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          format: int32
+        required: true
+    requestBody:
+      $ref: "../requestBodies/transaction.yaml#/UpdateTransactionRequest"
+    responses:
+      200:
+        $ref: "../responses/transaction.yaml#/UpdateTransactionResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"
+  delete:
+    operationId: DeleteTransaction
+    summary: "delete a transaction"
+    tags:
+      - transaction
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          format: int32
+        required: true
+    responses:
+      200:
+        $ref: "../responses/common.yaml#/Empty200"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"

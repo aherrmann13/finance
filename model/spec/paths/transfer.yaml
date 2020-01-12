@@ -1,0 +1,52 @@
+CreateTransfer:
+  post:
+    operationId: CreateTransfer
+    summary: "create a transfer"
+    tags:
+      - transfer
+    requestBody:
+      $ref: "../requestBodies/transfer.yaml#/CreateTransferRequest"
+    responses:
+      200:
+        $ref: "../responses/transfer.yaml#/CreateTransferResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"
+
+UpdateDeleteTransfer:
+  put:
+    operationId: UpdateTransfer
+    summary: "update a transfer"
+    tags:
+      - transfer
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          format: int32
+        required: true
+    requestBody:
+      $ref: "../requestBodies/transfer.yaml#/UpdateTransferRequest"
+    responses:
+      200:
+        $ref: "../responses/transfer.yaml#/UpdateTransferResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"
+  delete:
+    operationId: DeleteTransfer
+    summary: "delete a transfer"
+    tags:
+      - transfer
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          format: int32
+        required: true
+    responses:
+      200:
+        $ref: "../responses/common.yaml#/Empty200"
+      4XX:
+        $ref: "../responses/common.yaml#/Error" 
+

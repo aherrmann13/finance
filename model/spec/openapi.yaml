@@ -3,7 +3,38 @@ info:
   title: "finance api"
   version: "0.0.1"
 paths:
-  /: {}
+  /category:
+    $ref: "paths/category.yaml#/CreateGetCategory"
+  /category/{id}:
+    $ref: "paths/category.yaml#/UpdateDeleteCategory"
+  /transaction:
+    $ref: "paths/transaction.yaml#/CreateTransaction"
+  /transaction/{id}:
+    $ref: "paths/transaction.yaml#/UpdateDeleteTransaction"
+  /source:
+    $ref: "paths/source.yaml#/CreateGetSource"
+  /source/{id}:
+    $ref: "paths/source.yaml#/UpdateDeleteSource"
+  /account:
+    $ref: "paths/account.yaml#/CreateGetAccount"
+  /account/{id}:
+    $ref: "paths/account.yaml#/UpdateDeleteAccount"
+  /asset:
+    $ref: "paths/asset.yaml#/CreateAsset"
+  /asset/{id}:
+    $ref: "paths/asset.yaml#/UpdateDeleteAsset"
+  /reporting/accountvalue:
+    $ref: "paths/reporting.yaml#/GetAccountValue"
+  /reporting/networth:
+    $ref: "paths/reporting.yaml#/GetNetWorth" 
+  /timeperiod:
+    $ref: "paths/timeperiod.yaml#/GetTimePeriod"
+  /transfer:
+    $ref: "paths/transfer.yaml#/CreateTransfer"
+  /transfer/{id}:
+    $ref: "paths/transfer.yaml#/UpdateDeleteTransfer"
+  /record:
+    $ref: "paths/record.yaml#/GetRecord"
 components:
   schemas:
     Category:
@@ -87,6 +118,10 @@ components:
       $ref: "responses/transfer.yaml#/UpdateTransferResponse"
     GetRecordsResponse:
       $ref: "responses/record.yaml#/GetRecordsResponse"
+    Empty200:
+      $ref: "responses/common.yaml#/Empty200"
+    Error:
+      $ref: "responses/common.yaml#/Error"
   requestBodies:
     CreateCategoryRequest:
       $ref: "requestBodies/category.yaml#/CreateCategoryRequest"
@@ -100,8 +135,6 @@ components:
       $ref: "requestBodies/source.yaml#/CreateSourceRequest"
     UpdateSourceRequest:
       $ref: "requestBodies/source.yaml#/UpdateSourceRequest"
-    GetSourcesRequest:
-      $ref: "requestBodies/source.yaml#/GetSourcesRequest"
     CreateAccountRequest:
       $ref: "requestBodies/account.yaml#/CreateAccountRequest"
     UpdateAccountRequest:
@@ -110,9 +143,5 @@ components:
       $ref: "requestBodies/asset.yaml#/CreateAssetRequest"
     UpdateAssetRequest:
       $ref: "requestBodies/asset.yaml#/UpdateAssetRequest"
-    GetAccountValueRequest:
-      $ref: "requestBodies/reporting.yaml#/GetAccountValueRequest"
     CreateTransferRequest:
       $ref: "requestBodies/transfer.yaml#/CreateTransferRequest"
-    GetRecordsRequest:
-      $ref: "requestBodies/record.yaml#/GetRecordsRequest"
