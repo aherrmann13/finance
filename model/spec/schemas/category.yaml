@@ -17,6 +17,7 @@ Category:
       oneOf:
         - $ref: "#/AnyPeriod"
         - $ref: "#/SinglePeriod"
+        - $ref: "#/CollectionPeriod"
         - $ref: "#/RangePeriod"
     isLeaf:
       type: boolean
@@ -56,6 +57,12 @@ SinglePeriod:
       format: int32
   required:
     - id
+
+CollectionPeriod:
+  type: array
+  items:
+    type: integer
+    format: int32
 
 RangePeriod:
   type: object

@@ -45,6 +45,8 @@ components:
       $ref: "schemas/category.yaml#/AnyPeriod"
     SinglePeriod:
       $ref: "schemas/category.yaml#/SinglePeriod"
+    PeriodCollection:
+      $ref: "schemas/category.yaml#/CollectionPeriod"
     RangePeriod:
       $ref: "schemas/category.yaml#/RangePeriod"
     Transaction:
