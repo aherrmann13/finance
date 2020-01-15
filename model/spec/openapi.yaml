@@ -81,6 +81,29 @@ components:
       $ref: "schemas/record.yaml#/Record"
     RecordQuery:
       $ref: "schemas/record.yaml#/RecordQuery"
+  requestBodies:
+    CreateCategoryRequest:
+      $ref: "requestBodies/category.yaml#/CreateCategoryRequest"
+    UpdateCategoryRequest:
+      $ref: "requestBodies/category.yaml#/UpdateCategoryRequest"
+    CreateTransactionRequest:
+      $ref: "requestBodies/transaction.yaml#/CreateTransactionRequest"
+    UpdateTransactionRequest:
+      $ref: "requestBodies/transaction.yaml#/UpdateTransactionRequest"
+    CreateSourceRequest:
+      $ref: "requestBodies/source.yaml#/CreateSourceRequest"
+    UpdateSourceRequest:
+      $ref: "requestBodies/source.yaml#/UpdateSourceRequest"
+    CreateAccountRequest:
+      $ref: "requestBodies/account.yaml#/CreateAccountRequest"
+    UpdateAccountRequest:
+      $ref: "requestBodies/account.yaml#/UpdateAccountRequest"
+    CreateAssetRequest:
+      $ref: "requestBodies/asset.yaml#/CreateAssetRequest"
+    UpdateAssetRequest:
+      $ref: "requestBodies/asset.yaml#/UpdateAssetRequest"
+    CreateTransferRequest:
+      $ref: "requestBodies/transfer.yaml#/CreateTransferRequest"
   responses:
     CreateCategoryResponse:
       $ref: "responses/category.yaml#/CreateCategoryResponse"
@@ -124,26 +147,3 @@ components:
       $ref: "responses/common.yaml#/Empty200"
     Error:
       $ref: "responses/common.yaml#/Error"
-  requestBodies:
-    CreateCategoryRequest:
-      $ref: "requestBodies/category.yaml#/CreateCategoryRequest"
-    UpdateCategoryRequest:
-      $ref: "requestBodies/category.yaml#/UpdateCategoryRequest"
-    CreateTransactionRequest:
-      $ref: "requestBodies/transaction.yaml#/CreateTransactionRequest"
-    UpdateTransactionRequest:
-      $ref: "requestBodies/transaction.yaml#/UpdateTransactionRequest"
-    CreateSourceRequest:
-      $ref: "requestBodies/source.yaml#/CreateSourceRequest"
-    UpdateSourceRequest:
-      $ref: "requestBodies/source.yaml#/UpdateSourceRequest"
-    CreateAccountRequest:
-      $ref: "requestBodies/account.yaml#/CreateAccountRequest"
-    UpdateAccountRequest:
-      $ref: "requestBodies/account.yaml#/UpdateAccountRequest"
-    CreateAssetRequest:
-      $ref: "requestBodies/asset.yaml#/CreateAssetRequest"
-    UpdateAssetRequest:
-      $ref: "requestBodies/asset.yaml#/UpdateAssetRequest"
-    CreateTransferRequest:
-      $ref: "requestBodies/transfer.yaml#/CreateTransferRequest"
