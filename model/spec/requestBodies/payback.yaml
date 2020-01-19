@@ -1,0 +1,13 @@
+CreatePaybackRequest:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/payback.yaml#/Payback"
+         
+UpdatePaybackRequest:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/payback.yaml#/Payback"

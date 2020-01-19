@@ -35,6 +35,10 @@ paths:
     $ref: "paths/transfer.yaml#/UpdateDeleteTransfer"
   /record:
     $ref: "paths/record.yaml#/GetRecord"
+  /payback:
+    $ref: "paths/payback.yaml#/CreateGetPayback"
+  /payback/{id}:
+    $ref: "paths/payback.yaml#/UpdateDeletePayback"
 components:
   schemas:
     Category:
@@ -81,6 +85,10 @@ components:
       $ref: "schemas/record.yaml#/Record"
     RecordQuery:
       $ref: "schemas/record.yaml#/RecordQuery"
+    Payback:
+      $ref: "schemas/payback.yaml#/Payback"
+    PaybackQuery:
+      $ref: "schemas/payback.yaml#/PaybackQuery"
   requestBodies:
     CreateCategoryRequest:
       $ref: "requestBodies/category.yaml#/CreateCategoryRequest"
@@ -104,6 +112,12 @@ components:
       $ref: "requestBodies/asset.yaml#/UpdateAssetRequest"
     CreateTransferRequest:
       $ref: "requestBodies/transfer.yaml#/CreateTransferRequest"
+    UpdateTransferRequest:
+      $ref: "requestBodies/transfer.yaml#/UpdateTransferRequest"
+    CreatePaybackRequest:
+      $ref: "requestBodies/payback.yaml#/CreatePaybackRequest"
+    UpdatePaybackRequest:
+      $ref: "requestBodies/payback.yaml#/UpdatePaybackRequest"
   responses:
     CreateCategoryResponse:
       $ref: "responses/category.yaml#/CreateCategoryResponse"
@@ -143,6 +157,12 @@ components:
       $ref: "responses/transfer.yaml#/UpdateTransferResponse"
     GetRecordsResponse:
       $ref: "responses/record.yaml#/GetRecordsResponse"
+    CreatePaybackResponse:
+      $ref: "responses/payback.yaml#/CreatePaybackResponse"
+    UpdatePaybackResponse:
+      $ref: "responses/payback.yaml#/UpdatePaybackResponse"
+    GetPaybacksResponse:
+      $ref: "responses/payback.yaml#/GetPaybacksResponse"
     Empty200:
       $ref: "responses/common.yaml#/Empty200"
     Error:

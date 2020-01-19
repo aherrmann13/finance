@@ -1,0 +1,66 @@
+CreateGetPayback:
+  post:
+    operationId: CreatePayback
+    summary: "create a payback"
+    tags:
+      - payback
+    requestBody:
+      $ref: "../requestBodies/payback.yaml#/CreatePaybackRequest"
+    responses:
+      200:
+        $ref: "../responses/payback.yaml#/CreatePaybackResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"
+  get:
+    operationId: GetPaybacks
+    summary: "get paybacks matching query"
+    tags:
+      - payback
+    parameters:
+      - in: query
+        name: filter
+        schema:
+          $ref: "../schemas/payback.yaml#/PaybackQuery"
+    responses:
+      200:
+        $ref: "../responses/payback.yaml#/GetPaybacksResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"
+
+UpdateDeletePayback:
+  put:
+    operationId:  UpdatePayback
+    summary: "update a payback"
+    tags:
+      - payback
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          format: int32
+        required: true
+    requestBody:
+      $ref: "../requestBodies/payback.yaml#/UpdatePaybackRequest"
+    responses:
+      200:
+        $ref: "../responses/payback.yaml#/UpdatePaybackResponse"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"
+  delete:
+    operationId:  DeletePayback
+    summary: "delete a payback"
+    tags:
+      - payback
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          format: int32
+        required: true
+    responses:
+      200:
+        $ref: "../responses/common.yaml#/Empty200"
+      4XX:
+        $ref: "../responses/common.yaml#/Error"

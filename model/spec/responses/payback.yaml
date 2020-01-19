@@ -1,0 +1,22 @@
+CreatePaybackResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/payback.yaml#/Payback"
+
+UpdatePaybackResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/payback.yaml#/Payback"
+
+GetPaybacksResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        type: array
+        items:
+          $ref: "../schemas/payback.yaml#/Payback"
