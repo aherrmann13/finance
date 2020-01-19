@@ -37,8 +37,4 @@ TimePeriodQuery:
     inclusive:
       type: boolean
       writeOnly: true
-  required:
-    - from
-    - to
-    - inclusive
 

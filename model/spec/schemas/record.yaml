@@ -53,5 +53,7 @@ RecordQuery:
       items:
         type: integer
         format: int32
+      writeOnly: true
     useTransactionReportingDate:
-      type: boolean    
+      type: boolean  
+      writeOnly: true  
