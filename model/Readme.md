@@ -24,14 +24,36 @@ yaml file at ./dist/model.yaml
 <details>
   <summary>path generation is annoying</summary>
   <p>
-    path generation is kindof messy and spread across
-    multiple files, where openapi.yaml needs to reference
-    the available parameters, and the definition in
-    the file under ./paths/ must define the parameters.
-    Becuase `$ref` does not allow merging of definitions,
-    all operations with the same path and different http
-    verbs must be under the same object, so we end up with
-    `UpdateDeleteTransaction` as an object because they are
-    `put` and `delete` under `transaction/{id}`
+    path generation is kindof messy and spread across multiple files, where openapi.yaml needs to reference the
+    available parameters, and the definition in the file under ./paths/ must define the parameters. Becauase
+    <code>$ref</code> does not allow merging of definitions, all operations with the same path and different http verbs
+    must be under the same object, so we end up with <code>UpdateDeleteTransaction</code> as an object because they are
+    <code>put</code> and <code>delete</code> under <code>transaction/{id}</code>
   </p> 
 </details>
+
+<details>
+  <summary>cannot use oneOf in swagger doc</summary>
+  <h4>issue</h4>
+  <p>
+    using twilio guardrail to generate http4s models and endpoints. as of now, guardrail does not support
+    <code>oneOf</code> in swagger model. <a href="https://github.com/twilio/guardrail/issues/195">this issue</a> here
+    needs to be tracked to determine when <code>oneOf</code> can be used. the models that should be updated are
+    <code>Record</code> to be oneOf <code>Asset</code>, <code>Transaction</code>, or <code>Transfer</code>,
+    <code>EffectiveTime</code> to be oneOf <code>AnyPeriod</code>, <code>SinglePeriod</code>,
+    <code>CollectionPeriod</code> or <code>RangePeriod</code>
+  </p>
+  <h4><code>Record</code></h4>
+  <p>
+    setting <code>Record</code> to have three properties, asset, transaction, and transfer, with <code>Asset</code>,
+    <code>Transaction</code>, and <code>Transfer</code> with the 'assumed' guarantee that it will only ever have one of
+    those objects
+  </p>
+  <h4><code>EffectiveTime</code></h4>
+  <p>
+    setting <code>EffectiveTime</code> to be an array of to/from objects, where an empty array means
+    <code>AnyPeriod</code>, one item and <code>to == from</code> is <code>SinglePeriod</code>, one item and 
+    <code>to != from</code> is <code>RangePeriod</code> and anything else is <code>CollectionPeriod</code>
+  </p>
+</details>
+

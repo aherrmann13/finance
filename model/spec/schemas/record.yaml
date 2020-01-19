@@ -1,9 +1,14 @@
-# TODO: verify this type works in scala + typescript
+## TODO: this is messy until guardrail supports oneOf
+## for http4s
 Record:
-  oneOf:
-    - $ref: "./transaction.yaml#/Transaction"
-    - $ref: "./transfer.yaml#/Transfer"
-    - $ref: "./asset.yaml#/Asset"
+  type: object
+  properties:
+    transaction:
+      $ref: "./transaction.yaml#/Transaction"
+    transfer:
+      $ref: "./transfer.yaml#/Transfer"
+    asset:
+      $ref: "./asset.yaml#/Asset"
 
 RecordQuery:
   type: object

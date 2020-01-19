@@ -13,12 +13,7 @@ Category:
     description:
       type: string
     effectiveTime:
-      type: object
-      oneOf:
-        - $ref: "#/AnyPeriod"
-        - $ref: "#/SinglePeriod"
-        - $ref: "#/CollectionPeriod"
-        - $ref: "#/RangePeriod"
+      $ref: "#/EffectiveTime"
     isLeaf:
       type: boolean
     budget:
@@ -45,26 +40,12 @@ Budget:
     - periodId
     - amount
 
-AnyPeriod:
-  type: string
-  enum: [ "Any" ]
-
-SinglePeriod:
-  type: object
-  properties:
-    id:
-      type: integer
-      format: int32
-  required:
-    - id
-
-CollectionPeriod:
+EffectiveTime:
   type: array
   items:
-    type: integer
-    format: int32
+    $ref: "#/Period"
 
-RangePeriod:
+Period:
   type: object
   properties:
     to:
