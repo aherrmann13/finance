@@ -9,7 +9,7 @@ CreateTransfer:
     responses:
       200:
         $ref: "../responses/transfer.yaml#/CreateTransferResponse"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error"
 
 UpdateDeleteTransfer:
@@ -30,7 +30,7 @@ UpdateDeleteTransfer:
     responses:
       200:
         $ref: "../responses/transfer.yaml#/UpdateTransferResponse"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error"
   delete:
     operationId: DeleteTransfer
@@ -47,6 +47,6 @@ UpdateDeleteTransfer:
     responses:
       200:
         $ref: "../responses/common.yaml#/Empty200"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error" 
 

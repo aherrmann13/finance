@@ -9,7 +9,7 @@ CreateGetSource:
     responses:
       200:
         $ref: "../responses/source.yaml#/CreateSourceResponse"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error"
   get:
     operationId: GetSources
@@ -24,7 +24,7 @@ CreateGetSource:
     responses:
       200:
         $ref: "../responses/source.yaml#/GetSourcesResponse"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error" 
 
 UpdateDeleteSource:
@@ -45,7 +45,7 @@ UpdateDeleteSource:
     responses:
       200:
         $ref: "../responses/source.yaml#/UpdateSourceResponse"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error"
   delete:
     operationId: DeleteSource
@@ -62,5 +62,5 @@ UpdateDeleteSource:
     responses:
       200:
         $ref: "../responses/common.yaml#/Empty200"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error"

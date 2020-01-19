@@ -9,7 +9,7 @@ CreateTransaction:
     responses:
       200:
         $ref: "../responses/transaction.yaml#/CreateTransactionResponse"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error"
 
 UpdateDeleteTransaction:
@@ -30,7 +30,7 @@ UpdateDeleteTransaction:
     responses:
       200:
         $ref: "../responses/transaction.yaml#/UpdateTransactionResponse"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error"
   delete:
     operationId: DeleteTransaction
@@ -47,5 +47,5 @@ UpdateDeleteTransaction:
     responses:
       200:
         $ref: "../responses/common.yaml#/Empty200"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error"

@@ -9,7 +9,7 @@ CreateGetCategory:
     responses:
       200:
         $ref: "../responses/category.yaml#/CreateCategoryResponse"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error"
   get:
     operationId: GetAllCategories
@@ -19,7 +19,7 @@ CreateGetCategory:
     responses:
       200:
         $ref: "../responses/category.yaml#/GetCategoriesResponse"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error"
 
 UpdateDeleteCategory:
@@ -40,7 +40,7 @@ UpdateDeleteCategory:
     responses:
       200:
         $ref: "../responses/category.yaml#/UpdateCategoryResponse"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error"
   delete:
     operationId: DeleteCategory
@@ -57,5 +57,5 @@ UpdateDeleteCategory:
     responses:
       200:
         $ref: "../responses/common.yaml#/Empty200"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error"

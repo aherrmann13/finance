@@ -15,5 +15,5 @@ GetRecord:
     responses:
       200:
         $ref: "../responses/record.yaml#/GetRecordsResponse"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error"

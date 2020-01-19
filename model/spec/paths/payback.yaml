@@ -9,7 +9,7 @@ CreateGetPayback:
     responses:
       200:
         $ref: "../responses/payback.yaml#/CreatePaybackResponse"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error"
   get:
     operationId: GetPaybacks
@@ -24,7 +24,7 @@ CreateGetPayback:
     responses:
       200:
         $ref: "../responses/payback.yaml#/GetPaybacksResponse"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error"
 
 UpdateDeletePayback:
@@ -45,7 +45,7 @@ UpdateDeletePayback:
     responses:
       200:
         $ref: "../responses/payback.yaml#/UpdatePaybackResponse"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error"
   delete:
     operationId:  DeletePayback
@@ -62,5 +62,5 @@ UpdateDeletePayback:
     responses:
       200:
         $ref: "../responses/common.yaml#/Empty200"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error"

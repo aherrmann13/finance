@@ -12,7 +12,7 @@ GetAccountValue:
     responses:
       200:
         $ref: "../responses/reporting.yaml#/GetAccountValueResponse"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error"
 
 GetNetWorth: 
@@ -24,5 +24,5 @@ GetNetWorth:
     responses:
       200:
         $ref: "../responses/reporting.yaml#/GetNetWorthResponse"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error"

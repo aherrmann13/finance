@@ -9,7 +9,7 @@ CreateAsset:
     responses:
       200:
         $ref: "../responses/asset.yaml#/CreateAssetResponse"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error"
 
 UpdateDeleteAsset:
@@ -30,7 +30,7 @@ UpdateDeleteAsset:
     responses:
       200:
         $ref: "../responses/asset.yaml#/UpdateAssetResponse"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error" 
   delete:
     operationId: DeleteAsset
@@ -47,5 +47,5 @@ UpdateDeleteAsset:
     responses:
       200:
         $ref: "../responses/common.yaml#/Empty200"
-      4XX:
+      400:
         $ref: "../responses/common.yaml#/Error"
