@@ -4,6 +4,7 @@ GetTimePeriod:
     summary: "get all time periods"
     tags:
       - timeperiod
+    x-scala-package: timeperiod
     responses:
       200:
         $ref: "../responses/timeperiod.yaml#/GetTimePeriodsResponse"

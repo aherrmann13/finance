@@ -4,6 +4,7 @@ CreateTransfer:
     summary: "create a transfer"
     tags:
       - transfer
+    x-scala-package: transfer
     requestBody:
       $ref: "../requestBodies/transfer.yaml#/CreateTransferRequest"
     responses:
@@ -18,6 +19,7 @@ UpdateDeleteTransfer:
     summary: "update a transfer"
     tags:
       - transfer
+    x-scala-package: transfer
     parameters:
       - in: path
         name: id
@@ -37,6 +39,7 @@ UpdateDeleteTransfer:
     summary: "delete a transfer"
     tags:
       - transfer
+    x-scala-package: transfer
     parameters:
       - in: path
         name: id

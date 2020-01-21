@@ -4,6 +4,7 @@ CreateGetPayback:
     summary: "create a payback"
     tags:
       - payback
+    x-scala-package: payback
     requestBody:
       $ref: "../requestBodies/payback.yaml#/CreatePaybackRequest"
     responses:
@@ -16,6 +17,7 @@ CreateGetPayback:
     summary: "get paybacks matching query"
     tags:
       - payback
+    x-scala-package: payback
     parameters:
       - in: query
         name: filter
@@ -33,6 +35,7 @@ UpdateDeletePayback:
     summary: "update a payback"
     tags:
       - payback
+    x-scala-package: payback
     parameters:
       - in: path
         name: id
@@ -52,6 +55,7 @@ UpdateDeletePayback:
     summary: "delete a payback"
     tags:
       - payback
+    x-scala-package: payback
     parameters:
       - in: path
         name: id

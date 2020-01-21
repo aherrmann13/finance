@@ -4,6 +4,7 @@ GetAccountValue:
     summary: "gets the value of the specified accounts"
     tags:
       - reporting
+    x-scala-package: reporting
     parameters:
       - in: query
         name: filter
@@ -21,6 +22,7 @@ GetNetWorth:
     summary: "gets the users net worth"
     tags:
       - reporting
+    x-scala-package: reporting
     responses:
       200:
         $ref: "../responses/reporting.yaml#/GetNetWorthResponse"

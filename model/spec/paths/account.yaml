@@ -4,6 +4,7 @@ CreateGetAccount:
     summary: "create an account"
     tags:
       - account
+    x-scala-package: account
     requestBody:
       $ref: "../requestBodies/account.yaml#/CreateAccountRequest"
     responses:
@@ -16,6 +17,7 @@ CreateGetAccount:
     summary: "get all accounts"
     tags:
       - account
+    x-scala-package: account
     responses:
       200:
         $ref: "../responses/account.yaml#/GetAccountsResponse"
@@ -28,6 +30,7 @@ UpdateDeleteAccount:
     summary: "update an account"
     tags:
       - account
+    x-scala-package: account
     parameters:
       - in: path
         name: id
@@ -47,6 +50,7 @@ UpdateDeleteAccount:
     summary: "delete an account"
     tags:
       - account
+    x-scala-package: account
     parameters:
       - in: path
         name: id

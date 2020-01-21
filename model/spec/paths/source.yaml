@@ -4,6 +4,7 @@ CreateGetSource:
     summary: "create a source"
     tags:
       - source
+    x-scala-package: source
     requestBody:
       $ref: "../requestBodies/source.yaml#/CreateSourceRequest"
     responses:
@@ -16,6 +17,7 @@ CreateGetSource:
     summary: "get sources matching query"
     tags:
       - source
+    x-scala-package: source
     parameters:
       - in: query
         name: filter
@@ -33,6 +35,7 @@ UpdateDeleteSource:
     summary: "update a source"
     tags:
       - source
+    x-scala-package: source
     parameters:
       - in: path
         name: id
@@ -52,6 +55,7 @@ UpdateDeleteSource:
     summary: "delete a source"
     tags:
       - source
+    x-scala-package: source
     parameters:
       - in: path
         name: id

@@ -4,6 +4,7 @@ CreateAsset:
     summary: "create an asset"
     tags:
       - asset
+    x-scala-package: asset
     requestBody:
       $ref: "../requestBodies/asset.yaml#/CreateAssetRequest"
     responses:
@@ -18,6 +19,7 @@ UpdateDeleteAsset:
     summary: "update an asset"
     tags:
       - asset
+    x-scala-package: asset
     parameters:
       - in: path
         name: id
@@ -37,6 +39,7 @@ UpdateDeleteAsset:
     summary: "delete an asset"
     tags:
       - asset
+    x-scala-package: asset
     parameters:
       - in: path
         name: id

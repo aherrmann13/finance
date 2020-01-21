@@ -4,6 +4,7 @@ CreateTransaction:
     summary: "create a transaction"
     tags:
       - transaction
+    x-scala-package: transaction
     requestBody:
       $ref: "../requestBodies/transaction.yaml#/CreateTransactionRequest"
     responses:
@@ -18,6 +19,7 @@ UpdateDeleteTransaction:
     summary: "update a transaction"
     tags: 
       - transaction
+    x-scala-package: transaction
     parameters:
       - in: path
         name: id
@@ -37,6 +39,7 @@ UpdateDeleteTransaction:
     summary: "delete a transaction"
     tags:
       - transaction
+    x-scala-package: transaction
     parameters:
       - in: path
         name: id

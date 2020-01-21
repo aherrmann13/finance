@@ -7,6 +7,7 @@ GetRecord:
       - transfer
       - asset
       - record
+    x-scala-package: record
     parameters:
       - in: query
         name: filter

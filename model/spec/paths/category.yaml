@@ -4,6 +4,7 @@ CreateGetCategory:
     summary: "create a category" 
     tags:
       - category
+    x-scala-package: category
     requestBody:
       $ref: "../requestBodies/category.yaml#/CreateCategoryRequest"
     responses:
@@ -16,6 +17,7 @@ CreateGetCategory:
     summary: "get all categories"
     tags:
       - category
+    x-scala-package: category
     responses:
       200:
         $ref: "../responses/category.yaml#/GetCategoriesResponse"
@@ -28,6 +30,7 @@ UpdateDeleteCategory:
     summary: "update a category"
     tags:
       - category
+    x-scala-package: category
     parameters:
       - in: path
         name: id
@@ -47,6 +50,7 @@ UpdateDeleteCategory:
     summary: "delete a category"
     tags:
       - category
+    x-scala-package: category
     parameters:
       - in: path
         name: id
