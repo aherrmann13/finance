@@ -22,7 +22,7 @@ SourceQuery:
       format: int32
       writeOnly: true
     take:
-      type: number
+      type: integer
       format: int32
       writeOnly: true
     search:
