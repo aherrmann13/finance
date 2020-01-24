@@ -14,16 +14,10 @@ Transaction:
     transactionDate:
       type: string
       format: date
-    reportingDate:
-      type: string
-      format: date
     sourceId:
       type: integer
       format: int32
     accountId:
-      type: integer
-      format: int32
-    categoryId:
       type: integer
       format: int32
   required:
@@ -31,10 +25,8 @@ Transaction:
     - amount
     - description
     - transactionDate
-    - reportingDate
     - sourceId
     - accountId
-    - categoryId
 
 Amount:
   type: object
@@ -46,8 +38,11 @@ Amount:
       type: number
     description:
       type: string
+    reportingDate:
+      type: string
+      format: date
   required:
     - categoryId
     - amount
     - description
-
+    - reportingDate
