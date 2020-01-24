@@ -1,3 +1,5 @@
 model/dist
 node_modules/
 *.swp
+target/
+.idea/
