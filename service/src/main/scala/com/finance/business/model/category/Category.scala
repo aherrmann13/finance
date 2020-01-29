@@ -7,5 +7,5 @@ case class Category(
     name: Name,
     description: Description,
     effectiveTime: EffectiveTime,
-    budget: Option[Budget]
+    budget: Seq[Budget]
 )

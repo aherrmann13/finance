@@ -30,15 +30,16 @@ StockMetadata:
   properties:
     ticker:
       type: string
+    unitPrice:
+      type: number
     dividend:
       type: object
       properties:
-        amount:
-          type: string
         type:
           type: string
           enum: [ "Cash", "Stock" ]
       required:
-        - amount
+        - type
   required:
     - ticker
+    - unitPrice
