@@ -7,7 +7,7 @@ scalaVersion := "2.13.1"
 val CatsVersion = "2.1.0"
 val CatsEffectVersion = "2.0.0"
 val CirceVersion = "0.12.3"
-val Http4sVersion = "0.21.0-M6"
+val Http4sVersion = "0.21.1"
 val NScalaTimeVersion = "2.22.0"
 
 

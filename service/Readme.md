@@ -3,7 +3,7 @@
 #### Libraries used
 
 [cats](https://github.com/typelevel/cats)  
-[cats-effect](https://github.com/typelevel/cats-effect)
+[cats-effect](https://github.com/typelevel/cats-effect)  
 [circe](https://github.com/circe/circe)  
 [http4s](https://github.com/http4s/http4s)  
 [nscala-time](https://github.com/nscala-time/nscala-time)  
