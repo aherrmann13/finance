@@ -1,7 +1,7 @@
 package com.finance.business.model.types
 
 object Usd {
-  def apply(amount: BigDecimal): Usd = new Usd(amount)
+  def apply(value: BigDecimal): Usd = new Usd(value)
 }
 
-class Usd(val amount: BigDecimal) extends AnyVal
+class Usd(val value: BigDecimal) extends AnyVal

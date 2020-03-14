@@ -1,0 +1,7 @@
+package com.finance.business.validation.errors
+
+sealed trait AccountTypeInvalid extends ValidationError
+
+object BankCantHaveAssets extends AccountTypeInvalid
+object BrokerageCantHavePaybacks extends AccountTypeInvalid
+object BrokerageCantHaveTransactions extends AccountTypeInvalid

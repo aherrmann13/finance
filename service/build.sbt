@@ -4,12 +4,16 @@ version := "0.0.1"
 
 scalaVersion := "2.13.1"
 
+scalacOptions ++= Seq(
+  "-language:higherKinds",
+  "-language:postfixOps"
+)
+
 val CatsVersion = "2.1.0"
 val CatsEffectVersion = "2.0.0"
 val CirceVersion = "0.12.3"
 val Http4sVersion = "0.21.1"
 val NScalaTimeVersion = "2.22.0"
-
 
 libraryDependencies ++= Seq(
     "com.github.nscala-time"  %% "nscala-time"          % NScalaTimeVersion,
@@ -29,4 +33,4 @@ guardrailTasks in Compile := List(
     framework = "http4s"
  )
 )
- 
+

@@ -1,7 +1,7 @@
 package com.finance.business.model.types
 
 object Id {
-  def apply(id: Int): Id = new Id(id)
+  def apply(value: Int): Id = new Id(value)
 }
 
-class Id(val id: Int) extends AnyVal;
+class Id(val value: Int) extends AnyVal;

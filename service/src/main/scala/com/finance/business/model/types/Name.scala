@@ -1,7 +1,7 @@
 package com.finance.business.model.types
 
 object Name {
-  def apply(name: String): Name = new Name(name)
+  def apply(value: String): Name = new Name(value)
 }
 
-class Name(val name: String) extends AnyVal
+class Name(val value: String) extends AnyVal
