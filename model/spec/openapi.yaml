@@ -61,8 +61,10 @@ components:
       $ref: "schemas/account.yaml#/Account"
     Asset:
       $ref: "schemas/asset.yaml#/Asset"
-    StockMetadata:
-      $ref: "schemas/asset.yaml#/StockMetadata"
+    Stock:
+      $ref: "schemas/asset.yaml#/Stock"
+    StockAction:
+      $ref: "schemas/asset.yaml#/StockAction"
     AccountValue:
       $ref: "schemas/reporting.yaml#/AccountValue"
     AccountValueQuery:
