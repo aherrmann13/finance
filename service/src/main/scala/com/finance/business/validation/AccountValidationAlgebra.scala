@@ -18,7 +18,7 @@ trait AccountValidationAlgebra[F[_]] {
 
   def hasNoTransactions(id: Id): EitherT[F, HasTransactions, Unit]
 
-  def hasNoAssets(account: Account): EitherT[F, HasAssets, Unit]
+  def hasNoAssets(id: Id): EitherT[F, HasAssets, Unit]
 
-  def hasNoPaybacks(account: Account): EitherT[F, HasPaybacks, Unit]
+  def hasNoPaybacks(id: Id): EitherT[F, HasPaybacks, Unit]
 }
