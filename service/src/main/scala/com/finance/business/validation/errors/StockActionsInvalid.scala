@@ -4,6 +4,7 @@ import com.finance.business.model.asset.StockAction
 
 sealed trait StockActionsInvalid extends ValidationError
 
-case class DividendMustHavePreviousPurchase(dividend: StockAction) extends StockActionsInvalid
+case class NoStockToPayDividend(action: StockAction) extends StockActionsInvalid
+case class SellingMoreThanCurrentlyHave(action: StockAction) extends StockActionsInvalid
 
 

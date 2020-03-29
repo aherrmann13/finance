@@ -1,6 +1,6 @@
 package com.finance.business.model.account
 
-import com.finance.business.model.types.{HasDescription, HasId, HasName, Id, NamedModel, ModelName}
+import com.finance.business.model.types._
 
 object implicits {
   private val modelName = ModelName("Account")
