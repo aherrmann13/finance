@@ -87,18 +87,19 @@ class AssetValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mock
         .value shouldEqual
         EitherT.leftT[IdMonad, Unit](SellingMoreThanCurrentlyHave(badAction)).value
     }
-    "should return Right(()) for empty action list" in {
+    "should return Right(()) for valid action list" in {
       val action0 = StockAction(DateTime.now(), Buy, 6, Usd(12.0), Usd(15.0))
       val action1 = action0.copy(units = 5)
       val action2 = action0.copy(actionType = CashDividend)
-      val action3 = action0.copy(actionType = Sell)
+      val action3 = action0.copy(actionType = StockDividend, units = 1)
+      val action4 = action0.copy(actionType = Sell, units = action0.units + action1.units + action3.units)
 
       assetValidationInterpreter
-        .stockActionsAreValid(fakeStock.copy(actions = Seq(action0, action1, action2, action3)))
+        .stockActionsAreValid(fakeStock.copy(actions = Seq(action0, action1, action2, action3, action4)))
         .value shouldEqual
         EitherT.rightT[IdMonad, StockActionsInvalid](()).value
     }
-    "should return Right(()) for valid action list" in {
+    "should return Right(()) for empty action list" in {
       assetValidationInterpreter
         .stockActionsAreValid(fakeStock)
         .value shouldEqual

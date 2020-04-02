@@ -18,9 +18,9 @@ private[validation] object PropertyValidator {
   def idIsNone[F[_]: Applicative, M: HasId: NamedModel](m: M): EitherT[F, IdMustBeNone, Unit] =
     EitherT.cond(m.id.isEmpty, (), IdMustBeNone(m modelName))
 
-  def exists[F[_]: Applicative, M: HasId: NamedModel](
+  def exists[F[_]: Applicative, M: HasId: NamedModel, V](
       m: M,
-      doesExist: Id => F[Option[M]]
+      doesExist: Id => F[Option[V]]
   ): EitherT[F, DoesNotExist, Unit] =
     EitherT {
       m.id map { id =>
