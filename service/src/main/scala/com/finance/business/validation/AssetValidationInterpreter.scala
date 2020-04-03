@@ -35,7 +35,7 @@ class AssetValidationInterpreter[F[_]: Monad](
     PropertyValidator.idIsNone(asset)
 
   override def exists(asset: Asset): EitherT[F, DoesNotExist, Unit] =
-    PropertyValidator.exists(asset, assetRepository.get)
+    PropertyValidator.exists(asset.id, assetRepository.get)
 
   override def stockActionsAreValid(stock: Stock): EitherT[F, StockActionsInvalid, Unit] =
     stockActionValidator(stock.actions)

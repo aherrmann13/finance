@@ -23,7 +23,7 @@ class PaybackValidationInterpreter[F[_]: Monad](
     PropertyValidator.idIsNone(payback)
 
   override def exists(payback: Payback): EitherT[F, DoesNotExist, Unit] =
-    PropertyValidator.exists(payback, paybackRepository.get)
+    PropertyValidator.exists(payback.id, paybackRepository.get)
 
   override def nameIsValid(payback: Payback): EitherT[F, NameTooLong, Unit] =
     PropertyValidator.nameIsValid(payback)

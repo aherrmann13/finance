@@ -25,7 +25,7 @@ class AccountValidationInterpreter[F[_]: Monad](
     PropertyValidator.idIsNone(account)
 
   override def exists(account: Account): EitherT[F, DoesNotExist, Unit] =
-    PropertyValidator.exists(account, accountRepository.get)
+    PropertyValidator.exists(account.id, accountRepository.get)
 
   override def nameIsValid(account: Account): EitherT[F, NameTooLong, Unit] =
     PropertyValidator.nameIsValid(account)

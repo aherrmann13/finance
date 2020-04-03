@@ -23,7 +23,7 @@ class SourceValidationInterpreter[F[_]: Monad](
     PropertyValidator.idIsNone(source)
 
   override def exists(source: Source): EitherT[F, DoesNotExist, Unit] =
-    PropertyValidator.exists(source, sourceRepository.get)
+    PropertyValidator.exists(source.id, sourceRepository.get)
 
   override def nameIsValid(source: Source): EitherT[F, NameTooLong, Unit] =
     PropertyValidator.nameIsValid(source)

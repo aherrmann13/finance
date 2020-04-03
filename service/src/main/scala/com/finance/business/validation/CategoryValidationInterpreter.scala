@@ -5,21 +5,13 @@ import cats.data.EitherT
 import cats.implicits._
 import com.finance.business.model.category._
 import com.finance.business.model.category.implicits._
-import com.finance.business.model.types.{HasId, Id, ModelName, NamedModel}
+import com.finance.business.model.types.{Id, ModelName}
 import com.finance.business.operations.CategoryOps._
 import com.finance.business.repository.{CategoryRepository, TransactionRepository}
 import com.finance.business.validation.errors._
 
 object CategoryValidationInterpreter {
   private val Name = ModelName("Category")
-
-  private implicit val parentHasId: HasId[Id] = (target: Id) => Some(target)
-
-  //noinspection ConvertExpressionToSAM
-  // for some reason the compiler has trouble if this is inlined
-  private implicit val parentHasModelName: NamedModel[Id] = new NamedModel[Id] {
-    override def modelName(target: Id): ModelName = Name
-  }
 }
 
 class CategoryValidationInterpreter[F[_]: Monad](
@@ -32,7 +24,7 @@ class CategoryValidationInterpreter[F[_]: Monad](
     PropertyValidator.idIsNone(category)
 
   override def exists(category: Category): EitherT[F, DoesNotExist, Unit] =
-    PropertyValidator.exists(category, categoryRepository.get)
+    PropertyValidator.exists(category.id, categoryRepository.get)
 
   override def parentExists(id: Id): EitherT[F, DoesNotExist, Unit] =
     PropertyValidator.exists(id, categoryRepository.get)
