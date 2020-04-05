@@ -5,10 +5,10 @@ import com.finance.business.model.types._
 object implicits {
   private val paybackModelName = ModelName("Payback")
 
-  implicit val hasId: HasId[Payback] = (target: Payback) => target.id
-  implicit val hasName: HasName[Payback] = (target: Payback) => target.name
-  implicit val hasDescription: HasDescription[Payback] = (target: Payback) => target.description
-  implicit val hasModelName: NamedModel[Payback] = new NamedModel[Payback] {
+  implicit val paybackHasId: HasId[Payback] = (target: Payback) => target.id
+  implicit val paybackHasName: HasName[Payback] = (target: Payback) => target.name
+  implicit val paybackHasDescription: HasDescription[Payback] = (target: Payback) => target.description
+  implicit val paybackHasModelName: NamedModel[Payback] = new NamedModel[Payback] {
     override def modelName: ModelName = paybackModelName
   }
 }

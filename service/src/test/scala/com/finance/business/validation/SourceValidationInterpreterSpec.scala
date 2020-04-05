@@ -53,38 +53,38 @@ class SourceValidationInterpreterSpec extends AnyFreeSpec with Matchers with Moc
   }
   "nameIsValid" - {
     "should return Left(NameIsTooLong) when name is too long" in {
-      val name = Name((0 to 128).map( _ => "a").fold("")(_ + _))
-      sourceValidationInterpreter.nameIsValid(fakeSourceWithId.copy(name=name)).value shouldEqual
+      val name = Name((0 to 128).map(_ => "a").fold("")(_ + _))
+      sourceValidationInterpreter.nameIsValid(fakeSourceWithId.copy(name = name)).value shouldEqual
         EitherT.leftT[IdMonad, Unit](NameTooLong(sourceName, name)).value
     }
     "should return Right(()) when name is correct length" in {
-      val name = Name((0 to 127).map( _ => "a").fold("")(_ + _))
-      sourceValidationInterpreter.nameIsValid(fakeSourceWithId.copy(name=name)).value shouldEqual
+      val name = Name((0 to 127).map(_ => "a").fold("")(_ + _))
+      sourceValidationInterpreter.nameIsValid(fakeSourceWithId.copy(name = name)).value shouldEqual
         EitherT.rightT[IdMonad, NameTooLong](()).value
     }
   }
   "descriptionIsValid" - {
     "should return Left(DescriptionIsTooLong) when description is too long" in {
-      val desc = Description((0 to 512).map( _ => "a").fold("")(_ + _))
-      sourceValidationInterpreter.descriptionIsValid(fakeSourceWithId.copy(description=desc)).value shouldEqual
+      val desc = Description((0 to 512).map(_ => "a").fold("")(_ + _))
+      sourceValidationInterpreter.descriptionIsValid(fakeSourceWithId.copy(description = desc)).value shouldEqual
         EitherT.leftT[IdMonad, Unit](DescriptionTooLong(sourceName, desc)).value
     }
     "should return Right(()) when description is correct length" in {
-      val desc = Description((0 to 511).map( _ => "a").fold("")(_ + _))
-      sourceValidationInterpreter.descriptionIsValid(fakeSourceWithId.copy(description=desc)).value shouldEqual
+      val desc = Description((0 to 511).map(_ => "a").fold("")(_ + _))
+      sourceValidationInterpreter.descriptionIsValid(fakeSourceWithId.copy(description = desc)).value shouldEqual
         EitherT.rightT[IdMonad, DescriptionTooLong](()).value
     }
-    "hasNoTransactions" - {
-      "should return Left(HasTransactions) if there are transactions with account id" in {
-        (mockTransactionRepository anyWithSourceId  _).when(fakeSourceWithId.id.get).returns(true.pure[IdMonad])
-        sourceValidationInterpreter.hasNoTransactions(fakeSourceWithId.id.get).value shouldEqual
-          EitherT.leftT[IdMonad, Unit](HasTransactions(sourceName)).value
-      }
-      "should return Right(()) if there are no transactions with no account id" in {
-        (mockTransactionRepository anyWithSourceId   _).when(fakeSourceWithId.id.get).returns(false.pure[IdMonad])
-        sourceValidationInterpreter.hasNoTransactions(fakeSourceWithId.id.get).value shouldEqual
-          EitherT.rightT[IdMonad, HasTransactions](()).value
-      }
+  }
+  "hasNoTransactions" - {
+    "should return Left(HasTransactions) if there are transactions with account id" in {
+      (mockTransactionRepository anyWithSourceId _).when(fakeSourceWithId.id.get).returns(true.pure[IdMonad])
+      sourceValidationInterpreter.hasNoTransactions(fakeSourceWithId.id.get).value shouldEqual
+        EitherT.leftT[IdMonad, Unit](HasTransactions(sourceName)).value
+    }
+    "should return Right(()) if there are no transactions with no account id" in {
+      (mockTransactionRepository anyWithSourceId _).when(fakeSourceWithId.id.get).returns(false.pure[IdMonad])
+      sourceValidationInterpreter.hasNoTransactions(fakeSourceWithId.id.get).value shouldEqual
+        EitherT.rightT[IdMonad, HasTransactions](()).value
     }
   }
 }
