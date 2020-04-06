@@ -25,8 +25,8 @@ class AccountValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mo
     mockPaybackRepository
   )
 
-  private val fakeAccountWithId = Account(Id(4), Name("Name"), Description("Description"), Bank)
-  private val fakeAccountWithNoId = Account(Name("Name"), Description("Description"), Bank)
+  private val fakeAccountWithId = Account(Some(Id(4)), Name("Name"), Description("Description"), Bank)
+  private val fakeAccountWithNoId = fakeAccountWithId.copy(id = None)
   private val accountName = ModelName("Account")
   "idIsNone" - {
     "should return Left(IdMustBeNone) when id is Some" in {
