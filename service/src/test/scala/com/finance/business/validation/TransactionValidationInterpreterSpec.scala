@@ -164,7 +164,7 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
         fakeTransactionWithId.amounts(1).copy(categoryId = Id(16))
       )
 
-      val category = Category(Some(Id(1)), Name("name"), Description("desc"), Always, Seq.empty)
+      val category = Category(Some(Id(1)), None, Name("name"), Description("desc"), Always, Seq.empty)
 
       (mockCategoryRepository get _).when(amounts.head.categoryId).returns(Some(category).pure[IdMonad])
       (mockCategoryRepository get _).when(amounts(1).categoryId).returns(Some(category).pure[IdMonad])

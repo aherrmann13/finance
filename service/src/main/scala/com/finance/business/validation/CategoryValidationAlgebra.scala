@@ -10,9 +10,9 @@ trait CategoryValidationAlgebra[F[_]] {
 
   def exists(category: Category): EitherT[F, DoesNotExist, Unit]
 
-  def parentExists(id: Id): EitherT[F, DoesNotExist, Unit]
+  def parentExists(category: Category): EitherT[F, DoesNotExist, Unit]
 
-  def withinParentTimePeriod(id: Id, category: Category): EitherT[F, CategoryNotWithinParentTimePeriod, Unit]
+  def withinParentTimePeriod(category: Category): EitherT[F, CategoryNotWithinParentTimePeriod, Unit]
 
   def nameIsValid(category: Category): EitherT[F, NameTooLong, Unit]
 

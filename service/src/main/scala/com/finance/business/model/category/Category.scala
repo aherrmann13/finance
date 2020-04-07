@@ -5,6 +5,7 @@ import com.finance.business.model.types._
 
 case class Category(
     id: Option[Id],
+    parentId: Option[Id],
     name: Name,
     description: Description,
     effectiveTime: EffectiveTime,

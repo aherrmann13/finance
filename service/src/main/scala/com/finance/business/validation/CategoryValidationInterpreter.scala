@@ -26,19 +26,21 @@ class CategoryValidationInterpreter[F[_]: Monad](
   override def exists(category: Category): EitherT[F, DoesNotExist, Unit] =
     PropertyValidator.exists(category.id, categoryRepository.get)
 
-  override def parentExists(id: Id): EitherT[F, DoesNotExist, Unit] =
-    PropertyValidator.exists(id, categoryRepository.get)
+  override def parentExists(category: Category): EitherT[F, DoesNotExist, Unit] =
+    PropertyValidator.exists(category.parentId, categoryRepository.get)
 
-  override def withinParentTimePeriod(id: Id, category: Category): EitherT[F, CategoryNotWithinParentTimePeriod, Unit] =
+  override def withinParentTimePeriod(category: Category): EitherT[F, CategoryNotWithinParentTimePeriod, Unit] =
     EitherT {
-      categoryRepository.get(id) map { cat =>
-        cat map { parent =>
-          Either.cond(
-            category.effectiveTime within parent.effectiveTime,
-            (),
-            CategoryNotWithinParentTimePeriod(category.effectiveTime, parent.effectiveTime))
-        } getOrElse Either.right[CategoryNotWithinParentTimePeriod, Unit](())
-      }
+      category.parentId map {
+        categoryRepository.get(_) map {
+          _ map { parent =>
+            Either.cond(
+              category.effectiveTime within parent.effectiveTime,
+              (),
+              CategoryNotWithinParentTimePeriod(category.effectiveTime, parent.effectiveTime))
+          } getOrElse Either.right[CategoryNotWithinParentTimePeriod, Unit](())
+        }
+      } getOrElse Either.right[CategoryNotWithinParentTimePeriod, Unit](()).pure[F]
     }
 
   override def nameIsValid(category: Category): EitherT[F, NameTooLong, Unit] =
