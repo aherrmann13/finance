@@ -22,14 +22,14 @@ class AccountServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
   private val account = Account(Some(accountId), Name("Name"), Description("Description"), Bank)
 
   "create" - {
-    "returns Left(IdMustBeNone) when validation algebra idIsNone returns Left(IdMustBeNone)" in {
+    "returns Left(IdMustBeNone) from validation algebra idIsNone" in {
       val returnVal = EitherT.leftT[IdMonad, Unit](IdMustBeNone(ModelName("Account")))
       (mockValidationAlgebra idIsNone _) when account returns returnVal
       (mockRepository create _) expects account never
 
       service.create(account) shouldEqual returnVal
     }
-    "returns Left(NameTooLong) when validation algebra nameIsValid returns Left(NameTooLong)" in {
+    "returns Left(NameTooLong) from validation algebra nameIsValid" in {
       val returnVal = EitherT.leftT[IdMonad, Unit](NameTooLong(ModelName("Account"), Name("Name")))
       (mockValidationAlgebra idIsNone _) when account returns EitherT.rightT[IdMonad, IdMustBeNone](())
       (mockValidationAlgebra nameIsValid _) when account returns returnVal
@@ -37,7 +37,7 @@ class AccountServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
       service.create(account) shouldEqual returnVal
     }
-    "returns Left(DescriptionTooLong) when validation algebra descriptionIsValid returns Left(DescriptionTooLong)" in {
+    "returns Left(DescriptionTooLong) from validation algebra descriptionIsValid" in {
       val returnVal = EitherT.leftT[IdMonad, Unit](DescriptionTooLong(ModelName("Account"), Description("Desc")))
       (mockValidationAlgebra idIsNone _) when account returns EitherT.rightT[IdMonad, IdMustBeNone](())
       (mockValidationAlgebra nameIsValid _) when account returns EitherT.rightT[IdMonad, NameTooLong](())
@@ -56,14 +56,14 @@ class AccountServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
     }
   }
   "update" - {
-    "returns Left(DoesNotExist) when validation algebra exists returns Left(DoesNotExist)" in {
+    "returns Left(DoesNotExist) from validation algebra exists" in {
       val returnVal = EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Account")))
       (mockValidationAlgebra exists _) when account returns returnVal
       (mockRepository update _) expects account never
 
       service.update(account) shouldEqual returnVal
     }
-    "returns Left(NameTooLong) when validation algebra nameIsValid returns Left(NameTooLong)" in {
+    "returns Left(NameTooLong) from validation algebra nameIsValid" in {
       val returnVal = EitherT.leftT[IdMonad, Unit](NameTooLong(ModelName("Account"), Name("Name")))
       (mockValidationAlgebra exists _) when account returns EitherT.rightT[IdMonad, DoesNotExist](())
       (mockValidationAlgebra nameIsValid _) when account returns returnVal
@@ -71,7 +71,7 @@ class AccountServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
       service.update(account) shouldEqual returnVal
     }
-    "returns Left(DescriptionTooLong) when validation algebra descriptionIsValid returns Left(DescriptionTooLong)" in {
+    "returns Left(DescriptionTooLong) from validation algebra descriptionIsValid" in {
       val returnVal = EitherT.leftT[IdMonad, Unit](DescriptionTooLong(ModelName("Account"), Description("Desc")))
       (mockValidationAlgebra exists _) when account returns EitherT.rightT[IdMonad, DoesNotExist](())
       (mockValidationAlgebra nameIsValid _) when account returns EitherT.rightT[IdMonad, NameTooLong](())
@@ -80,7 +80,7 @@ class AccountServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
       service.update(account) shouldEqual returnVal
     }
-    "returns Left(AccountTypeInvalid) when validation algebra accountTypeIsValid returns Left(AccountTypeInvalid)" in {
+    "returns Left(AccountTypeInvalid) from validation algebra accountTypeIsValid" in {
       val returnVal = EitherT.leftT[IdMonad, Unit][AccountTypeInvalid](BankCantHaveAssets)
       (mockValidationAlgebra exists _) when account returns EitherT.rightT[IdMonad, DoesNotExist](())
       (mockValidationAlgebra nameIsValid _) when account returns EitherT.rightT[IdMonad, NameTooLong](())
@@ -101,14 +101,14 @@ class AccountServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
     }
   }
   "delete" - {
-    "returns Left(HasTransactions) when validation algebra hasNoTransactions returns Left(HasTransactions)" in {
+    "returns Left(HasTransactions) from validation algebra hasNoTransactions" in {
       val returnVal = EitherT.leftT[IdMonad, Unit](HasTransactions(ModelName("Account")))
       (mockValidationAlgebra hasNoTransactions _) when accountId returns returnVal
       (mockRepository delete _) expects accountId never
 
       service.delete(accountId) shouldEqual returnVal
     }
-    "returns Left(HasAssets) when validation algebra hasNoAssets returns Left(HasAssets)" in {
+    "returns Left(HasAssets) from validation algebra hasNoAssets" in {
       val returnVal = EitherT.leftT[IdMonad, Unit](HasAssets(ModelName("Account")))
       (mockValidationAlgebra hasNoTransactions _) when accountId returns EitherT.rightT[IdMonad, HasTransactions](())
       (mockValidationAlgebra hasNoAssets _) when accountId returns returnVal
@@ -116,7 +116,7 @@ class AccountServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
       service.delete(accountId) shouldEqual returnVal
     }
-    "returns Left(HasPaybacks) when validation algebra hasNoPaybacks returns Left(HasPaybacks)" in {
+    "returns Left(HasPaybacks) from validation algebra hasNoPaybacks" in {
       val returnVal = EitherT.leftT[IdMonad, Unit](HasPaybacks(ModelName("Account")))
       (mockValidationAlgebra hasNoTransactions _) when accountId returns EitherT.rightT[IdMonad, HasTransactions](())
       (mockValidationAlgebra hasNoAssets _) when accountId returns EitherT.rightT[IdMonad, HasAssets](())
