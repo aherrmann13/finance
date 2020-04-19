@@ -50,25 +50,17 @@ class CategoryValidationInterpreter[F[_]: Monad](
     PropertyValidator.descriptionIsValid(category)
 
   override def budgetWithinCategoryTime(category: Category): EitherT[F, BudgetPeriodNotInEffectiveTime, Unit] =
-    withinCategoryTime(category.budget, category.effectiveTime)
+    category.budget.toList.traverse { budget =>
+      EitherT.cond[F](
+        budget.effectiveTime within category.effectiveTime,
+        (),
+        BudgetPeriodNotInEffectiveTime(budget.effectiveTime, category.effectiveTime))
+    } map( _ => ())
 
   override def hasNoTransactions(id: Id): EitherT[F, HasTransactions, Unit] =
     EitherT {
       transactionRepository.anyWithCategoryId(id) map { exists =>
         Either.cond(!exists, (), HasTransactions(Name))
       }
-    }
-
-  private def withinCategoryTime(
-      budget: Seq[Budget],
-      time: EffectiveTime
-  ): EitherT[F, BudgetPeriodNotInEffectiveTime, Unit] =
-    budget match {
-      case Nil => EitherT.rightT(())
-      case x :: y =>
-        EitherT.cond[F](x.effectiveTime within time, (), BudgetPeriodNotInEffectiveTime(x.effectiveTime, time)) flatMap {
-          _ =>
-            withinCategoryTime(y, time)
-        }
     }
 }

@@ -2,13 +2,14 @@ package com.finance.business.validation
 
 import cats.Monad
 import cats.data.EitherT
+import cats.implicits._
 import com.finance.business.model.account.implicits._
 import com.finance.business.model.category.implicits._
 import com.finance.business.model.source.implicits._
 import com.finance.business.model.transaction.{Amount, Transaction}
 import com.finance.business.model.transaction.implicits._
-import com.finance.business.repository.{AccountRepository, CategoryRepository, SourceRepository, TransactionRepository}
-import com.finance.business.validation.errors.{DescriptionTooLong, DoesNotExist, IdMustBeNone, ValidationError}
+import com.finance.business.repository._
+import com.finance.business.validation.errors._
 
 class TransactionValidationInterpreter[F[_] : Monad](
   transactionRepository: TransactionRepository[F],
@@ -32,22 +33,9 @@ class TransactionValidationInterpreter[F[_] : Monad](
     PropertyValidator.exists(transaction.accountId, accountRepository.get)
 
   override def amountDescAreValid(transaction: Transaction): EitherT[F, DescriptionTooLong, Unit] =
-    validateAmounts[DescriptionTooLong](transaction.amounts, PropertyValidator.descriptionIsValid)
+    transaction.amounts.toList.traverse(PropertyValidator.descriptionIsValid[F, Amount](_)).map(_ => ())
 
   override def categoryIdsExist(transaction: Transaction): EitherT[F, DoesNotExist, Unit] =
-    validateAmounts[DoesNotExist](
-      transaction.amounts,
-      amt => PropertyValidator.exists(amt.categoryId, categoryRepository.get)
-    )
-
-  private def validateAmounts[E <: ValidationError](
-    amounts: Seq[Amount],
-    validator: Amount => EitherT[F, E, Unit]
-  ): EitherT[F, E, Unit] =
-    amounts match {
-      case Nil => EitherT.rightT(())
-      case x :: y => validator(x) flatMap {
-        _ => validateAmounts(y, validator)
-      }
-    }
+    transaction.amounts.toList.traverse(x => PropertyValidator.exists(x.categoryId, categoryRepository.get))
+      .map(_ => ())
 }
