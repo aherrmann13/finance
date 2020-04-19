@@ -1,15 +1,9 @@
-package com.finance.business.repository
+package com.finance.business.services
 
 import com.finance.business.model.base.Model
 import com.finance.business.model.types.Id
 
-trait Repository[F[_], M <: Model] {
-  def create(model: M): F[M]
-
-  def update(model: M): F[M]
-
-  def delete(id: Id): F[Unit]
-
+trait QueryService[F[_], M <: Model] {
   def get(id: Id): F[Option[M]]
 
   def getMany(ids: Seq[Id]): F[Seq[M]]

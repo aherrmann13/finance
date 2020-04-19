@@ -3,8 +3,10 @@ package com.finance.business.services
 import cats.data.EitherT
 import cats.{Id => IdMonad}
 import cats.implicits._
-import com.finance.business.model.asset.{Asset, Buy, Stock, StockAction}
+import com.finance.business.model.asset.{Asset, Buy, Stock, StockAction, StockPriceAsOf, StockValue}
 import com.finance.business.model.types.{Id, ModelName, Usd}
+import com.finance.business.operations.StockOps._
+import com.finance.business.remotecalls.StockPriceRetriever
 import com.finance.business.repository.AssetRepository
 import com.finance.business.validation.AssetValidationAlgebra
 import com.finance.business.validation.errors._
@@ -16,8 +18,9 @@ import org.scalatest.matchers.should.Matchers
 class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
   private val mockValidationAlgebra = stub[AssetValidationAlgebra[IdMonad]]
   private val mockRepository = mock[AssetRepository[IdMonad]]
+  private val mockStockPriceRetriever = mock[StockPriceRetriever[IdMonad]]
 
-  private val service = new AssetService[IdMonad](mockValidationAlgebra, mockRepository)
+  private val service = new AssetService[IdMonad](mockValidationAlgebra, mockRepository, mockStockPriceRetriever)
 
   private val assetId = Id(5)
   private val asset = new Asset {
@@ -39,7 +42,7 @@ class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         val returnVal = EitherT.leftT[IdMonad, Unit][StockActionsInvalid](
           SellingMoreThanCurrentlyHave(StockAction(DateTime.now(), Buy, 6, Usd(12.0), Usd(15.0)))
         )
-        (mockValidationAlgebra idIsNone  _) when stock returns EitherT.rightT[IdMonad, IdMustBeNone](())
+        (mockValidationAlgebra idIsNone _) when stock returns EitherT.rightT[IdMonad, IdMustBeNone](())
         (mockValidationAlgebra stockActionsAreValid _) when stock returns returnVal
         (mockRepository create _) expects stock never
 
@@ -100,9 +103,50 @@ class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
   }
   "delete" - {
     "returns Right(()) and deletes" in {
-      (mockRepository delete  _) expects assetId returns ().pure[IdMonad]
+      (mockRepository delete _) expects assetId returns ().pure[IdMonad]
 
       service.delete(assetId) shouldEqual EitherT.rightT[IdMonad, ValidationError](())
+    }
+  }
+  "get" - {
+    "returns repository get" - {
+      (mockRepository get _) expects assetId returns Some(asset).pure[IdMonad]
+
+      service.get(assetId) shouldEqual Some(asset)
+    }
+  }
+  "getMany" - {
+    "returns repository getMany" - {
+      (mockRepository getMany _) expects Seq(assetId, Id(assetId.value + 1)) returns Seq(asset, asset).pure[IdMonad]
+
+      service.getMany(Seq(assetId, Id(assetId.value + 1))) shouldEqual Seq(asset, asset)
+    }
+  }
+  "getAll" - {
+    "returns repository getAll" - {
+      (mockRepository.getAll _).expects().returns(Seq(asset, asset).pure[IdMonad])
+
+      service.getAll shouldEqual Seq(asset, asset)
+    }
+  }
+  "getStockValue" - {
+    val stocks = Seq(
+      Stock(Some(Id(4)), "ticker0", Seq.empty),
+      Stock(Some(Id(4)), "ticker1", Seq.empty),
+      Stock(Some(Id(4)), "ticker2", Seq.empty)
+    )
+    val values = Seq(
+      StockPriceAsOf(Usd(54.3), Usd(52.1), DateTime.now),
+      StockPriceAsOf(Usd(2.35), Usd(54.59), DateTime.now),
+      StockPriceAsOf(Usd(17.65), Usd(52.1), DateTime.now)
+    )
+    "returns each stock with price" in {
+      (mockRepository.getAllStocks _).expects().returns(stocks.pure[IdMonad])
+      stocks.zip(values).foreach { x =>
+        (mockStockPriceRetriever.call _) expects x._1.ticker returns x._2.pure[IdMonad]
+      }
+
+      service.getStockValue shouldEqual stocks.zip(values).map { x => x._1 withPrice x._2 }
     }
   }
 }

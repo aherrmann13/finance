@@ -8,16 +8,19 @@ import com.finance.business.repository.AssetRepository
 import com.finance.business.validation.errors._
 
 object AssetValidationInterpreter {
+
   case object StockActionValidator {
     def apply(): StockActionValidator = StockActionValidator(0)
   }
-  case class StockActionValidator(currentUnits: Long) extends AnyVal {
+
+  case class StockActionValidator(currentUnits: BigDecimal) extends AnyVal {
     def +(action: StockAction): StockActionValidator = action.actionType match {
       case Buy           => copy(currentUnits = currentUnits + action.units)
       case Sell          => copy(currentUnits = currentUnits - action.units)
       case StockDividend => copy(currentUnits = currentUnits + action.units)
       case CashDividend  => this
     }
+
     def ?(action: StockAction): Option[StockActionsInvalid] = action.actionType match {
       case Buy           => None
       case Sell          => Option.unless(currentUnits >= action.units)(SellingMoreThanCurrentlyHave(action))
@@ -27,27 +30,21 @@ object AssetValidationInterpreter {
   }
 }
 
-class AssetValidationInterpreter[F[_]: Monad](
-    assetRepository: AssetRepository[F]
-) extends AssetValidationAlgebra[F] {
+class AssetValidationInterpreter[F[_]: Monad](assetRepository: AssetRepository[F]) extends AssetValidationAlgebra[F] {
   import AssetValidationInterpreter._
+
   override def idIsNone(asset: Asset): EitherT[F, IdMustBeNone, Unit] =
     PropertyValidator.idIsNone(asset)
 
   override def exists(asset: Asset): EitherT[F, DoesNotExist, Unit] =
     PropertyValidator.exists(asset.id, assetRepository.get)
 
+  // TODO: clean up
   override def stockActionsAreValid(stock: Stock): EitherT[F, StockActionsInvalid, Unit] =
-    stockActionValidator(stock.actions)
-
-  private def stockActionValidator(
-      stockActions: Seq[StockAction],
-      validator: StockActionValidator = StockActionValidator()
-  ): EitherT[F, StockActionsInvalid, Unit] =
-    stockActions match {
-      case Nil => EitherT.rightT[F, StockActionsInvalid](())
-      case x :: Nil =>
-        validator ? x map { EitherT.leftT[F, Unit](_) } getOrElse EitherT.rightT[F, StockActionsInvalid](())
-      case x :: y => validator ? x map { EitherT.leftT[F, Unit](_) } getOrElse stockActionValidator(y, validator + x)
-    }
+    stock.actions.toList.foldLeft(EitherT.pure[F, StockActionsInvalid](StockActionValidator())) {
+      (acc: EitherT[F, StockActionsInvalid, StockActionValidator], a: StockAction) =>
+        acc flatMap { v =>
+          EitherT.fromOption[F](v ? a, v + a).swap
+        }
+    } map (_ => ())
 }

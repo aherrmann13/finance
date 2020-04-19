@@ -6,7 +6,7 @@ import com.github.nscala_time.time.Imports._
 case class StockAction(
     date: DateTime,
     actionType: StockActionType,
-    units: Long,
+    units: BigDecimal,
     unitPrice: Usd,
     amountPaid: Usd
 )
