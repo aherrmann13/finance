@@ -2,9 +2,10 @@ package com.finance.business.validation
 
 import cats.Monad
 import cats.data.EitherT
+import com.finance.business.model.account.implicits._
 import com.finance.business.model.asset._
 import com.finance.business.model.asset.implicits._
-import com.finance.business.repository.AssetRepository
+import com.finance.business.repository.{AccountRepository, AssetRepository}
 import com.finance.business.validation.errors._
 
 object AssetValidationInterpreter {
@@ -30,7 +31,10 @@ object AssetValidationInterpreter {
   }
 }
 
-class AssetValidationInterpreter[F[_]: Monad](assetRepository: AssetRepository[F]) extends AssetValidationAlgebra[F] {
+class AssetValidationInterpreter[F[_]: Monad](
+    assetRepository: AssetRepository[F],
+    accountRepository: AccountRepository[F]
+) extends AssetValidationAlgebra[F] {
   import AssetValidationInterpreter._
 
   override def idIsNone(asset: Asset): EitherT[F, IdMustBeNone, Unit] =
@@ -38,6 +42,9 @@ class AssetValidationInterpreter[F[_]: Monad](assetRepository: AssetRepository[F
 
   override def exists(asset: Asset): EitherT[F, DoesNotExist, Unit] =
     PropertyValidator.exists(asset.id, assetRepository.get)
+
+  override def accountIdExists(asset: Asset): EitherT[F, DoesNotExist, Unit] =
+    PropertyValidator.exists(asset.accountId, accountRepository.get)
 
   // TODO: clean up
   override def stockActionsAreValid(stock: Stock): EitherT[F, StockActionsInvalid, Unit] =

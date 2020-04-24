@@ -20,8 +20,9 @@ class AssetService[F[_] : Monad](
   override def create(model: Asset): EitherT[F, ValidationError, Asset] =
     for {
       _ <- validator idIsNone model
+      _ <- validator accountIdExists model
       _ <- model match {
-        case stock@Stock(_, _, _) => validator stockActionsAreValid stock
+        case stock@Stock(_, _, _, _) => validator stockActionsAreValid stock
         case _ => EitherT.rightT[F, ValidationError](())
       }
       saved <- EitherT.liftF(repository create model)
@@ -30,8 +31,9 @@ class AssetService[F[_] : Monad](
   override def update(model: Asset): EitherT[F, ValidationError, Asset] =
     for {
       _ <- validator exists model
+      _ <- validator accountIdExists model
       _ <- model match {
-        case stock@Stock(_, _, _) => validator stockActionsAreValid stock
+        case stock@Stock(_, _, _, _) => validator stockActionsAreValid stock
         case _ => EitherT.rightT[F, ValidationError](())
       }
       saved <- EitherT.liftF(repository update model)

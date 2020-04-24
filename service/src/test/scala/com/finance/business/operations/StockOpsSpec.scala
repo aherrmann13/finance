@@ -8,7 +8,7 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
 
 class StockOpsSpec extends AnyFreeSpec with Matchers {
-  private val fakeStock = Stock(Some(Id(4)), "ticker", Seq.empty)
+  private val fakeStock = Stock(Some(Id(4)), Id(9), "ticker", Seq.empty)
   private val fakeStockPriceAsOf = StockPriceAsOf(Usd(50.5), Usd(51), DateTime.now)
 
   "StockOperations" - {

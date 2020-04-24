@@ -3,9 +3,10 @@ package com.finance.business.validation
 import cats.data.EitherT
 import cats.{Id => IdMonad}
 import cats.implicits._
+import com.finance.business.model.account.{Account, Bank}
 import com.finance.business.model.asset._
-import com.finance.business.model.types.{Id, ModelName, Usd}
-import com.finance.business.repository.AssetRepository
+import com.finance.business.model.types.{Description, Id, ModelName, Name, Usd}
+import com.finance.business.repository.{AccountRepository, AssetRepository}
 import com.finance.business.validation.errors._
 import com.github.nscala_time.time.Imports._
 import org.scalamock.scalatest.MockFactory
@@ -14,14 +15,18 @@ import org.scalatest.matchers.should.Matchers
 
 class AssetValidationInterpreterSpec extends AnyFreeSpec with Matchers with MockFactory {
   private val mockAssetRepository = stub[AssetRepository[IdMonad]]
+  private val mockAccountRepository = stub[AccountRepository[IdMonad]]
 
-  private val assetValidationInterpreter = new AssetValidationInterpreter[IdMonad](mockAssetRepository)
+  private val assetValidationInterpreter =
+    new AssetValidationInterpreter[IdMonad](mockAssetRepository, mockAccountRepository)
 
   private val fakeAssetWithId = new Asset {
     override val id: Option[Id] = Some(Id(1))
+    override val accountId: Id = Id(15)
   }
   private val fakeAccountWithNoId = new Asset {
     override val id: Option[Id] = None
+    override val accountId: Id = Id(15)
   }
   private val assetName = ModelName("Asset")
 
@@ -40,7 +45,7 @@ class AssetValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mock
       assetValidationInterpreter.exists(fakeAccountWithNoId).value shouldEqual
         EitherT.leftT[IdMonad, Unit](DoesNotExist(assetName)).value
     }
-    "should return Left(DoesNotExist) when repository does not contain Account" in {
+    "should return Left(DoesNotExist) when repository does not contain Asset" in {
       (mockAssetRepository get _).when(fakeAssetWithId.id.get).returns(None.pure[IdMonad])
       assetValidationInterpreter.exists(fakeAssetWithId).value shouldEqual
         EitherT.leftT[IdMonad, Unit](DoesNotExist(assetName, fakeAssetWithId.id)).value
@@ -51,8 +56,21 @@ class AssetValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mock
         EitherT.rightT[IdMonad, DoesNotExist](()).value
     }
   }
+  "accountIdExists" - {
+    "should return Left(DoesNotExist) when repository does not contain Account" in {
+      (mockAccountRepository get _).when(fakeAssetWithId.accountId).returns(None.pure[IdMonad])
+      assetValidationInterpreter.accountIdExists(fakeAssetWithId).value shouldEqual
+        EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Account"), fakeAssetWithId.accountId)).value
+    }
+    "should return Right(()) when repository contains Account" in {
+      (mockAccountRepository get _).when(fakeAssetWithId.accountId)
+        .returns(Some(Account(Some(Id(4)), Name("Name"), Description("Description"), Bank)).pure[IdMonad])
+      assetValidationInterpreter.accountIdExists(fakeAssetWithId).value shouldEqual
+        EitherT.rightT[IdMonad, DoesNotExist](()).value
+    }
+  }
   "stockActionsAreValid" - {
-    val fakeStock = Stock(Some(Id(2)), "ticker", Seq.empty)
+    val fakeStock = Stock(Some(Id(2)), Id(17), "ticker", Seq.empty)
 
     "should return Left(NoStockToPayDividend) when StockDividend occurs with no units" in {
       val action0 = StockAction(DateTime.now(), Buy, 6, Usd(12.0), Usd(15.0))

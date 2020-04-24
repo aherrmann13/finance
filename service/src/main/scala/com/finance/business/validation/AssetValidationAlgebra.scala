@@ -9,5 +9,7 @@ trait AssetValidationAlgebra[F[_]] {
 
   def exists(asset: Asset): EitherT[F, DoesNotExist, Unit]
 
+  def accountIdExists(asset: Asset): EitherT[F, DoesNotExist, Unit]
+
   def stockActionsAreValid(stock: Stock): EitherT[F, StockActionsInvalid, Unit]
 }
