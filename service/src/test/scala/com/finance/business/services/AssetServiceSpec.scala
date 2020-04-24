@@ -8,6 +8,7 @@ import com.finance.business.model.types.{Id, ModelName, Usd}
 import com.finance.business.operations.StockOps._
 import com.finance.business.remotecalls.StockPriceRetriever
 import com.finance.business.repository.AssetRepository
+import com.finance.business.repository.query.StockQuery
 import com.finance.business.validation.AssetValidationAlgebra
 import com.finance.business.validation.errors._
 import com.github.nscala_time.time.Imports.DateTime
@@ -132,14 +133,14 @@ class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
     }
   }
   "get" - {
-    "returns repository get" - {
+    "returns repository get" in {
       (mockRepository get _) expects assetId returns Some(asset).pure[IdMonad]
 
       service.get(assetId) shouldEqual Some(asset)
     }
   }
   "getMany" - {
-    "returns repository getMany" - {
+    "returns repository getMany" in {
       (mockRepository getMany _) expects Seq(assetId, Id(assetId.value + 1)) returns Seq(asset, asset).pure[IdMonad]
 
       service.getMany(Seq(assetId, Id(assetId.value + 1))) shouldEqual Seq(asset, asset)
@@ -172,6 +173,19 @@ class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       service.getStockValue shouldEqual stocks.zip(values).map { x =>
         x._1 withPrice x._2
       }
+    }
+  }
+  "getStocks" - {
+    val stocks = Seq(
+      Stock(Some(Id(4)), Id(19), "ticker0", Seq.empty),
+      Stock(Some(Id(4)), Id(19), "ticker1", Seq.empty),
+      Stock(Some(Id(4)), Id(19), "ticker2", Seq.empty)
+    )
+    "returns repository getStocks" in {
+      val query = StockQuery(None, Set.empty, None, None, Set.empty)
+      (mockRepository.getStocks _).expects(query).returns(stocks.pure[IdMonad])
+
+      service.getStocks(query) shouldEqual stocks
     }
   }
 }

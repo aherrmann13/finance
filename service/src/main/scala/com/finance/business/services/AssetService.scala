@@ -8,21 +8,22 @@ import com.finance.business.model.types.Id
 import com.finance.business.operations.StockOps._
 import com.finance.business.remotecalls.StockPriceRetriever
 import com.finance.business.repository.AssetRepository
+import com.finance.business.repository.query.StockQuery
 import com.finance.business.validation.AssetValidationAlgebra
 import com.finance.business.validation.errors.ValidationError
 
-class AssetService[F[_] : Monad](
-  validator: AssetValidationAlgebra[F],
-  repository: AssetRepository[F],
-  stockPriceRetriever: StockPriceRetriever[F]
+class AssetService[F[_]: Monad](
+    validator: AssetValidationAlgebra[F],
+    repository: AssetRepository[F],
+    stockPriceRetriever: StockPriceRetriever[F]
 ) extends CommandService[F, Asset]
-  with QueryService[F, Asset] {
+    with QueryService[F, Asset] {
   override def create(model: Asset): EitherT[F, ValidationError, Asset] =
     for {
       _ <- validator idIsNone model
       _ <- validator accountIdExists model
       _ <- model match {
-        case stock@Stock(_, _, _, _) => validator stockActionsAreValid stock
+        case stock @ Stock(_, _, _, _) => validator stockActionsAreValid stock
         case _ => EitherT.rightT[F, ValidationError](())
       }
       saved <- EitherT.liftF(repository create model)
@@ -33,7 +34,7 @@ class AssetService[F[_] : Monad](
       _ <- validator exists model
       _ <- validator accountIdExists model
       _ <- model match {
-        case stock@Stock(_, _, _, _) => validator stockActionsAreValid stock
+        case stock @ Stock(_, _, _, _) => validator stockActionsAreValid stock
         case _ => EitherT.rightT[F, ValidationError](())
       }
       saved <- EitherT.liftF(repository update model)
@@ -44,7 +45,7 @@ class AssetService[F[_] : Monad](
 
   override def get(id: Id): F[Option[Asset]] = repository.get(id)
 
-  override def getMany(ids: Seq[Id]): F[Seq[Asset]] = repository.getMany((ids))
+  override def getMany(ids: Seq[Id]): F[Seq[Asset]] = repository.getMany(ids)
 
   override def getAll: F[Seq[Asset]] = repository.getAll
 
@@ -54,4 +55,6 @@ class AssetService[F[_] : Monad](
     } map {
       _.toSeq
     }
+
+  def getStocks(query: StockQuery): F[Seq[Stock]] = repository.getStocks(query)
 }
