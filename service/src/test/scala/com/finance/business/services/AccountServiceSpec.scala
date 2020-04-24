@@ -134,4 +134,26 @@ class AccountServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       service.delete(accountId) shouldEqual EitherT.rightT[IdMonad, ValidationError](())
     }
   }
+  "get" - {
+    "returns repository get" in {
+      (mockRepository get _) expects accountId returns Some(account).pure[IdMonad]
+
+      service.get(accountId) shouldEqual Some(account)
+    }
+  }
+  "getMany" - {
+    "returns repository getMany" in {
+      (mockRepository getMany _) expects Seq(accountId, Id(accountId.value + 1)) returns
+        Seq(account, account).pure[IdMonad]
+
+      service.getMany(Seq(accountId, Id(accountId.value + 1))) shouldEqual Seq(account, account)
+    }
+  }
+  "getAll" - {
+    "returns repository getAll" - {
+      (mockRepository.getAll _).expects().returns(Seq(account, account).pure[IdMonad])
+
+      service.getAll shouldEqual Seq(account, account)
+    }
+  }
 }

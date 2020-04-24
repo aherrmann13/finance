@@ -11,7 +11,8 @@ import com.finance.business.validation.errors.ValidationError
 class AccountService[F[_]: Monad](
   validator: AccountValidationAlgebra[F],
   repository: AccountRepository[F]
-) extends CommandService[F, Account] {
+) extends CommandService[F, Account]
+  with QueryService[F, Account] {
   override def create(model: Account): EitherT[F, ValidationError, Account] =
     for {
       _ <- validator idIsNone model
@@ -36,4 +37,10 @@ class AccountService[F[_]: Monad](
       _ <- validator hasNoPaybacks id
       deleted <- EitherT.liftF(repository delete id)
     } yield deleted
+
+  override def get(id: Id): F[Option[Account]] = repository.get(id)
+
+  override def getMany(ids: Seq[Id]): F[Seq[Account]] = repository.getMany(ids)
+
+  override def getAll: F[Seq[Account]] = repository.getAll
 }
