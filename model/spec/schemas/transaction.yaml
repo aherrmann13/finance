@@ -31,9 +31,12 @@ Transaction:
 Amount:
   type: object
   properties:
-    categoryId:
+    relationId:
       type: integer
       format: int32
+    type:
+      type: string
+      enum: [ Payback, Category ] 
     amount:
       type: number
     description:
