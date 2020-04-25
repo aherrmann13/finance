@@ -18,4 +18,6 @@ trait TransactionValidationAlgebra[F[_]] {
   def amountDescAreValid(transaction: Transaction): EitherT[F, DescriptionTooLong, Unit]
 
   def categoryIdsExist(transaction: Transaction): EitherT[F, DoesNotExist, Unit]
+
+  def paybackIdsExists(transaction: Transaction): EitherT[F, DoesNotExist, Unit]
 }

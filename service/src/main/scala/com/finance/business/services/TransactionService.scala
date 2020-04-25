@@ -20,6 +20,7 @@ class TransactionService[F[_]: Monad](
       _ <- validator accountIdExists model
       _ <- validator amountDescAreValid model
       _ <- validator categoryIdsExist model
+      _ <- validator paybackIdsExists model
       saved <- EitherT.liftF(repository create model)
     } yield saved
 
@@ -31,6 +32,7 @@ class TransactionService[F[_]: Monad](
       _ <- validator accountIdExists model
       _ <- validator amountDescAreValid model
       _ <- validator categoryIdsExist model
+      _ <- validator paybackIdsExists model
       saved <- EitherT.liftF(repository update model)
     } yield saved
 
