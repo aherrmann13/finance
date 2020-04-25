@@ -190,4 +190,26 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       service.delete(categoryId) shouldEqual EitherT.rightT[IdMonad, ValidationError](())
     }
   }
+  "get" - {
+    "returns repository get" in {
+      (mockRepository get _) expects categoryId returns Some(category).pure[IdMonad]
+
+      service.get(categoryId) shouldEqual Some(category)
+    }
+  }
+  "getMany" - {
+    "returns repository getMany" in {
+      (mockRepository getMany _) expects Seq(categoryId, Id(categoryId.value + 1)) returns
+        Seq(category, category).pure[IdMonad]
+
+      service.getMany(Seq(categoryId, Id(categoryId.value + 1))) shouldEqual Seq(category, category)
+    }
+  }
+  "getAll" - {
+    "returns repository getAll" - {
+      (mockRepository.getAll _).expects().returns(Seq(category, category).pure[IdMonad])
+
+      service.getAll shouldEqual Seq(category, category)
+    }
+  }
 }

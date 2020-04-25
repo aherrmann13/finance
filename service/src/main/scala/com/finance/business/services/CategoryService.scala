@@ -11,7 +11,8 @@ import com.finance.business.validation.errors.ValidationError
 class CategoryService[F[_]: Monad](
     validator: CategoryValidationAlgebra[F],
     repository: CategoryRepository[F]
-) extends CommandService[F, Category] {
+) extends CommandService[F, Category]
+    with QueryService[F, Category] {
   override def create(model: Category): EitherT[F, ValidationError, Category] =
     for {
       _ <- validator idIsNone model
@@ -39,4 +40,10 @@ class CategoryService[F[_]: Monad](
       _ <- validator hasNoTransactions id
       deleted <- EitherT.liftF(repository delete id)
     } yield deleted
+
+  override def get(id: Id): F[Option[Category]] = repository.get(id)
+
+  override def getMany(ids: Seq[Id]): F[Seq[Category]] = repository.getMany(ids)
+
+  override def getAll: F[Seq[Category]] = repository.getAll
 }
