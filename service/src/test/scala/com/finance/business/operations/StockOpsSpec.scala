@@ -30,9 +30,9 @@ class StockOpsSpec extends AnyFreeSpec with Matchers {
         )
 
         val sells = Seq(
-          StockAction(DateTime.now, Sell, 27.9, Usd(1), Usd(1)),
-          StockAction(DateTime.now, Sell, 22.88, Usd(1), Usd(1)),
-          StockAction(DateTime.now, Sell, 19.88, Usd(1), Usd(1))
+          StockAction(DateTime.now, FifoSell, 27.9, Usd(1), Usd(1)),
+          StockAction(DateTime.now, LifoSell, 22.88, Usd(1), Usd(1)),
+          StockAction(DateTime.now, FifoSell, 19.88, Usd(1), Usd(1))
         )
 
         val stockDividends = Seq(
@@ -98,7 +98,8 @@ class StockOpsSpec extends AnyFreeSpec with Matchers {
         "ignores all other actions" in {
           (fakeStock.copy(
             actions = buys :+
-              buys.head.copy(actionType = Sell) :+
+              buys.head.copy(actionType = FifoSell) :+
+              buys.head.copy(actionType = LifoSell) :+
               buys.head.copy(actionType = CashDividend) :+
               buys.head.copy(actionType = StockDividend)
           ) withPrice fakeStockPriceAsOf).pricePaid shouldEqual

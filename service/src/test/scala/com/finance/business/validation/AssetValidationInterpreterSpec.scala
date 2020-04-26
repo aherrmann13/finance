@@ -75,7 +75,7 @@ class AssetValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mock
     "should return Left(NoStockToPayDividend) when StockDividend occurs with no units" in {
       val action0 = StockAction(DateTime.now(), Buy, 6, Usd(12.0), Usd(15.0))
       val action1 = action0.copy(units = 5)
-      val action2 = action0.copy(units = action0.units + action1.units, actionType = Sell)
+      val action2 = action0.copy(units = action0.units + action1.units, actionType = LifoSell)
       val badAction = action0.copy(actionType = StockDividend)
 
       assetValidationInterpreter
@@ -86,7 +86,7 @@ class AssetValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mock
     "should return Left(NoStockToPayDividend) when CashDividend occurs with no units" in {
       val action0 = StockAction(DateTime.now(), Buy, 6, Usd(12.0), Usd(15.0))
       val action1 = action0.copy(units = 5)
-      val action2 = action0.copy(units = action0.units + action1.units, actionType = Sell)
+      val action2 = action0.copy(units = action0.units + action1.units, actionType = FifoSell)
       val badAction = action0.copy(actionType = CashDividend)
 
       assetValidationInterpreter
@@ -97,7 +97,7 @@ class AssetValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mock
     "should return Left(NoStockToPayDividend) when sale occurs greater than current units" in {
       val action0 = StockAction(DateTime.now(), Buy, 6, Usd(12.0), Usd(15.0))
       val action1 = action0.copy(units = 5)
-      val badAction = action0.copy(units = action0.units + action1.units + 1, actionType = Sell)
+      val badAction = action0.copy(units = action0.units + action1.units + 1, actionType = LifoSell)
       val action2 = action0.copy(actionType = CashDividend)
 
       assetValidationInterpreter
@@ -110,7 +110,7 @@ class AssetValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mock
       val action1 = action0.copy(units = 5)
       val action2 = action0.copy(actionType = CashDividend)
       val action3 = action0.copy(actionType = StockDividend, units = 1)
-      val action4 = action0.copy(actionType = Sell, units = action0.units + action1.units + action3.units)
+      val action4 = action0.copy(actionType = FifoSell, units = action0.units + action1.units + action3.units)
 
       assetValidationInterpreter
         .stockActionsAreValid(fakeStock.copy(actions = Seq(action0, action1, action2, action3, action4)))

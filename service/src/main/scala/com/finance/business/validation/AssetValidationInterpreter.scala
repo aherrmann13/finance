@@ -16,25 +16,29 @@ object AssetValidationInterpreter {
 
   case class StockActionValidator(currentUnits: BigDecimal) extends AnyVal {
     def +(action: StockAction): StockActionValidator = action.actionType match {
-      case Buy           => copy(currentUnits = currentUnits + action.units)
-      case Sell          => copy(currentUnits = currentUnits - action.units)
+      case Buy => copy(currentUnits = currentUnits + action.units)
+      case LifoSell => copy(currentUnits = currentUnits - action.units)
+      case FifoSell => copy(currentUnits = currentUnits - action.units)
       case StockDividend => copy(currentUnits = currentUnits + action.units)
-      case CashDividend  => this
+      case CashDividend => this
     }
 
     def ?(action: StockAction): Option[StockActionsInvalid] = action.actionType match {
-      case Buy           => None
-      case Sell          => Option.unless(currentUnits >= action.units)(SellingMoreThanCurrentlyHave(action))
+      case Buy => None
+      case LifoSell => Option.unless(currentUnits >= action.units)(SellingMoreThanCurrentlyHave(action))
+      case FifoSell => Option.unless(currentUnits >= action.units)(SellingMoreThanCurrentlyHave(action))
       case StockDividend => Option.unless(currentUnits >= action.units)(NoStockToPayDividend(action))
-      case CashDividend  => Option.unless(currentUnits >= action.units)(NoStockToPayDividend(action))
+      case CashDividend => Option.unless(currentUnits >= action.units)(NoStockToPayDividend(action))
     }
   }
+
 }
 
-class AssetValidationInterpreter[F[_]: Monad](
-    assetRepository: AssetRepository[F],
-    accountRepository: AccountRepository[F]
+class AssetValidationInterpreter[F[_] : Monad](
+  assetRepository: AssetRepository[F],
+  accountRepository: AccountRepository[F]
 ) extends AssetValidationAlgebra[F] {
+
   import AssetValidationInterpreter._
 
   override def idIsNone(asset: Asset): EitherT[F, IdMustBeNone, Unit] =
@@ -53,5 +57,5 @@ class AssetValidationInterpreter[F[_]: Monad](
         acc flatMap { v =>
           EitherT.fromOption[F](v ? a, v + a).swap
         }
-    } map (_ => ())
+    } map(_ => ())
 }

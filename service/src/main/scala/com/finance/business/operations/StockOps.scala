@@ -27,7 +27,8 @@ object StockOps {
       stock.actions map { action =>
         action.actionType match {
           case Buy => action.units
-          case Sell => action.units * -1
+          case LifoSell => action.units * -1
+          case FifoSell => action.units * -1
           case StockDividend => action.units
           case CashDividend => BigDecimal(0)
         }
