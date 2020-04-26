@@ -23,6 +23,8 @@ paths:
     $ref: "paths/asset.yaml#/CreateAsset"
   /asset/{id}:
     $ref: "paths/asset.yaml#/UpdateDeleteAsset"
+  /asset/stockvalue:
+    $ref: "paths/asset.yaml#/GetStockValue"
   /reporting/accountvalue:
     $ref: "paths/reporting.yaml#/GetAccountValue"
   /reporting/networth:
@@ -65,6 +67,8 @@ components:
       $ref: "schemas/asset.yaml#/Stock"
     StockAction:
       $ref: "schemas/asset.yaml#/StockAction"
+    StockValue:
+      $ref: "schemas/asset.yaml#/StockValue"
     AccountValue:
       $ref: "schemas/reporting.yaml#/AccountValue"
     AccountValueQuery:
@@ -139,6 +143,8 @@ components:
       $ref: "responses/asset.yaml#/CreateAssetResponse"
     UpdateAssetResponse:
       $ref: "responses/asset.yaml#/UpdateAssetResponse"
+    GetStockValueResponse:
+      $ref: "responses/asset.yaml#/GetStockValueResponse"
     GetAccountValueResponse:
       $ref: "responses/reporting.yaml#/GetAccountValueResponse"
     GetNetWorthResponse:

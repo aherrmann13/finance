@@ -9,6 +9,9 @@ Asset:
 Stock:
   type: object
   properties:
+    accountId:
+      type: integer
+      format: int32
     ticker:
       type: string
     actions:
@@ -16,6 +19,7 @@ Stock:
       items:
         $ref: "#/StockAction"
   required:
+    - accountId
     - ticker
     - actions
 
@@ -40,3 +44,39 @@ StockAction:
     - units
     - unitPrice
     - amountPaid
+
+StockValue:
+  type: object
+  properties:
+    stock:
+      $ref: "#/Stock"
+    price:
+      type: number
+    asOf:
+      type: string
+      format: date-time
+    quantity:
+      type: number
+    daysChange:
+      type: number
+    daysChangePercentage:
+      type: number
+    daysGain:
+      type: number
+    pricePaid:
+      type: number
+    totalGain:
+      type: number
+    value:
+      type: number
+  required:
+    - stock
+    - price
+    - asOf
+    - quantity
+    - daysChange
+    - daysChangePercentage
+    - daysGain
+    - pricePaid
+    - totalGain
+    - value

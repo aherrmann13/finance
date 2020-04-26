@@ -52,3 +52,16 @@ UpdateDeleteAsset:
         $ref: "../responses/common.yaml#/Empty200"
       400:
         $ref: "../responses/common.yaml#/Error"
+
+GetStockValue:
+  get:
+    operationId: GetStockValue
+    summary: "get value of stocks"
+    tags:
+      - asset
+    x-scala-package: asset
+    responses:
+      200:
+        $ref: "../responses/asset.yaml#/GetStockValueResponse"
+      400:
+        $ref: "../responses/common.yaml#/Error"

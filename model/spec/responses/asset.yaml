@@ -12,3 +12,11 @@ UpdateAssetResponse:
       schema:
         $ref: "../schemas/asset.yaml#/Asset"
 
+GetStockValueResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        type: array
+        items:
+          $ref: "../schemas/asset.yaml#/StockValue"
