@@ -94,10 +94,21 @@ class AssetValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mock
         .value shouldEqual
         EitherT.leftT[IdMonad, Unit](NoStockToPayDividend(badAction)).value
     }
-    "should return Left(NoStockToPayDividend) when sale occurs greater than current units" in {
+    "should return Left(NoStockToPayDividend) when Lifo sale occurs greater than current units" in {
       val action0 = StockAction(DateTime.now(), Buy, 6, Usd(12.0), Usd(15.0))
       val action1 = action0.copy(units = 5)
       val badAction = action0.copy(units = action0.units + action1.units + 1, actionType = LifoSell)
+      val action2 = action0.copy(actionType = CashDividend)
+
+      assetValidationInterpreter
+        .stockActionsAreValid(fakeStock.copy(actions = Seq(action0, action1, badAction, action2)))
+        .value shouldEqual
+        EitherT.leftT[IdMonad, Unit](SellingMoreThanCurrentlyHave(badAction)).value
+    }
+    "should return Left(NoStockToPayDividend) when Fifo sale occurs greater than current units" in {
+      val action0 = StockAction(DateTime.now(), Buy, 6, Usd(12.0), Usd(15.0))
+      val action1 = action0.copy(units = 5)
+      val badAction = action0.copy(units = action0.units + action1.units + 1, actionType = FifoSell)
       val action2 = action0.copy(actionType = CashDividend)
 
       assetValidationInterpreter
