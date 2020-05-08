@@ -19,5 +19,7 @@ trait TransactionValidationAlgebra[F[_]] {
 
   def categoryIdsExist(transaction: Transaction): EitherT[F, DoesNotExist, Unit]
 
+  def reportingDateWithinCategoryTime(transaction: Transaction): EitherT[F, DateNotInEffectiveTime, Unit]
+
   def paybackIdsExists(transaction: Transaction): EitherT[F, DoesNotExist, Unit]
 }

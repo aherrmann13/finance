@@ -20,5 +20,7 @@ trait CategoryValidationAlgebra[F[_]] {
 
   def budgetWithinCategoryTime(category: Category): EitherT[F, BudgetPeriodNotInEffectiveTime, Unit]
 
+  def transactionsWithinCategoryTime(category: Category): EitherT[F, CategoryTransactionNotWithinEffectiveTime, Unit]
+
   def hasNoTransactions(id: Id): EitherT[F, HasTransactions, Unit]
 }

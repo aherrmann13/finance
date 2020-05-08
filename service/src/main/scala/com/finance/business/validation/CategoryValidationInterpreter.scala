@@ -7,17 +7,20 @@ import com.finance.business.model.category._
 import com.finance.business.model.category.implicits._
 import com.finance.business.model.types.{Id, ModelName}
 import com.finance.business.operations.CategoryOps._
-import com.finance.business.repository.{CategoryRepository, TransactionRepository}
+import com.finance.business.repository.query.DateRange
+import com.finance.business.repository.{CategoryRepository, TimePeriodRepository, TransactionRepository}
 import com.finance.business.validation.errors._
 
 object CategoryValidationInterpreter {
   private val Name = ModelName("Category")
 }
 
-class CategoryValidationInterpreter[F[_]: Monad](
-    categoryRepository: CategoryRepository[F],
-    transactionRepository: TransactionRepository[F]
+class CategoryValidationInterpreter[F[_] : Monad](
+  categoryRepository: CategoryRepository[F],
+  transactionRepository: TransactionRepository[F],
+  timePeriodRepository: TimePeriodRepository[F]
 ) extends CategoryValidationAlgebra[F] {
+
   import CategoryValidationInterpreter._
 
   override def idIsNone(category: Category): EitherT[F, IdMustBeNone, Unit] =
@@ -55,7 +58,21 @@ class CategoryValidationInterpreter[F[_]: Monad](
         budget.effectiveTime within category.effectiveTime,
         (),
         BudgetPeriodNotInEffectiveTime(budget.effectiveTime, category.effectiveTime))
-    } map( _ => ())
+    } map (_ => ())
+
+  override def transactionsWithinCategoryTime(
+    category: Category
+  ): EitherT[F, CategoryTransactionNotWithinEffectiveTime, Unit] =
+    EitherT {
+      timePeriodRepository.getMany(category.effectiveTime.ids) map {
+        _ map { range => DateRange(range.start, range.end) }
+      } flatMap {
+        transactionRepository.anyNotInRanges
+      } map {
+        Either.cond(_, (), CategoryTransactionNotWithinEffectiveTime(category.effectiveTime))
+      }
+    }
+
 
   override def hasNoTransactions(id: Id): EitherT[F, HasTransactions, Unit] =
     EitherT {

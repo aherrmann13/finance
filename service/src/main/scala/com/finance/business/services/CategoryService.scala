@@ -32,6 +32,7 @@ class CategoryService[F[_]: Monad](
       _ <- validator nameIsValid model
       _ <- validator descriptionIsValid model
       _ <- validator budgetWithinCategoryTime model
+      _ <- validator transactionsWithinCategoryTime model
       saved <- EitherT.liftF(repository update model)
     } yield saved
 

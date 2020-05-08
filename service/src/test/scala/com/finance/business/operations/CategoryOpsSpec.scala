@@ -1,6 +1,7 @@
 package com.finance.business.operations
 
 import com.finance.business.model.category.{Always, Collection, Range, Single}
+import com.finance.business.model.types.Id
 import com.finance.business.operations.CategoryOps._
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
@@ -135,6 +136,22 @@ class CategoryOpsSpec extends AnyFreeSpec with Matchers {
             Single(5) within Single(5) shouldBe true
           }
         }
+      }
+    }
+    "ids" - {
+      "return empty seq on Always" in {
+        Always.ids shouldEqual Seq.empty
+      }
+      "return all elements in Collection" in {
+        val ids = Seq(1, 4, 6, 8, 23, 12)
+        Collection(ids).ids shouldEqual ids.map { Id(_) }
+      }
+      "return elements in Range" in {
+        Range(1, 7).ids shouldEqual Seq(1, 2, 3, 4, 5, 6, 7).map { Id(_) }
+      }
+      "return single element in Single" in {
+        val id = 7
+        Single(id).ids shouldEqual Seq(Id(id))
       }
     }
   }

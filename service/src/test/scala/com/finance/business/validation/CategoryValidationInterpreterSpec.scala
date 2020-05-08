@@ -4,20 +4,26 @@ import cats.data.EitherT
 import cats.{Id => IdMonad}
 import cats.implicits._
 import com.finance.business.model.category._
+import com.finance.business.model.timeperiod.TimePeriodRange
 import com.finance.business.model.types.{Description, Id, ModelName, Name, Usd}
-import com.finance.business.repository.{CategoryRepository, TransactionRepository}
+import com.finance.business.operations.CategoryOps._
+import com.finance.business.repository.query.DateRange
+import com.finance.business.repository.{CategoryRepository, TimePeriodRepository, TransactionRepository}
 import com.finance.business.validation.errors._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
+import com.github.nscala_time.time.Imports._
 
 class CategoryValidationInterpreterSpec extends AnyFreeSpec with Matchers with MockFactory {
   private val mockCategoryRepository = stub[CategoryRepository[IdMonad]]
   private val mockTransactionRepository = stub[TransactionRepository[IdMonad]]
+  private val mockTimePeriodRepository = stub[TimePeriodRepository[IdMonad]]
 
   private val categoryValidationInterpreter = new CategoryValidationInterpreter[IdMonad](
     mockCategoryRepository,
-    mockTransactionRepository
+    mockTransactionRepository,
+    mockTimePeriodRepository
   )
 
   private val categoryName = ModelName("Category")
@@ -130,6 +136,31 @@ class CategoryValidationInterpreterSpec extends AnyFreeSpec with Matchers with M
       val cat = fakeCategoryWithId.copy(effectiveTime = Always, budget = Seq(budget0, budget1, budget2))
       categoryValidationInterpreter.budgetWithinCategoryTime(cat).value shouldEqual
         EitherT.rightT[IdMonad, BudgetPeriodNotInEffectiveTime](()).value
+    }
+  }
+  "transactionsWithinCategoryTime" - {
+    val timePeriods = Seq(
+      TimePeriodRange(Some(Id(4)), DateTime.now, DateTime.now),
+      TimePeriodRange(Some(Id(4)), DateTime.now, DateTime.now),
+      TimePeriodRange(Some(Id(4)), DateTime.now, DateTime.now)
+    )
+    "should return Left(CategoryTransactionNotWithinEffectiveTime) when transactions outside category time" in {
+      (mockTimePeriodRepository.getMany _).when(fakeCategoryWithId.effectiveTime.ids).returns(timePeriods)
+      (mockTransactionRepository.anyNotInRanges _)
+        .when(timePeriods.map(x => DateRange(x.start, x.end)))
+        .returns(true.pure[IdMonad])
+
+      categoryValidationInterpreter.transactionsWithinCategoryTime(fakeCategoryWithId).value shouldEqual
+        EitherT.rightT[IdMonad, CategoryTransactionNotWithinEffectiveTime](()).value
+    }
+    "should return Right(()) when all transactions in category time" in {
+      (mockTimePeriodRepository.getMany _).when(fakeCategoryWithId.effectiveTime.ids).returns(timePeriods)
+      (mockTransactionRepository.anyNotInRanges _)
+        .when(timePeriods.map(x => DateRange(x.start, x.end)))
+        .returns(false.pure[IdMonad])
+
+      categoryValidationInterpreter.transactionsWithinCategoryTime(fakeCategoryWithId).value shouldEqual
+        EitherT.leftT[IdMonad, Unit](CategoryTransactionNotWithinEffectiveTime(fakeCategoryWithId.effectiveTime)).value
     }
   }
   "hasNoTransactions" - {

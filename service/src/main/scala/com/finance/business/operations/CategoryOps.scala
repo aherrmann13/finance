@@ -1,6 +1,7 @@
 package com.finance.business.operations
 
 import com.finance.business.model.category.{Always, Collection, EffectiveTime, Range, Single}
+import com.finance.business.model.types.Id
 
 object CategoryOps {
   implicit class EffectiveTimeOperations(time: EffectiveTime) {
@@ -28,5 +29,12 @@ object CategoryOps {
           case Single(innerPeriod) => innerPeriod == period
         }
       }
+
+    def ids: Seq[Id] = time match {
+      case Always => Seq.empty
+      case Collection(range) => range map { Id(_) }
+      case Range(from, to) => from to to map { Id(_) }
+      case Single(period) => Seq(Id(period))
+    }
   }
 }

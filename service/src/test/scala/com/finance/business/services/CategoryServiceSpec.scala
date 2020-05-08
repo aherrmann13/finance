@@ -160,6 +160,22 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
       service.update(category) shouldEqual returnVal
     }
+    "returns Left(CategoryTransactionNotWithinEffectiveTime) from validation algebra transactionsWithinCategoryTime" in {
+      val returnVal = EitherT.leftT[IdMonad, Unit](CategoryTransactionNotWithinEffectiveTime(Always))
+      (mockValidationAlgebra exists _) when category returns EitherT.rightT[IdMonad, DoesNotExist](())
+      (mockValidationAlgebra parentExists _) when category returns EitherT.rightT[IdMonad, DoesNotExist](())
+      (mockValidationAlgebra withinParentTimePeriod _) when category returns
+        EitherT.rightT[IdMonad, CategoryNotWithinParentTimePeriod](())
+      (mockValidationAlgebra nameIsValid _) when category returns EitherT.rightT[IdMonad, NameTooLong](())
+      (mockValidationAlgebra descriptionIsValid _) when category returns
+        EitherT.rightT[IdMonad, DescriptionTooLong](())
+      (mockValidationAlgebra budgetWithinCategoryTime _) when category returns
+        EitherT.rightT[IdMonad, BudgetPeriodNotInEffectiveTime](())
+      (mockValidationAlgebra transactionsWithinCategoryTime _) when category returns returnVal
+      (mockRepository update _) expects category never
+
+      service.update(category) shouldEqual returnVal
+    }
     "returns Right(()) and updates model when validation passes" in {
       (mockValidationAlgebra exists _) when category returns EitherT.rightT[IdMonad, DoesNotExist](())
       (mockValidationAlgebra parentExists _) when category returns EitherT.rightT[IdMonad, DoesNotExist](())
@@ -170,6 +186,8 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         EitherT.rightT[IdMonad, DescriptionTooLong](())
       (mockValidationAlgebra budgetWithinCategoryTime _) when category returns
         EitherT.rightT[IdMonad, BudgetPeriodNotInEffectiveTime](())
+      (mockValidationAlgebra transactionsWithinCategoryTime _) when category returns
+        EitherT.rightT[IdMonad, CategoryTransactionNotWithinEffectiveTime](())
       (mockRepository update _) expects category returns category.pure[IdMonad]
 
       service.update(category) shouldEqual EitherT.rightT[IdMonad, ValidationError](category)
