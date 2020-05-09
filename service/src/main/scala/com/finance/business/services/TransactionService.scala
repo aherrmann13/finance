@@ -16,11 +16,11 @@ class TransactionService[F[_]: Monad](
     for {
       _ <- validator idIsNone model
       _ <- validator descriptionIsValid model
-      _ <- validator sourceIdExists model
       _ <- validator accountIdExists model
       _ <- validator amountDescAreValid model
       _ <- validator categoryIdsExist model
       _ <- validator paybackIdsExists model
+      _ <- validator sourceIdsExists model
       _ <- validator reportingDateWithinCategoryTime model
       saved <- EitherT.liftF(repository create model)
     } yield saved
@@ -29,11 +29,11 @@ class TransactionService[F[_]: Monad](
     for {
       _ <- validator exists model
       _ <- validator descriptionIsValid model
-      _ <- validator sourceIdExists model
       _ <- validator accountIdExists model
       _ <- validator amountDescAreValid model
       _ <- validator categoryIdsExist model
       _ <- validator paybackIdsExists model
+      _ <- validator sourceIdsExists model
       _ <- validator reportingDateWithinCategoryTime model
       saved <- EitherT.liftF(repository update model)
     } yield saved

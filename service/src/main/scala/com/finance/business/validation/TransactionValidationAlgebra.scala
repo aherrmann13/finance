@@ -11,15 +11,15 @@ trait TransactionValidationAlgebra[F[_]] {
 
   def descriptionIsValid(transaction: Transaction): EitherT[F, DescriptionTooLong, Unit]
 
-  def sourceIdExists(transaction: Transaction): EitherT[F, DoesNotExist, Unit]
-
   def accountIdExists(transaction: Transaction): EitherT[F, DoesNotExist, Unit]
 
   def amountDescAreValid(transaction: Transaction): EitherT[F, DescriptionTooLong, Unit]
 
   def categoryIdsExist(transaction: Transaction): EitherT[F, DoesNotExist, Unit]
 
-  def reportingDateWithinCategoryTime(transaction: Transaction): EitherT[F, DateNotInEffectiveTime, Unit]
-
   def paybackIdsExists(transaction: Transaction): EitherT[F, DoesNotExist, Unit]
+
+  def sourceIdsExists(transaction: Transaction): EitherT[F, DoesNotExist, Unit]
+
+  def reportingDateWithinCategoryTime(transaction: Transaction): EitherT[F, DateNotInEffectiveTime, Unit]
 }

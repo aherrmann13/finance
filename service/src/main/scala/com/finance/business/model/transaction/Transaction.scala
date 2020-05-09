@@ -8,7 +8,6 @@ case class Transaction(
     id: Option[Id],
     description: Description,
     transactionDate: DateTime,
-    sourceId: Id,
     accountId: Id,
     amounts: Seq[Amount]
 ) extends Model

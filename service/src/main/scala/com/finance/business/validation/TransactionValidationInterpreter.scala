@@ -44,9 +44,6 @@ class TransactionValidationInterpreter[F[_] : Monad](
   override def descriptionIsValid(transaction: Transaction): EitherT[F, DescriptionTooLong, Unit] =
     PropertyValidator.descriptionIsValid(transaction)
 
-  override def sourceIdExists(transaction: Transaction): EitherT[F, DoesNotExist, Unit] =
-    PropertyValidator.exists(transaction.sourceId, sourceRepository.get)
-
   override def accountIdExists(transaction: Transaction): EitherT[F, DoesNotExist, Unit] =
     PropertyValidator.exists(transaction.accountId, accountRepository.get)
 
@@ -55,16 +52,27 @@ class TransactionValidationInterpreter[F[_] : Monad](
 
   override def categoryIdsExist(transaction: Transaction): EitherT[F, DoesNotExist, Unit] =
     transaction.amounts.toList.flatMap {
-      case CategoryAmount(categoryId, _, _, _) => Some(categoryId)
+      case CategoryAmount(categoryId, _, _, _, _) => Some(categoryId)
       case _ => None
     }.traverse { x =>
       PropertyValidator.exists(x, categoryRepository.get)
     }.map(_ => ())
 
+  override def paybackIdsExists(transaction: Transaction): EitherT[F, DoesNotExist, Unit] =
+    transaction.amounts.toList.flatMap {
+      case PaybackAmount(paybackId, _, _, _, _) => Some(paybackId)
+      case _ => None
+    }.traverse { x =>
+      PropertyValidator.exists(x, paybackRepository.get)
+    }.map(_ => ())
+
+  override def sourceIdsExists(transaction: Transaction): EitherT[F, DoesNotExist, Unit] =
+    transaction.amounts.toList.traverse(a => PropertyValidator.exists(a.sourceId, sourceRepository.get)).map(_ => ())
+
   // TODO: clean this up
   override def reportingDateWithinCategoryTime(transaction: Transaction): EitherT[F, DateNotInEffectiveTime, Unit] =
     transaction.amounts.toList.traverse {
-      case CategoryAmount(categoryId, _, _, date) =>
+      case CategoryAmount(categoryId, _, _, _, date) =>
         EitherT {
           categoryRepository.get(categoryId) flatMap {
             case Some(x) if x.effectiveTime.isInstanceOf[Always.type] => Either.right[DateNotInEffectiveTime, Unit](()).pure[F]
@@ -76,13 +84,5 @@ class TransactionValidationInterpreter[F[_] : Monad](
           }
         }
       case _ => EitherT.rightT[F, DateNotInEffectiveTime](())
-    }.map(_ => ())
-
-  override def paybackIdsExists(transaction: Transaction): EitherT[F, DoesNotExist, Unit] =
-    transaction.amounts.toList.flatMap {
-      case PaybackAmount(paybackId, _, _, _) => Some(paybackId)
-      case _ => None
-    }.traverse { x =>
-        PropertyValidator.exists(x, paybackRepository.get)
     }.map(_ => ())
 }
