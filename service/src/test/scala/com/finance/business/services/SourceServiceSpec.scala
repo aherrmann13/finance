@@ -1,8 +1,8 @@
 package com.finance.business.services
 
 import cats.data.EitherT
-import cats.{Id => IdMonad}
 import cats.implicits._
+import cats.{Id => IdMonad}
 import com.finance.business.model.source.Source
 import com.finance.business.model.types.{Description, Id, ModelName, Name}
 import com.finance.business.repository.SourceRepository
@@ -21,87 +21,89 @@ class SourceServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
   private val sourceId = Id(5)
   private val source = Source(Some(sourceId), Name("Name"), Description("Description"))
 
-  "create" - {
-    "returns Left(IdMustBeNone) from validation algebra idIsNone" in {
-      val returnVal = EitherT.leftT[IdMonad, Unit](IdMustBeNone(ModelName("Source")))
-      (mockValidationAlgebra idIsNone _) when source returns returnVal
-      (mockRepository create _) expects source never
+  "SourceService" - {
+    "create" - {
+      "returns Left(IdMustBeNone) from validation algebra idIsNone" in {
+        val returnVal = EitherT.leftT[IdMonad, Unit](IdMustBeNone(ModelName("Source")))
+        (mockValidationAlgebra idIsNone _) when source returns returnVal
+        (mockRepository create _) expects source never
 
-      service.create(source) shouldEqual returnVal
+        service.create(source) shouldEqual returnVal
+      }
+      "returns Left(NameTooLong) from validation algebra nameIsValid" in {
+        val returnVal = EitherT.leftT[IdMonad, Unit](NameTooLong(ModelName("Source"), Name("Name")))
+        (mockValidationAlgebra idIsNone _) when source returns EitherT.rightT[IdMonad, IdMustBeNone](())
+        (mockValidationAlgebra nameIsValid _) when source returns returnVal
+        (mockRepository create _) expects source never
+
+        service.create(source) shouldEqual returnVal
+      }
+      "returns Left(DescriptionTooLong) from validation algebra descriptionIsValid" in {
+        val returnVal = EitherT.leftT[IdMonad, Unit](DescriptionTooLong(ModelName("Source"), Description("Desc")))
+        (mockValidationAlgebra idIsNone _) when source returns EitherT.rightT[IdMonad, IdMustBeNone](())
+        (mockValidationAlgebra nameIsValid _) when source returns EitherT.rightT[IdMonad, NameTooLong](())
+        (mockValidationAlgebra descriptionIsValid _) when source returns returnVal
+        (mockRepository create _) expects source never
+
+        service.create(source) shouldEqual returnVal
+      }
+      "returns Right(()) and saves model when validation passes" in {
+        (mockValidationAlgebra idIsNone _) when source returns EitherT.rightT[IdMonad, IdMustBeNone](())
+        (mockValidationAlgebra nameIsValid _) when source returns EitherT.rightT[IdMonad, NameTooLong](())
+        (mockValidationAlgebra descriptionIsValid _) when source returns EitherT.rightT[IdMonad, DescriptionTooLong](())
+        (mockRepository create _) expects source returns source.pure[IdMonad]
+
+        service.create(source) shouldEqual EitherT.rightT[IdMonad, ValidationError](source)
+      }
     }
-    "returns Left(NameTooLong) from validation algebra nameIsValid" in {
-      val returnVal = EitherT.leftT[IdMonad, Unit](NameTooLong(ModelName("Source"), Name("Name")))
-      (mockValidationAlgebra idIsNone _) when source returns EitherT.rightT[IdMonad, IdMustBeNone](())
-      (mockValidationAlgebra nameIsValid _) when source returns returnVal
-      (mockRepository create _) expects source never
+    "update" - {
+      "returns Left(DoesNotExist) from validation algebra exists" in {
+        val returnVal = EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Source")))
+        (mockValidationAlgebra exists _) when source returns returnVal
+        (mockRepository update _) expects source never
 
-      service.create(source) shouldEqual returnVal
+        service.update(source) shouldEqual returnVal
+      }
+      "returns Left(NameTooLong) from validation algebra nameIsValid" in {
+        val returnVal = EitherT.leftT[IdMonad, Unit](NameTooLong(ModelName("Source"), Name("Name")))
+        (mockValidationAlgebra exists _) when source returns EitherT.rightT[IdMonad, DoesNotExist](())
+        (mockValidationAlgebra nameIsValid _) when source returns returnVal
+        (mockRepository update _) expects source never
+
+        service.update(source) shouldEqual returnVal
+      }
+      "returns Left(DescriptionTooLong) from validation algebra descriptionIsValid" in {
+        val returnVal = EitherT.leftT[IdMonad, Unit](DescriptionTooLong(ModelName("Source"), Description("Desc")))
+        (mockValidationAlgebra exists _) when source returns EitherT.rightT[IdMonad, DoesNotExist](())
+        (mockValidationAlgebra nameIsValid _) when source returns EitherT.rightT[IdMonad, NameTooLong](())
+        (mockValidationAlgebra descriptionIsValid _) when source returns returnVal
+        (mockRepository update _) expects source never
+
+        service.update(source) shouldEqual returnVal
+      }
+      "returns Right(()) and updates model when validation passes" in {
+        (mockValidationAlgebra exists _) when source returns EitherT.rightT[IdMonad, DoesNotExist](())
+        (mockValidationAlgebra nameIsValid _) when source returns EitherT.rightT[IdMonad, NameTooLong](())
+        (mockValidationAlgebra descriptionIsValid _) when source returns EitherT.rightT[IdMonad, DescriptionTooLong](())
+        (mockRepository update _) expects source returns source.pure[IdMonad]
+
+        service.update(source) shouldEqual EitherT.rightT[IdMonad, ValidationError](source)
+      }
     }
-    "returns Left(DescriptionTooLong) from validation algebra descriptionIsValid" in {
-      val returnVal = EitherT.leftT[IdMonad, Unit](DescriptionTooLong(ModelName("Source"), Description("Desc")))
-      (mockValidationAlgebra idIsNone _) when source returns EitherT.rightT[IdMonad, IdMustBeNone](())
-      (mockValidationAlgebra nameIsValid _) when source returns EitherT.rightT[IdMonad, NameTooLong](())
-      (mockValidationAlgebra descriptionIsValid _) when source returns returnVal
-      (mockRepository create _) expects source never
+    "delete" - {
+      "returns Left(HasTransactions) from validation algebra hasNoTransactions" in {
+        val returnVal = EitherT.leftT[IdMonad, Unit](HasTransactions(ModelName("Source")))
+        (mockValidationAlgebra hasNoTransactions _) when sourceId returns returnVal
+        (mockRepository delete _) expects sourceId never
 
-      service.create(source) shouldEqual returnVal
-    }
-    "returns Right(()) and saves model when validation passes" in {
-      (mockValidationAlgebra idIsNone _) when source returns EitherT.rightT[IdMonad, IdMustBeNone](())
-      (mockValidationAlgebra nameIsValid _) when source returns EitherT.rightT[IdMonad, NameTooLong](())
-      (mockValidationAlgebra descriptionIsValid _) when source returns EitherT.rightT[IdMonad, DescriptionTooLong](())
-      (mockRepository create _) expects source returns source.pure[IdMonad]
+        service.delete(sourceId) shouldEqual returnVal
+      }
+      "returns Right(()) and deletes when validation passes" in {
+        (mockValidationAlgebra hasNoTransactions _) when sourceId returns EitherT.rightT[IdMonad, HasTransactions](())
+        (mockRepository delete _) expects sourceId returns ().pure[IdMonad]
 
-      service.create(source) shouldEqual EitherT.rightT[IdMonad, ValidationError](source)
-    }
-  }
-  "update" - {
-    "returns Left(DoesNotExist) from validation algebra exists" in {
-      val returnVal = EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Source")))
-      (mockValidationAlgebra exists _) when source returns returnVal
-      (mockRepository update _) expects source never
-
-      service.update(source) shouldEqual returnVal
-    }
-    "returns Left(NameTooLong) from validation algebra nameIsValid" in {
-      val returnVal = EitherT.leftT[IdMonad, Unit](NameTooLong(ModelName("Source"), Name("Name")))
-      (mockValidationAlgebra exists _) when source returns EitherT.rightT[IdMonad, DoesNotExist](())
-      (mockValidationAlgebra nameIsValid _) when source returns returnVal
-      (mockRepository update _) expects source never
-
-      service.update(source) shouldEqual returnVal
-    }
-    "returns Left(DescriptionTooLong) from validation algebra descriptionIsValid" in {
-      val returnVal = EitherT.leftT[IdMonad, Unit](DescriptionTooLong(ModelName("Source"), Description("Desc")))
-      (mockValidationAlgebra exists _) when source returns EitherT.rightT[IdMonad, DoesNotExist](())
-      (mockValidationAlgebra nameIsValid _) when source returns EitherT.rightT[IdMonad, NameTooLong](())
-      (mockValidationAlgebra descriptionIsValid _) when source returns returnVal
-      (mockRepository update _) expects source never
-
-      service.update(source) shouldEqual returnVal
-    }
-    "returns Right(()) and updates model when validation passes" in {
-      (mockValidationAlgebra exists _) when source returns EitherT.rightT[IdMonad, DoesNotExist](())
-      (mockValidationAlgebra nameIsValid _) when source returns EitherT.rightT[IdMonad, NameTooLong](())
-      (mockValidationAlgebra descriptionIsValid _) when source returns EitherT.rightT[IdMonad, DescriptionTooLong](())
-      (mockRepository update _) expects source returns source.pure[IdMonad]
-
-      service.update(source) shouldEqual EitherT.rightT[IdMonad, ValidationError](source)
-    }
-  }
-  "delete" - {
-    "returns Left(HasTransactions) from validation algebra hasNoTransactions" in {
-      val returnVal = EitherT.leftT[IdMonad, Unit](HasTransactions(ModelName("Source")))
-      (mockValidationAlgebra hasNoTransactions _) when sourceId returns returnVal
-      (mockRepository delete _) expects sourceId never
-
-      service.delete(sourceId) shouldEqual returnVal
-    }
-    "returns Right(()) and deletes when validation passes" in {
-      (mockValidationAlgebra hasNoTransactions _) when sourceId returns EitherT.rightT[IdMonad, HasTransactions](())
-      (mockRepository delete _) expects sourceId returns ().pure[IdMonad]
-
-      service.delete(sourceId) shouldEqual EitherT.rightT[IdMonad, ValidationError](())
+        service.delete(sourceId) shouldEqual EitherT.rightT[IdMonad, ValidationError](())
+      }
     }
   }
 }
