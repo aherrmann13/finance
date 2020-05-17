@@ -1,157 +1,52 @@
 package com.finance.business.operations
 
-import com.finance.business.model.category.{Always, Collection, Range, Single}
-import com.finance.business.model.types.Id
+import com.finance.business.model.types.DateRange
 import com.finance.business.operations.CategoryOps._
+import com.github.nscala_time.time.Imports._
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
 
 class CategoryOpsSpec extends AnyFreeSpec with Matchers {
 
   "EffectiveTimeOperations" - {
+    val range = DateRange(DateTime.lastWeek, DateTime.nextWeek)
     "within" - {
-      "when anotherTime is Always " - {
-        "and time is Always" - {
-          "should return true" in {
-            Always within Always shouldBe true
-          }
-        }
-        "and time is Collection" - {
-          "should return true" in {
-            Collection(Seq(1, 2, 3)) within Always shouldBe true
-          }
-        }
-        "and time is Range" - {
-          "should return true" in {
-            Range(1, 2) within Always shouldBe true
-          }
-        }
-        "and time is Single" - {
-          "should return true" in {
-            Single(1) within Always shouldBe true
-          }
-        }
+      "returns false when range not within any range in list" in {
+        range within Seq(
+          DateRange(DateTime.lastYear, DateTime.lastMonth),
+          DateRange(DateTime.lastMonth, DateTime.now)
+        ) shouldBe false
       }
-      "when anotherTime is Collection " - {
-        "and time is Always" - {
-          "should return false" in {
-            Always within Collection(Seq(1, 2, 3)) shouldBe false
-          }
-        }
-        "and time is Collection" - {
-          "with all elements in anothertime should return true" in {
-            Collection(Seq(2, 3)) within Collection(Seq(1, 2, 3, 4)) shouldBe true
-          }
-          "with any element not in anothertime should return false" in {
-            Collection(Seq(1, 2, 3)) within Collection(Seq(2, 3, 4)) shouldBe false
-          }
-        }
-        "and time is Range" - {
-          "inside collection should return true" in {
-            Range(1, 4) within Collection(Seq(1, 2, 3, 4)) shouldBe true
-          }
-          "with elements not in collection should return false" in {
-            Range(1, 3) within Collection(Seq(1, 3)) shouldBe false
-          }
-        }
-        "and time is Single" - {
-          "in collection should return true" in {
-            Single(1) within Collection(Seq(1, 3)) shouldBe true
-          }
-          "outside collection should return false" in {
-            Single(5) within Collection(Seq(1, 3)) shouldBe false
-          }
-        }
+      "returns true when range equal to another range in list" in {
+        range within Seq(
+          DateRange(DateTime.lastYear, DateTime.lastMonth),
+          DateRange(DateTime.lastMonth, DateTime.now),
+          range
+        ) shouldBe true
       }
-      "when anotherTime is Range" - {
-        "and time is Always" - {
-          "should return false" in {
-            Always within Range(4, 8) shouldBe false
-          }
-        }
-        "and time is Collection" - {
-          "with all elements within Range should return true" in {
-            Collection(Seq(4, 6, 8)) within Range(4, 8) shouldBe true
-          }
-          "with any element outside Range should return false" in {
-            Collection(Seq(4, 6, 9)) within Range(4, 8) shouldBe false
-          }
-        }
-        "and time is Range" - {
-          "that is identical should return true" in {
-            Range(4, 8) within Range(4, 8) shouldBe true
-          }
-          "inside another time should return true" in {
-            Range(5, 7) within Range(4, 8) shouldBe true
-          }
-          "outside another time should return false" in {
-            Range(3, 9) within Range(4, 8) shouldBe false
-          }
-        }
-        "and time is Single" - {
-          "inside Range should return true" in {
-            Single(5) within Range(4, 8) shouldBe true
-          }
-          "on edge should return true" in {
-            Single(5) within Range(4, 8) shouldBe true
-          }
-          "outside of Range should return false" in {
-            Single(2) within Range(4, 8) shouldBe false
-          }
-        }
-      }
-      "when anotherTime is Single" - {
-        "and time is Always" - {
-          "should return false" in {
-            Always within Single(5) shouldBe false
-          }
-        }
-        "and time is Collection" - {
-          "with single element in Single should return true" in {
-            Collection(Seq(5)) within Single(5) shouldBe true
-          }
-          "with single element not in Single should return false" in {
-            Collection(Seq(6)) within Single(5) shouldBe false
-          }
-          "with multiple elements in Single should return true" in {
-            Collection(Seq(5, 6)) within Single(5) shouldBe false
-          }
-        }
-        "and time is Range" - {
-          "of one period equal to single should return true" in {
-            Range(5, 5) within Single(5) shouldBe true
-          }
-          "of one period not equal to single should return false" in {
-            Range(5, 6) within Single(5) shouldBe false
-          }
-          "should return false" in {
-            Range(5, 7) within Single(5) shouldBe false
-          }
-        }
-        "and time is Single" - {
-          "with different id should return false" in {
-            Single(9) within Single(5) shouldBe false
-          }
-          "with same id should return true" in {
-            Single(5) within Single(5) shouldBe true
-          }
-        }
+      "returns true when range within to another range in list" in {
+        range within Seq(
+          DateRange(DateTime.lastYear, DateTime.lastMonth),
+          DateRange(DateTime.lastMonth, DateTime.now),
+          DateRange(DateTime.lastMonth, DateTime.nextMonth)
+        ) shouldBe true
       }
     }
-    "ids" - {
-      "return empty seq on Always" in {
-        Always.ids shouldEqual Seq.empty
+    "contains" - {
+      "returns false when time is after range" in {
+        range contains range.end.plusDays(1) shouldBe false
       }
-      "return all elements in Collection" in {
-        val ids = Seq(1, 4, 6, 8, 23, 12)
-        Collection(ids).ids shouldEqual ids.map { Id(_) }
+      "returns false when time is before range" in {
+        range contains range.start.minusDays(1) shouldBe false
       }
-      "return elements in Range" in {
-        Range(1, 7).ids shouldEqual Seq(1, 2, 3, 4, 5, 6, 7).map { Id(_) }
+      "returns true when time is equal to range upper bound" in {
+        range contains range.end shouldBe true
       }
-      "return single element in Single" in {
-        val id = 7
-        Single(id).ids shouldEqual Seq(Id(id))
+      "returns true when time is equal to range lower bound" in {
+        range contains range.start shouldBe true
+      }
+      "returns true when time is within range" in {
+        range contains DateTime.now shouldBe true
       }
     }
   }

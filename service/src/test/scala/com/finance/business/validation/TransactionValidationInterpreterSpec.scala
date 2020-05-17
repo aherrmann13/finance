@@ -1,16 +1,14 @@
 package com.finance.business.validation
 
 import cats.data.EitherT
-import cats.{Id => IdMonad}
 import cats.implicits._
+import cats.{Id => IdMonad}
 import com.finance.business.model.account.{Account, Bank}
-import com.finance.business.model.category.{Always, Category, Collection}
+import com.finance.business.model.category.{Budget, Category}
 import com.finance.business.model.payback.Payback
 import com.finance.business.model.source.Source
-import com.finance.business.model.timeperiod.TimePeriodRange
 import com.finance.business.model.transaction.{CategoryAmount, PaybackAmount, Transaction}
-import com.finance.business.model.types.{Description, Id, ModelName, Name, Usd}
-import com.finance.business.operations.CategoryOps._
+import com.finance.business.model.types._
 import com.finance.business.repository._
 import com.finance.business.validation.errors.{DateNotInEffectiveTime, DescriptionTooLong, DoesNotExist, IdMustBeNone}
 import com.github.nscala_time.time.Imports._
@@ -25,15 +23,13 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
   private val mockAccountRepository = stub[AccountRepository[IdMonad]]
   private val mockCategoryRepository = stub[CategoryRepository[IdMonad]]
   private val mockPaybackRepository = stub[PaybackRepository[IdMonad]]
-  private val mockTimePeriodRepository = stub[TimePeriodRepository[IdMonad]]
 
   private val transactionValidationInterpreter = new TransactionValidationInterpreter[IdMonad](
     mockTransactionRepository,
     mockSourceRepository,
     mockAccountRepository,
     mockCategoryRepository,
-    mockPaybackRepository,
-    mockTimePeriodRepository
+    mockPaybackRepository
   )
 
   private val transactionName = ModelName("Transaction")
@@ -159,7 +155,7 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
         CategoryAmount(categoryId1, Id(5), Usd(1.6), Description("amountDesc2"), DateTime.now)
       )
 
-      val category = Category(Some(Id(1)), None, Name("name"), Description("desc"), Always, Seq.empty)
+      val category = Category(Some(Id(1)), None, Name("name"), Description("desc"), Seq.empty, Seq.empty)
 
       (mockCategoryRepository get _).when(categoryId0).returns(Some(category).pure[IdMonad])
       (mockCategoryRepository get _).when(categoryId1).returns(Some(category).pure[IdMonad])
@@ -232,25 +228,34 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
         EitherT.rightT[IdMonad, DoesNotExist](()).value
     }
   }
-  "reportingDateWithinCategoryTime" - {
-    val category = Category(Some(Id(1)), None, Name("name"), Description("desc"), Collection(Seq(1, 3)), Seq.empty)
+  "reportingDateWithinBudgetTime" - {
+    val category = Category(
+      Some(Id(1)),
+      None,
+      Name("name"),
+      Description("desc"),
+      Seq.empty,
+      Seq(
+        Budget(Seq(DateRange(DateTime.lastMonth, DateTime.now)), Usd(13)),
+        Budget(Seq(DateRange(DateTime.now, DateTime.nextMonth)), Usd(13))
+      )
+    )
 
     "should return Left(DateNotInEffectiveTime) for first reporting date not in category time" in {
-      val catAmount = CategoryAmount(Id(7), Id(8), Usd(1.6), Description("amountDesc1"), DateTime.lastYear())
-      val timePeriod0 = TimePeriodRange(Some(category.effectiveTime.ids.head), DateTime.lastMonth, DateTime.now)
-      val timePeriod1 = TimePeriodRange(Some(category.effectiveTime.ids(1)), DateTime.now, DateTime.nextMonth)
-      (mockTimePeriodRepository getMany _).when(category.effectiveTime.ids).returns(Seq(timePeriod0, timePeriod1))
-      (mockCategoryRepository get _).when(catAmount.categoryId).returns(Some(category).pure[IdMonad])
+      val badAmount = CategoryAmount(Id(7), Id(8), Usd(1.6), Description("amountDesc"), DateTime.lastYear)
+      (mockCategoryRepository get _).when(badAmount.categoryId).returns(Some(category).pure[IdMonad])
 
       val amounts = Seq(
-        PaybackAmount(Id(6), Id(5), Usd(14.6), Description("amountDesc0"), DateTime.now),
-        catAmount.copy(reportingDate = DateTime.now),
-        catAmount
+        PaybackAmount(Id(6), Id(5), Usd(14.6), Description("amountDesc"), DateTime.now),
+        CategoryAmount(badAmount.categoryId, Id(8), Usd(1.6), Description("amountDesc"), DateTime.now),
+        badAmount
       )
 
-      transactionValidationInterpreter
-        .reportingDateWithinCategoryTime(fakeTransactionWithId.copy(amounts = amounts)).value shouldEqual
-        EitherT.leftT[IdMonad, Unit](DateNotInEffectiveTime(catAmount.reportingDate, category.effectiveTime)).value
+      transactionValidationInterpreter.reportingDateWithinBudgetTime(
+        fakeTransactionWithId.copy(amounts = amounts)
+      ).value shouldEqual EitherT.leftT[IdMonad, Unit](
+          DateNotInEffectiveTime(badAmount.reportingDate, category.budget.flatMap(_.effectiveTime))
+      ).value
     }
     "should return Right(()) for PaybackAmount" in {
       val amounts = Seq(
@@ -260,24 +265,24 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
       )
 
       transactionValidationInterpreter
-        .reportingDateWithinCategoryTime(fakeTransactionWithId.copy(amounts = amounts)).value shouldEqual
+        .reportingDateWithinBudgetTime(fakeTransactionWithId.copy(amounts = amounts)).value shouldEqual
         EitherT.rightT[IdMonad, DateNotInEffectiveTime](()).value
     }
     "should return Right(()) for CategoryAmount with category effectiveTime Always" in {
       val amounts = Seq(
-        CategoryAmount(Id(6), Id(5), Usd(14.6), Description("amountDesc0"), DateTime.lastYear),
+        CategoryAmount(Id(6), Id(5), Usd(14.6), Description("amountDesc0"), DateTime.lastWeek),
         CategoryAmount(Id(7), Id(5), Usd(14.6), Description("amountDesc0"), DateTime.now),
-        CategoryAmount(Id(8), Id(5), Usd(14.6), Description("amountDesc0"), DateTime.nextYear)
+        CategoryAmount(Id(8), Id(5), Usd(14.6), Description("amountDesc0"), DateTime.nextWeek)
       )
 
       amounts.foreach { amount =>
         (mockCategoryRepository get _)
           .when(amount.categoryId)
-          .returns(Some(category.copy(effectiveTime = Always)).pure[IdMonad])
+          .returns(Some(category).pure[IdMonad])
       }
 
       transactionValidationInterpreter
-        .reportingDateWithinCategoryTime(fakeTransactionWithId.copy(amounts = amounts)).value shouldEqual
+        .reportingDateWithinBudgetTime(fakeTransactionWithId.copy(amounts = amounts)).value shouldEqual
         EitherT.rightT[IdMonad, DateNotInEffectiveTime](()).value
     }
     "should return Right(()) for CategoryAmount with non existent category id" in {
@@ -290,29 +295,29 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
       amounts.foreach { amount => (mockCategoryRepository get _).when(amount.categoryId).returns(None.pure[IdMonad]) }
 
       transactionValidationInterpreter
-        .reportingDateWithinCategoryTime(fakeTransactionWithId.copy(amounts = amounts)).value shouldEqual
+        .reportingDateWithinBudgetTime(fakeTransactionWithId.copy(amounts = amounts)).value shouldEqual
         EitherT.rightT[IdMonad, DateNotInEffectiveTime](()).value
     }
     "should return Right(()) for CategoryAmount with reportingDate within category effectiveTime" in {
       val catAmount = CategoryAmount(Id(7), Id(5), Usd(1.6), Description("amountDesc1"), DateTime.lastWeek)
-      val timePeriod0 = TimePeriodRange(Some(category.effectiveTime.ids.head), DateTime.lastMonth, DateTime.now)
-      val timePeriod1 = TimePeriodRange(Some(category.effectiveTime.ids(1)), DateTime.now, DateTime.nextMonth)
-      (mockTimePeriodRepository getMany _).when(category.effectiveTime.ids).returns(Seq(timePeriod0, timePeriod1))
       (mockCategoryRepository get _).when(catAmount.categoryId).returns(Some(category).pure[IdMonad])
 
       transactionValidationInterpreter
-        .reportingDateWithinCategoryTime(fakeTransactionWithId.copy(amounts = Seq(catAmount))).value shouldEqual
+        .reportingDateWithinBudgetTime(fakeTransactionWithId.copy(amounts = Seq(catAmount))).value shouldEqual
         EitherT.rightT[IdMonad, DateNotInEffectiveTime](()).value
     }
     "should return Right(()) for CategoryAmount with reportingDate on edge of category effectiveTime" in {
-      val catAmount = CategoryAmount(Id(7), Id(5), Usd(1.6), Description("amountDesc1"), DateTime.lastWeek)
-      val timePeriod0 = TimePeriodRange(Some(category.effectiveTime.ids.head), catAmount.reportingDate, DateTime.now)
-      val timePeriod1 = TimePeriodRange(Some(category.effectiveTime.ids(1)), DateTime.now, DateTime.nextMonth)
-      (mockTimePeriodRepository getMany _).when(category.effectiveTime.ids).returns(Seq(timePeriod0, timePeriod1))
+      val catAmount = CategoryAmount(
+        Id(7),
+        Id(5),
+        Usd(1.6),
+        Description("amountDesc1"),
+        category.budget.head.effectiveTime.head.start
+      )
       (mockCategoryRepository get _).when(catAmount.categoryId).returns(Some(category).pure[IdMonad])
 
       transactionValidationInterpreter
-        .reportingDateWithinCategoryTime(fakeTransactionWithId.copy(amounts = Seq(catAmount))).value shouldEqual
+        .reportingDateWithinBudgetTime(fakeTransactionWithId.copy(amounts = Seq(catAmount))).value shouldEqual
         EitherT.rightT[IdMonad, DateNotInEffectiveTime](()).value
     }
   }

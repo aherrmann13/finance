@@ -3,7 +3,7 @@ package com.finance.business.services
 import cats.data.EitherT
 import cats.{Id => IdMonad}
 import cats.implicits._
-import com.finance.business.model.category.{Always, Category}
+import com.finance.business.model.category.Category
 import com.finance.business.model.types.{Description, Id, ModelName, Name}
 import com.finance.business.repository.CategoryRepository
 import com.finance.business.validation.CategoryValidationAlgebra
@@ -19,7 +19,7 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
   private val service = new CategoryService(mockValidationAlgebra, mockRepository)
 
   private val categoryId = Id(5)
-  private val category = Category(Some(categoryId), None, Name("Name"), Description("Description"), Always, Seq.empty)
+  private val category = Category(Some(categoryId), None, Name("Name"), Description("Description"), Seq.empty, Seq.empty)
 
   "create" - {
     "returns Left(IdMustBeNone) from validation algebra idIsNone" in {
@@ -37,8 +37,8 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
       service.create(category) shouldEqual returnVal
     }
-    "returns Left(CategoryNotWithinParentTimePeriod) from validation algebra withinParentTimePeriod" in {
-      val returnVal = EitherT.leftT[IdMonad, Unit](CategoryNotWithinParentTimePeriod(Always, Always))
+    "returns Left(CategoryEffectiveTimeNotWithinParent) from validation algebra withinParentTimePeriod" in {
+      val returnVal = EitherT.leftT[IdMonad, Unit](CategoryEffectiveTimeNotWithinParent(Seq.empty, Seq.empty))
       (mockValidationAlgebra idIsNone _) when category returns EitherT.rightT[IdMonad, IdMustBeNone](())
       (mockValidationAlgebra parentExists _) when category returns EitherT.rightT[IdMonad, DoesNotExist](())
       (mockValidationAlgebra withinParentTimePeriod _) when category returns returnVal
@@ -51,7 +51,7 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       (mockValidationAlgebra idIsNone _) when category returns EitherT.rightT[IdMonad, IdMustBeNone](())
       (mockValidationAlgebra parentExists _) when category returns EitherT.rightT[IdMonad, DoesNotExist](())
       (mockValidationAlgebra withinParentTimePeriod _) when category returns
-        EitherT.rightT[IdMonad, CategoryNotWithinParentTimePeriod](())
+        EitherT.rightT[IdMonad, CategoryEffectiveTimeNotWithinParent](())
       (mockValidationAlgebra nameIsValid _) when category returns returnVal
       (mockRepository create _) expects category never
 
@@ -62,19 +62,19 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       (mockValidationAlgebra idIsNone _) when category returns EitherT.rightT[IdMonad, IdMustBeNone](())
       (mockValidationAlgebra parentExists _) when category returns EitherT.rightT[IdMonad, DoesNotExist](())
       (mockValidationAlgebra withinParentTimePeriod _) when category returns
-        EitherT.rightT[IdMonad, CategoryNotWithinParentTimePeriod](())
+        EitherT.rightT[IdMonad, CategoryEffectiveTimeNotWithinParent](())
       (mockValidationAlgebra nameIsValid _) when category returns EitherT.rightT[IdMonad, NameTooLong](())
       (mockValidationAlgebra descriptionIsValid _) when category returns returnVal
       (mockRepository create _) expects category never
 
       service.create(category) shouldEqual returnVal
     }
-    "returns Left(BudgetPeriodNotInEffectiveTime) from validation algebra budgetWithinCategoryTime" in {
-      val returnVal = EitherT.leftT[IdMonad, Unit](BudgetPeriodNotInEffectiveTime(Always, Always))
+    "returns Left(BudgetEffectiveTimeNotWithinCategory) from validation algebra budgetWithinCategoryTime" in {
+      val returnVal = EitherT.leftT[IdMonad, Unit](BudgetEffectiveTimeNotWithinCategory(Seq.empty, Seq.empty))
       (mockValidationAlgebra idIsNone _) when category returns EitherT.rightT[IdMonad, IdMustBeNone](())
       (mockValidationAlgebra parentExists _) when category returns EitherT.rightT[IdMonad, DoesNotExist](())
       (mockValidationAlgebra withinParentTimePeriod _) when category returns
-        EitherT.rightT[IdMonad, CategoryNotWithinParentTimePeriod](())
+        EitherT.rightT[IdMonad, CategoryEffectiveTimeNotWithinParent](())
       (mockValidationAlgebra nameIsValid _) when category returns EitherT.rightT[IdMonad, NameTooLong](())
       (mockValidationAlgebra descriptionIsValid _) when category returns
         EitherT.rightT[IdMonad, DescriptionTooLong](())
@@ -87,12 +87,12 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       (mockValidationAlgebra idIsNone _) when category returns EitherT.rightT[IdMonad, IdMustBeNone](())
       (mockValidationAlgebra parentExists _) when category returns EitherT.rightT[IdMonad, DoesNotExist](())
       (mockValidationAlgebra withinParentTimePeriod _) when category returns
-        EitherT.rightT[IdMonad, CategoryNotWithinParentTimePeriod](())
+        EitherT.rightT[IdMonad, CategoryEffectiveTimeNotWithinParent](())
       (mockValidationAlgebra nameIsValid _) when category returns EitherT.rightT[IdMonad, NameTooLong](())
       (mockValidationAlgebra descriptionIsValid _) when category returns
         EitherT.rightT[IdMonad, DescriptionTooLong](())
       (mockValidationAlgebra budgetWithinCategoryTime _) when category returns
-        EitherT.rightT[IdMonad, BudgetPeriodNotInEffectiveTime](())
+        EitherT.rightT[IdMonad, BudgetEffectiveTimeNotWithinCategory](())
       (mockRepository create _) expects category returns category.pure[IdMonad]
 
       service.create(category) shouldEqual EitherT.rightT[IdMonad, ValidationError](category)
@@ -114,8 +114,8 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
       service.update(category) shouldEqual returnVal
     }
-    "returns Left(CategoryNotWithinParentTimePeriod) from validation algebra withinParentTimePeriod" in {
-      val returnVal = EitherT.leftT[IdMonad, Unit](CategoryNotWithinParentTimePeriod(Always, Always))
+    "returns Left(CategoryEffectiveTimeNotWithinParent) from validation algebra withinParentTimePeriod" in {
+      val returnVal = EitherT.leftT[IdMonad, Unit](CategoryEffectiveTimeNotWithinParent(Seq.empty, Seq.empty))
       (mockValidationAlgebra exists _) when category returns EitherT.rightT[IdMonad, DoesNotExist](())
       (mockValidationAlgebra parentExists _) when category returns EitherT.rightT[IdMonad, DoesNotExist](())
       (mockValidationAlgebra withinParentTimePeriod _) when category returns returnVal
@@ -128,7 +128,7 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       (mockValidationAlgebra exists _) when category returns EitherT.rightT[IdMonad, DoesNotExist](())
       (mockValidationAlgebra parentExists _) when category returns EitherT.rightT[IdMonad, DoesNotExist](())
       (mockValidationAlgebra withinParentTimePeriod _) when category returns
-        EitherT.rightT[IdMonad, CategoryNotWithinParentTimePeriod](())
+        EitherT.rightT[IdMonad, CategoryEffectiveTimeNotWithinParent](())
       (mockValidationAlgebra nameIsValid _) when category returns returnVal
       (mockRepository update _) expects category never
 
@@ -139,19 +139,19 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       (mockValidationAlgebra exists _) when category returns EitherT.rightT[IdMonad, DoesNotExist](())
       (mockValidationAlgebra parentExists _) when category returns EitherT.rightT[IdMonad, DoesNotExist](())
       (mockValidationAlgebra withinParentTimePeriod _) when category returns
-        EitherT.rightT[IdMonad, CategoryNotWithinParentTimePeriod](())
+        EitherT.rightT[IdMonad, CategoryEffectiveTimeNotWithinParent](())
       (mockValidationAlgebra nameIsValid _) when category returns EitherT.rightT[IdMonad, NameTooLong](())
       (mockValidationAlgebra descriptionIsValid _) when category returns returnVal
       (mockRepository update _) expects category never
 
       service.update(category) shouldEqual returnVal
     }
-    "returns Left(BudgetPeriodNotInEffectiveTime) from validation algebra budgetWithinCategoryTime" in {
-      val returnVal = EitherT.leftT[IdMonad, Unit](BudgetPeriodNotInEffectiveTime(Always, Always))
+    "returns Left(BudgetEffectiveTimeNotWithinCategory) from validation algebra budgetWithinCategoryTime" in {
+      val returnVal = EitherT.leftT[IdMonad, Unit](BudgetEffectiveTimeNotWithinCategory(Seq.empty, Seq.empty))
       (mockValidationAlgebra exists _) when category returns EitherT.rightT[IdMonad, DoesNotExist](())
       (mockValidationAlgebra parentExists _) when category returns EitherT.rightT[IdMonad, DoesNotExist](())
       (mockValidationAlgebra withinParentTimePeriod _) when category returns
-        EitherT.rightT[IdMonad, CategoryNotWithinParentTimePeriod](())
+        EitherT.rightT[IdMonad, CategoryEffectiveTimeNotWithinParent](())
       (mockValidationAlgebra nameIsValid _) when category returns EitherT.rightT[IdMonad, NameTooLong](())
       (mockValidationAlgebra descriptionIsValid _) when category returns
         EitherT.rightT[IdMonad, DescriptionTooLong](())
@@ -160,18 +160,18 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
       service.update(category) shouldEqual returnVal
     }
-    "returns Left(CategoryTransactionNotWithinEffectiveTime) from validation algebra transactionsWithinCategoryTime" in {
-      val returnVal = EitherT.leftT[IdMonad, Unit](CategoryTransactionNotWithinEffectiveTime(Always))
+    "returns Left(TransactionNotWithinBudgetEffectiveTime) from validation algebra transactionsWithinCategoryTime" in {
+      val returnVal = EitherT.leftT[IdMonad, Unit](TransactionNotWithinBudgetEffectiveTime(Seq.empty))
       (mockValidationAlgebra exists _) when category returns EitherT.rightT[IdMonad, DoesNotExist](())
       (mockValidationAlgebra parentExists _) when category returns EitherT.rightT[IdMonad, DoesNotExist](())
       (mockValidationAlgebra withinParentTimePeriod _) when category returns
-        EitherT.rightT[IdMonad, CategoryNotWithinParentTimePeriod](())
+        EitherT.rightT[IdMonad, CategoryEffectiveTimeNotWithinParent](())
       (mockValidationAlgebra nameIsValid _) when category returns EitherT.rightT[IdMonad, NameTooLong](())
       (mockValidationAlgebra descriptionIsValid _) when category returns
         EitherT.rightT[IdMonad, DescriptionTooLong](())
       (mockValidationAlgebra budgetWithinCategoryTime _) when category returns
-        EitherT.rightT[IdMonad, BudgetPeriodNotInEffectiveTime](())
-      (mockValidationAlgebra transactionsWithinCategoryTime _) when category returns returnVal
+        EitherT.rightT[IdMonad, BudgetEffectiveTimeNotWithinCategory](())
+      (mockValidationAlgebra transactionsWithinBudgetTime _) when category returns returnVal
       (mockRepository update _) expects category never
 
       service.update(category) shouldEqual returnVal
@@ -180,14 +180,14 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       (mockValidationAlgebra exists _) when category returns EitherT.rightT[IdMonad, DoesNotExist](())
       (mockValidationAlgebra parentExists _) when category returns EitherT.rightT[IdMonad, DoesNotExist](())
       (mockValidationAlgebra withinParentTimePeriod _) when category returns
-        EitherT.rightT[IdMonad, CategoryNotWithinParentTimePeriod](())
+        EitherT.rightT[IdMonad, CategoryEffectiveTimeNotWithinParent](())
       (mockValidationAlgebra nameIsValid _) when category returns EitherT.rightT[IdMonad, NameTooLong](())
       (mockValidationAlgebra descriptionIsValid _) when category returns
         EitherT.rightT[IdMonad, DescriptionTooLong](())
       (mockValidationAlgebra budgetWithinCategoryTime _) when category returns
-        EitherT.rightT[IdMonad, BudgetPeriodNotInEffectiveTime](())
-      (mockValidationAlgebra transactionsWithinCategoryTime _) when category returns
-        EitherT.rightT[IdMonad, CategoryTransactionNotWithinEffectiveTime](())
+        EitherT.rightT[IdMonad, BudgetEffectiveTimeNotWithinCategory](())
+      (mockValidationAlgebra transactionsWithinBudgetTime _) when category returns
+        EitherT.rightT[IdMonad, TransactionNotWithinBudgetEffectiveTime](())
       (mockRepository update _) expects category returns category.pure[IdMonad]
 
       service.update(category) shouldEqual EitherT.rightT[IdMonad, ValidationError](category)

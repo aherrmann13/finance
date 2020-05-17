@@ -8,6 +8,6 @@ case class Category(
     parentId: Option[Id],
     name: Name,
     description: Description,
-    effectiveTime: EffectiveTime,
+    effectiveTime: Seq[DateRange],
     budget: Seq[Budget]
 ) extends Model

@@ -1,6 +1,6 @@
 package com.finance.business.validation.errors
 
-import com.finance.business.model.category.EffectiveTime
+import com.finance.business.model.types.DateRange
 import com.github.nscala_time.time.Imports._
 
-case class DateNotInEffectiveTime(date: DateTime, time: EffectiveTime) extends ValidationError
+case class DateNotInEffectiveTime(date: DateTime, ranges: Seq[DateRange]) extends ValidationError

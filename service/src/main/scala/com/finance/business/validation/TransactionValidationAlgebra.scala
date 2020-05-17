@@ -21,5 +21,5 @@ trait TransactionValidationAlgebra[F[_]] {
 
   def sourceIdsExists(transaction: Transaction): EitherT[F, DoesNotExist, Unit]
 
-  def reportingDateWithinCategoryTime(transaction: Transaction): EitherT[F, DateNotInEffectiveTime, Unit]
+  def reportingDateWithinBudgetTime(transaction: Transaction): EitherT[F, DateNotInEffectiveTime, Unit]
 }

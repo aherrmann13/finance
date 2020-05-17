@@ -12,15 +12,15 @@ trait CategoryValidationAlgebra[F[_]] {
 
   def parentExists(category: Category): EitherT[F, DoesNotExist, Unit]
 
-  def withinParentTimePeriod(category: Category): EitherT[F, CategoryNotWithinParentTimePeriod, Unit]
+  def withinParentTimePeriod(category: Category): EitherT[F, CategoryEffectiveTimeNotWithinParent, Unit]
 
   def nameIsValid(category: Category): EitherT[F, NameTooLong, Unit]
 
   def descriptionIsValid(category: Category): EitherT[F, DescriptionTooLong, Unit]
 
-  def budgetWithinCategoryTime(category: Category): EitherT[F, BudgetPeriodNotInEffectiveTime, Unit]
+  def budgetWithinCategoryTime(category: Category): EitherT[F, BudgetEffectiveTimeNotWithinCategory, Unit]
 
-  def transactionsWithinCategoryTime(category: Category): EitherT[F, CategoryTransactionNotWithinEffectiveTime, Unit]
+  def transactionsWithinBudgetTime(category: Category): EitherT[F, TransactionNotWithinBudgetEffectiveTime, Unit]
 
   def hasNoTransactions(id: Id): EitherT[F, HasTransactions, Unit]
 }

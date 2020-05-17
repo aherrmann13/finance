@@ -1,40 +1,18 @@
 package com.finance.business.operations
 
-import com.finance.business.model.category.{Always, Collection, EffectiveTime, Range, Single}
-import com.finance.business.model.types.Id
+import com.finance.business.model.types.DateRange
+import com.github.nscala_time.time.Imports._
 
 object CategoryOps {
-  implicit class EffectiveTimeOperations(time: EffectiveTime) {
-    def within(anotherTime: EffectiveTime): Boolean =
-      anotherTime match {
-        case Always => true
-        case Collection(range) => {
-          time match {
-            case Always => false
-            case Collection(innerRange) => innerRange.forall(range.contains(_))
-            case Range(innerFrom, innerTo) => (innerFrom to innerTo).forall(range.contains(_))
-            case Single(innerPeriod) => range.contains(innerPeriod)
-          }
-        }
-        case Range(from, to) => time match {
-          case Always => false
-          case Collection(innerRange) => innerRange.min >= from && innerRange.max <= to
-          case Range(innerFrom, innerTo) => innerFrom >= from && to >= innerTo
-          case Single(innerPeriod) => innerPeriod >= from &&  innerPeriod <= to
-        }
-        case Single(period) => time match {
-          case Always => false
-          case Collection(range) => range == Seq(period)
-          case Range(innerFrom, innerTo) => innerFrom == period && innerTo == period
-          case Single(innerPeriod) => innerPeriod == period
-        }
+  implicit class DateRangeOperations(range: DateRange) {
+    def within(otherRanges: Seq[DateRange]): Boolean =
+      otherRanges.exists { otherRange =>
+        (otherRange.start.isBefore(range.start) || otherRange.start.isEqual(range.start)) &&
+          (otherRange.end.isAfter(range.end) || otherRange.end.isEqual(range.end))
       }
 
-    def ids: Seq[Id] = time match {
-      case Always => Seq.empty
-      case Collection(range) => range map { Id(_) }
-      case Range(from, to) => from to to map { Id(_) }
-      case Single(period) => Seq(Id(period))
-    }
+    def contains(time: DateTime): Boolean =
+      (range.start.isBefore(time) || range.start.isEqual(time)) &&
+        (range.end.isAfter(time) || range.end.isEqual(time))
   }
 }

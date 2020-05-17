@@ -21,7 +21,7 @@ class TransactionService[F[_]: Monad](
       _ <- validator categoryIdsExist model
       _ <- validator paybackIdsExists model
       _ <- validator sourceIdsExists model
-      _ <- validator reportingDateWithinCategoryTime model
+      _ <- validator reportingDateWithinBudgetTime model
       saved <- EitherT.liftF(repository create model)
     } yield saved
 
@@ -34,7 +34,7 @@ class TransactionService[F[_]: Monad](
       _ <- validator categoryIdsExist model
       _ <- validator paybackIdsExists model
       _ <- validator sourceIdsExists model
-      _ <- validator reportingDateWithinCategoryTime model
+      _ <- validator reportingDateWithinBudgetTime model
       saved <- EitherT.liftF(repository update model)
     } yield saved
 
