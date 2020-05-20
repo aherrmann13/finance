@@ -50,6 +50,36 @@ class CategoryOpsSpec extends AnyFreeSpec with Matchers {
           range contains DateTime.now shouldBe true
         }
       }
+      "overlaps" - {
+        "returns false when no overlap" in {
+          val r0 = DateRange(DateTime.lastYear, DateTime.lastMonth)
+          val r1 = DateRange(DateTime.nextMonth, DateTime.nextYear)
+
+          r0 overlaps r1 shouldBe false
+          r1 overlaps r0 shouldBe false
+        }
+        "returns true when matching edge" in {
+          val r0 = DateRange(DateTime.lastYear, DateTime.lastMonth)
+          val r1 = DateRange(r0.end, DateTime.nextYear)
+
+          r0 overlaps r1 shouldBe true
+          r1 overlaps r0 shouldBe true
+        }
+        "returns true when there is partial overlap" in {
+          val r0 = DateRange(DateTime.lastYear, DateTime.now)
+          val r1 = DateRange(DateTime.lastMonth, DateTime.nextYear)
+
+          r0 overlaps r1 shouldBe true
+          r1 overlaps r0 shouldBe true
+        }
+        "returns true when there is total overlap" in {
+          val r0 = DateRange(DateTime.lastYear, DateTime.nextYear)
+          val r1 = DateRange(DateTime.lastMonth, DateTime.nextMonth)
+
+          r0 overlaps r1 shouldBe true
+          r1 overlaps r0 shouldBe true
+        }
+      }
     }
   }
 }

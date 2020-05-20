@@ -2,17 +2,41 @@ package com.finance.business.services
 
 import cats.Monad
 import cats.data.EitherT
-import com.finance.business.model.category.Category
-import com.finance.business.model.types.Id
-import com.finance.business.repository.CategoryRepository
+import cats.implicits._
+import com.finance.business.model.category.{Category, CategoryAmountSpent}
+import com.finance.business.model.transaction.Transaction
+import com.finance.business.model.types.{DateRange, Id}
+import com.finance.business.operations.CategoryOps._
+import com.finance.business.operations.TransactionOps._
+import com.finance.business.repository.{CategoryRepository, TransactionRepository}
 import com.finance.business.validation.CategoryValidationAlgebra
 import com.finance.business.validation.errors.ValidationError
 
+object CategoryService {
+  private def widenRange(categories: Seq[Category], range: DateRange): Option[DateRange] = {
+    val ranges = overlappingDateRanges(categories, range)
+    if(ranges.isEmpty) None else Some(DateRange(ranges.map(_.start).min, ranges.map(_.end).max))
+  }
+  private def overlappingDateRanges(categories: Seq[Category], range: DateRange): Seq[DateRange] =
+    categories flatMap {
+      _.budget
+    } flatMap {
+      _.effectiveTime
+    } filter {
+      _ overlaps range
+    }
+
+}
+
 class CategoryService[F[_]: Monad](
     validator: CategoryValidationAlgebra[F],
-    repository: CategoryRepository[F]
+    repository: CategoryRepository[F],
+    transactionRepository: TransactionRepository[F]
 ) extends CommandService[F, Category]
     with QueryService[F, Category] {
+
+  import CategoryService._
+
   override def create(model: Category): EitherT[F, ValidationError, Category] =
     for {
       _ <- validator idIsNone model
@@ -47,4 +71,11 @@ class CategoryService[F[_]: Monad](
   override def getMany(ids: Seq[Id]): F[Seq[Category]] = repository.getMany(ids)
 
   override def getAll: F[Seq[Category]] = repository.getAll
+
+  def getAmountSpentInRange(range: DateRange): F[Seq[CategoryAmountSpent]] =
+    for {
+      categories <- getAll
+      wideRange = widenRange(categories, range)
+      transactions <- wideRange.map { transactionRepository.getInRange } getOrElse Seq.empty[Transaction].pure[F]
+    } yield transactions.categoryValues(range, categories)
 }

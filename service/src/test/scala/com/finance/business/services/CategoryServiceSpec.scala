@@ -3,11 +3,13 @@ package com.finance.business.services
 import cats.data.EitherT
 import cats.implicits._
 import cats.{Id => IdMonad}
-import com.finance.business.model.category.Category
-import com.finance.business.model.types.{Description, Id, ModelName, Name}
-import com.finance.business.repository.CategoryRepository
+import com.finance.business.model.category.{Budget, BudgetAmountSpent, Category, CategoryAmountSpent}
+import com.finance.business.model.transaction.{CategoryAmount, Transaction}
+import com.finance.business.model.types.{DateRange, Description, Id, ModelName, Name, Usd}
+import com.finance.business.repository.{CategoryRepository, TransactionRepository}
 import com.finance.business.validation.CategoryValidationAlgebra
 import com.finance.business.validation.errors._
+import com.github.nscala_time.time.Imports._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
@@ -15,8 +17,9 @@ import org.scalatest.matchers.should.Matchers
 class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
   private val mockValidationAlgebra = stub[CategoryValidationAlgebra[IdMonad]]
   private val mockRepository = mock[CategoryRepository[IdMonad]]
+  private val mockTransactionRepository = mock[TransactionRepository[IdMonad]]
 
-  private val service = new CategoryService(mockValidationAlgebra, mockRepository)
+  private val service = new CategoryService(mockValidationAlgebra, mockRepository, mockTransactionRepository)
 
   private val categoryId = Id(5)
   private val category = Category(Some(categoryId), None, Name("Name"), Description("Description"), Seq.empty, Seq.empty)
@@ -229,6 +232,97 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         (mockRepository.getAll _).expects().returns(Seq(category, category).pure[IdMonad])
 
         service.getAll shouldEqual Seq(category, category)
+      }
+    }
+    "getAmountSpentInRange" - {
+      "requests transactions with wider range than passed in" in {
+        val budget0 = Budget(
+          Seq(
+            DateRange(DateTime.parse("2020-01-01"), DateTime.parse("2020-01-31")),
+            DateRange(DateTime.parse("2020-03-01"), DateTime.parse("2020-03-31"))
+          ),
+          Usd(30)
+        )
+        val budget1 = Budget(
+          Seq(
+            DateRange(DateTime.parse("2020-02-01"), DateTime.parse("2020-02-28")),
+            DateRange(DateTime.parse("2020-04-01"), DateTime.parse("2020-04-30"))
+          ),
+          Usd(30)
+        )
+
+        (mockRepository.getAll _).expects().returns(Seq(category.copy(budget = Seq(budget0, budget1))).pure[IdMonad])
+
+        mockTransactionRepository.getInRange _ expects DateRange(
+          budget1.effectiveTime.head.start, budget0.effectiveTime(1).end
+        ) returns Seq.empty[Transaction].pure[IdMonad]
+
+        service.getAmountSpentInRange(
+          DateRange(DateTime.parse("2020-02-15"), DateTime.parse("2020-03-15"))
+        )
+      }
+      "does not requests transactions if no valid date range" in {
+        val budget0 = Budget(
+          Seq(
+            DateRange(DateTime.parse("2020-01-01"), DateTime.parse("2020-01-31")),
+            DateRange(DateTime.parse("2020-03-01"), DateTime.parse("2020-03-31"))
+          ),
+          Usd(30)
+        )
+        val budget1 = Budget(
+          Seq(
+            DateRange(DateTime.parse("2020-02-01"), DateTime.parse("2020-02-28")),
+            DateRange(DateTime.parse("2020-04-01"), DateTime.parse("2020-04-30"))
+          ),
+          Usd(30)
+        )
+
+        (mockRepository.getAll _).expects().returns(Seq(category.copy(budget = Seq(budget0, budget1))).pure[IdMonad])
+
+        mockTransactionRepository.getInRange _ expects * never
+
+        service.getAmountSpentInRange(
+          DateRange(DateTime.parse("2019-02-15"), DateTime.parse("2019-03-15"))
+        )
+      }
+      "returns all categories as category values with amount totals" in {
+        val budget0 = Budget(
+          Seq(
+            DateRange(DateTime.parse("2020-01-01"), DateTime.parse("2020-01-31"))
+          ),
+          Usd(30)
+        )
+        val budget1 = Budget(
+          Seq(
+            DateRange(DateTime.parse("2020-02-01"), DateTime.parse("2020-02-28"))
+          ),
+          Usd(30)
+        )
+
+        val cat = category.copy(budget = Seq(budget0, budget1))
+
+        (mockRepository.getAll _).expects().returns(Seq(cat).pure[IdMonad])
+
+        val amt0 = CategoryAmount(cat.id.get, Id(6), Usd(10), Description("desc"), DateTime.parse("2020-01-13"))
+        val amt1 = CategoryAmount(cat.id.get, Id(6), Usd(20), Description("desc"), DateTime.parse("2020-01-15"))
+        val amt2 = CategoryAmount(cat.id.get, Id(6), Usd(30), Description("desc"), DateTime.parse("2020-02-15"))
+        val amt3 = CategoryAmount(cat.id.get, Id(6), Usd(40), Description("desc"), DateTime.parse("2020-03-15"))
+
+        val transaction0 = Transaction(Some(Id(5)), Description("desc"), DateTime.now, Id(6), Seq(amt0, amt1))
+        val transaction1 = Transaction(Some(Id(5)), Description("desc"), DateTime.now, Id(6), Seq(amt2, amt3))
+
+        mockTransactionRepository.getInRange _ expects DateRange(
+          budget0.effectiveTime.head.start, budget1.effectiveTime.head.end
+        ) returns Seq(transaction0, transaction1).pure[IdMonad]
+
+        service.getAmountSpentInRange(
+          DateRange(DateTime.parse("2020-01-14"), DateTime.parse("2020-02-17"))
+        ) shouldEqual Seq(
+          CategoryAmountSpent(cat, Seq(
+            BudgetAmountSpent(budget0.effectiveTime, Usd(20), Usd(10), budget0.amount),
+            BudgetAmountSpent(budget1.effectiveTime, Usd(30), Usd(0), budget1.amount)
+          ))
+        )
       }
     }
   }

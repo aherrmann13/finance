@@ -14,4 +14,6 @@ trait TransactionRepository[F[_]] extends Repository[F, Transaction] {
 
   // TODO: better method of determining this
   def anyOutsideRanges(categoryId: Id, ranges: Seq[DateRange]): F[Boolean]
+
+  def getInRange(range: DateRange): F[Seq[Transaction]]
 }
