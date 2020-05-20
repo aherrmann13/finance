@@ -12,8 +12,10 @@ Category:
       type: string
     description:
       type: string
-    effectiveTime:
-      $ref: "#/EffectiveTime"
+    effectivetime:
+      type: array
+      items:
+        $ref: "./common.yaml#/DateRange"
     isLeaf:
       type: boolean
     budget:
@@ -31,29 +33,13 @@ Category:
 Budget:
   type: object
   properties:
-    periodId:
-      type: integer
-      format: int32
+    effectiveTime:
+      type: array
+      items:
+        $ref: "./common.yaml#/DateRange"
     amount:
       type: number
   required:
-    - periodId
+    - effectiveTime
     - amount
 
-EffectiveTime:
-  type: array
-  items:
-    $ref: "#/Period"
-
-Period:
-  type: object
-  properties:
-    to:
-      type: integer
-      format: int32
-    from:
-      type: integer
-      format: int32
-  required:
-    - to
-    - from

@@ -5,9 +5,10 @@ AccountValue:
       type: integer
       format: int32
       readOnly: true
-    timePeriodId:
-      type: integer
-      format: int32
+    effectiveTime:
+      type: array
+      items:
+        $ref: "./common.yaml#/DateRange"
       readOnly: true
     value:
       type: number
@@ -20,13 +21,10 @@ AccountValue:
 AccountValueQuery:
   type: object
   properties:
-    from:
-      type: integer
-      format: int32
-      writeOnly: true
-    to:
-      type: integer
-      format: int32
+    effectiveTime:
+      type: array
+      items:
+        $ref: "./common.yaml#/DateRange"
       writeOnly: true
     accountIds:
       type: array

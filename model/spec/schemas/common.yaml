@@ -1,0 +1,12 @@
+DateRange:
+  type: object
+  properties:
+    start:
+      type: string
+      format: date
+    end:
+      type: string
+      format: date
+  required:
+    - start
+    - end

@@ -47,10 +47,6 @@ components:
       $ref: "schemas/category.yaml#/Category"
     Budget: 
       $ref: "schemas/category.yaml#/Budget"
-    EffectiveTime:
-      $ref: "schemas/category.yaml#/EffectiveTime"
-    Period:
-      $ref: "schemas/category.yaml#/Period"
     Transaction:
       $ref: "schemas/transaction.yaml#/Transaction"
     Amount:
@@ -87,6 +83,8 @@ components:
       $ref: "schemas/payback.yaml#/Payback"
     PaybackQuery:
       $ref: "schemas/payback.yaml#/PaybackQuery"
+    DateRange:
+      $ref: "schemas/common.yaml#/DateRange"
   requestBodies:
     CreateCategoryRequest:
       $ref: "requestBodies/category.yaml#/CreateCategoryRequest"
