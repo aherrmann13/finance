@@ -63,3 +63,22 @@ UpdateDeleteCategory:
         $ref: "../responses/common.yaml#/Empty200"
       400:
         $ref: "../responses/common.yaml#/Error"
+
+GetAmountSpentInRange:
+  get:
+    operationId: GetAmountSpentInRange
+    summary: "get the total amount spent in each category in the given time period"
+    tags:
+      - category
+    x-scala-package: category
+    parameters:
+      - in: query
+        name: query
+        schema:
+          $ref: "../schemas/category.yaml#/AmountSpentInRangeQuery"
+        required: true
+    responses:
+      200:
+        $ref: "../responses/category.yaml#/GetAmountSpentInRangeResponse"
+      400:
+        $ref: "../responses/common.yaml#/Error"

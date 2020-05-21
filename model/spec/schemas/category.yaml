@@ -43,3 +43,68 @@ Budget:
     - effectiveTime
     - amount
 
+## TODO: keep this in category? 
+AmountSpentInRangeQuery:
+  type: object
+  properties:
+    range:
+      allOf:
+        - $ref: "./common.yaml#/DateRange"
+      writeOnly: true
+  required:
+    - range
+
+AmountSpentInRange:
+  type: object
+  properties:
+    categories:
+      type: array
+      items:
+        $ref: "#/CategoryAmountSpent"
+      readOnly: true
+    range:
+      allOf:
+        - $ref: "./common.yaml#/DateRange"
+      readOnly: true
+  required:
+    - categories
+    - range 
+
+CategoryAmountSpent:
+  type: object
+  properties:
+    category:
+      allOf:
+        - $ref: "#/Category"
+      readOnly: true
+    budgetAmountSpent:
+      type: array
+      items:
+        $ref: "#/BudgetAmountSpent"
+      readOnly: true
+  required:
+    - category
+    - budgetAmountSpent
+
+BudgetAmountSpent:
+  type: object
+  properties:
+    effectivetime:
+      type: array
+      items:
+        $ref: "./common.yaml#/DateRange"
+      readOnly: true
+    in:
+      type: number
+      readOnly: true
+    out:
+      type: number
+      readOnly: true
+    amount:
+      type: number
+      readOnly: true
+  required:
+    - effectiveTime
+    - in
+    - out
+    - amount

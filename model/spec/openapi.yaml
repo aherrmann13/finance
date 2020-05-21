@@ -7,6 +7,8 @@ paths:
     $ref: "paths/category.yaml#/CreateGetCategory"
   /category/{id}:
     $ref: "paths/category.yaml#/UpdateDeleteCategory"
+  /category/amountinrange:
+    $ref: "paths/category.yaml#/GetAmountSpentInRange"
   /transaction:
     $ref: "paths/transaction.yaml#/CreateTransaction"
   /transaction/{id}:
@@ -47,6 +49,14 @@ components:
       $ref: "schemas/category.yaml#/Category"
     Budget: 
       $ref: "schemas/category.yaml#/Budget"
+    AmountSpentInRangeQuery:
+      $ref: "schemas/category.yaml#/AmountSpentInRangeQuery"
+    AmountSpentInRange:
+      $ref: "schemas/category.yaml#/AmountSpentInRange"
+    CategoryAmountSpent:
+      $ref: "schemas/category.yaml#/CategoryAmountSpent"
+    BudgetAmountSpent:
+      $ref: "schemas/category.yaml#/BudgetAmountSpent"
     Transaction:
       $ref: "schemas/transaction.yaml#/Transaction"
     Amount:
@@ -121,6 +131,8 @@ components:
       $ref: "responses/category.yaml#/UpdateCategoryResponse"
     GetCategoriesResponse:
       $ref: "responses/category.yaml#/GetCategoriesResponse"
+    GetAmountSpentInRangeResponse:
+      $ref: "responses/category.yaml#/GetAmountSpentInRangeResponse"
     CreateTransactionResponse:
       $ref: "responses/transaction.yaml#/CreateTransactionResponse"
     UpdateTransactionResponse:

@@ -20,3 +20,10 @@ GetCategoriesResponse:
         type: array
         items:
           $ref: "../schemas/category.yaml#/Category"
+
+GetAmountSpentInRangeResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/category.yaml#/AmountSpentInRange"
