@@ -39,9 +39,7 @@ yaml file at ./dist/model.yaml
     using twilio guardrail to generate http4s models and endpoints. as of now, guardrail does not support
     <code>oneOf</code> in swagger model. <a href="https://github.com/twilio/guardrail/issues/195">this issue</a> here
     needs to be tracked to determine when <code>oneOf</code> can be used. the models that should be updated are
-    <code>Record</code> to be oneOf <code>Asset</code>, <code>Transaction</code>, or <code>Transfer</code>,
-    <code>EffectiveTime</code> to be oneOf <code>AnyPeriod</code>, <code>SinglePeriod</code>,
-    <code>CollectionPeriod</code> or <code>RangePeriod</code>
+    <code>Record</code> to be oneOf <code>Asset</code>, <code>Transaction</code>, or <code>Transfer</code>
   </p>
   <h4><code>Record</code></h4>
   <p>
@@ -49,11 +47,17 @@ yaml file at ./dist/model.yaml
     <code>Transaction</code>, and <code>Transfer</code> with the 'assumed' guarantee that it will only ever have one of
     those objects
   </p>
-  <h4><code>EffectiveTime</code></h4>
-  <p>
-    setting <code>EffectiveTime</code> to be an array of to/from objects, where an empty array means
-    <code>AnyPeriod</code>, one item and <code>to == from</code> is <code>SinglePeriod</code>, one item and 
-    <code>to != from</code> is <code>RangePeriod</code> and anything else is <code>CollectionPeriod</code>
-  </p>
 </details>
 
+<details>
+  <summary>must use allOf on single property to combine with readOnly or writeOnly</summary>
+  <h4>issue</h4>
+  <p>
+    because <code>$ref</code> replaces all sibling properties with the contents of the ref it will replace the readOnly
+    or writeOnly flags (or anything else that gets set).  The workaround is to add an <code>allOf</code> property with
+    a single reference and add the required properties as siblings of the <code>allOf</code> prop.
+    </br>
+    sources <a href="https://stackoverflow.com/questions/51402156">here</a> and 
+    <a href="https://github.com/OAI/OpenAPI-Specification/issues/1671">here</a>
+  </p>
+</details>
