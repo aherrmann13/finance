@@ -33,14 +33,14 @@ class TransactionServiceSpec extends AnyFreeSpec with Matchers with MockFactory 
   )
   "TransactionService" - {
     "create" - {
-      "returns Left(IdMustBeNone) from validation algebra idIsNone" in {
+      "should return Left(IdMustBeNone) from validation algebra idIsNone" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](IdMustBeNone(ModelName("Transaction")))
         (mockValidationAlgebra idIsNone _) when transaction returns returnVal
         (mockRepository create _) expects transaction never
 
         service.create(transaction) shouldEqual returnVal
       }
-      "returns Left(DescriptionTooLong) from validation algebra descriptionIsValid" in {
+      "should return Left(DescriptionTooLong) from validation algebra descriptionIsValid" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DescriptionTooLong(ModelName("Transaction"), Description("Desc")))
         (mockValidationAlgebra idIsNone _) when transaction returns EitherT.rightT[IdMonad, IdMustBeNone](())
         (mockValidationAlgebra descriptionIsValid _) when transaction returns returnVal
@@ -48,7 +48,7 @@ class TransactionServiceSpec extends AnyFreeSpec with Matchers with MockFactory 
 
         service.create(transaction) shouldEqual returnVal
       }
-      "returns Left(DoesNotExist) from validation algebra accountIdExists" in {
+      "should return Left(DoesNotExist) from validation algebra accountIdExists" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Account"), transaction.accountId))
         (mockValidationAlgebra idIsNone _) when transaction returns EitherT.rightT[IdMonad, IdMustBeNone](())
         (mockValidationAlgebra descriptionIsValid _) when transaction returns
@@ -58,7 +58,7 @@ class TransactionServiceSpec extends AnyFreeSpec with Matchers with MockFactory 
 
         service.create(transaction) shouldEqual returnVal
       }
-      "returns Left(DescriptionTooLong) from validation algebra amountDescAreValid" in {
+      "should return Left(DescriptionTooLong) from validation algebra amountDescAreValid" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DescriptionTooLong(ModelName("Amount"), Description("Desc")))
         (mockValidationAlgebra idIsNone _) when transaction returns EitherT.rightT[IdMonad, IdMustBeNone](())
         (mockValidationAlgebra descriptionIsValid _) when transaction returns
@@ -69,7 +69,7 @@ class TransactionServiceSpec extends AnyFreeSpec with Matchers with MockFactory 
 
         service.create(transaction) shouldEqual returnVal
       }
-      "returns Left(DoesNotExist) from validation algebra categoryIdsExist" in {
+      "should return Left(DoesNotExist) from validation algebra categoryIdsExist" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Category"), Id(4)))
         (mockValidationAlgebra idIsNone _) when transaction returns EitherT.rightT[IdMonad, IdMustBeNone](())
         (mockValidationAlgebra descriptionIsValid _) when transaction returns
@@ -82,7 +82,7 @@ class TransactionServiceSpec extends AnyFreeSpec with Matchers with MockFactory 
 
         service.create(transaction) shouldEqual returnVal
       }
-      "returns Left(DoesNotExist) from validation algebra paybackIdsExist" in {
+      "should return Left(DoesNotExist) from validation algebra paybackIdsExist" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Payback"), Id(4)))
         (mockValidationAlgebra idIsNone _) when transaction returns EitherT.rightT[IdMonad, IdMustBeNone](())
         (mockValidationAlgebra descriptionIsValid _) when transaction returns
@@ -96,7 +96,7 @@ class TransactionServiceSpec extends AnyFreeSpec with Matchers with MockFactory 
 
         service.create(transaction) shouldEqual returnVal
       }
-      "returns Left(DoesNotExist) from validation algebra sourceIdsExists" in {
+      "should return Left(DoesNotExist) from validation algebra sourceIdsExists" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Source"), Id(4)))
         (mockValidationAlgebra idIsNone _) when transaction returns EitherT.rightT[IdMonad, IdMustBeNone](())
         (mockValidationAlgebra descriptionIsValid _) when transaction returns
@@ -111,7 +111,7 @@ class TransactionServiceSpec extends AnyFreeSpec with Matchers with MockFactory 
 
         service.create(transaction) shouldEqual returnVal
       }
-      "returns Left(DateNotInEffectiveTime) from validation algebra reportingDateWithinBudgetTime" in {
+      "should return Left(DateNotInEffectiveTime) from validation algebra reportingDateWithinBudgetTime" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DateNotInEffectiveTime(DateTime.now, Seq.empty))
         (mockValidationAlgebra idIsNone _) when transaction returns EitherT.rightT[IdMonad, IdMustBeNone](())
         (mockValidationAlgebra descriptionIsValid _) when transaction returns
@@ -127,7 +127,7 @@ class TransactionServiceSpec extends AnyFreeSpec with Matchers with MockFactory 
 
         service.create(transaction) shouldEqual returnVal
       }
-      "returns Right(()) and saves model when validation passes" in {
+      "should return Right(()) and saves model when validation passes" in {
         (mockValidationAlgebra idIsNone _) when transaction returns EitherT.rightT[IdMonad, IdMustBeNone](())
         (mockValidationAlgebra descriptionIsValid _) when transaction returns
           EitherT.rightT[IdMonad, DescriptionTooLong](())
@@ -145,14 +145,14 @@ class TransactionServiceSpec extends AnyFreeSpec with Matchers with MockFactory 
       }
     }
     "update" - {
-      "returns Left(DoesNotExist) from validation algebra exists" in {
+      "should return Left(DoesNotExist) from validation algebra exists" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Transaction")))
         (mockValidationAlgebra exists _) when transaction returns returnVal
         (mockRepository update _) expects transaction never
 
         service.update(transaction) shouldEqual returnVal
       }
-      "returns Left(DescriptionTooLong) from validation algebra descriptionIsValid" in {
+      "should return Left(DescriptionTooLong) from validation algebra descriptionIsValid" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DescriptionTooLong(ModelName("Transaction"), Description("Desc")))
         (mockValidationAlgebra exists _) when transaction returns EitherT.rightT[IdMonad, DoesNotExist](())
         (mockValidationAlgebra descriptionIsValid _) when transaction returns returnVal
@@ -160,7 +160,7 @@ class TransactionServiceSpec extends AnyFreeSpec with Matchers with MockFactory 
 
         service.update(transaction) shouldEqual returnVal
       }
-      "returns Left(DoesNotExist) from validation algebra accountIdExists" in {
+      "should return Left(DoesNotExist) from validation algebra accountIdExists" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Account"), transaction.accountId))
         (mockValidationAlgebra exists _) when transaction returns EitherT.rightT[IdMonad, DoesNotExist](())
         (mockValidationAlgebra descriptionIsValid _) when transaction returns
@@ -170,7 +170,7 @@ class TransactionServiceSpec extends AnyFreeSpec with Matchers with MockFactory 
 
         service.update(transaction) shouldEqual returnVal
       }
-      "returns Left(DescriptionTooLong) from validation algebra amountDescAreValid" in {
+      "should return Left(DescriptionTooLong) from validation algebra amountDescAreValid" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DescriptionTooLong(ModelName("Amount"), Description("Desc")))
         (mockValidationAlgebra exists _) when transaction returns EitherT.rightT[IdMonad, DoesNotExist](())
         (mockValidationAlgebra descriptionIsValid _) when transaction returns
@@ -181,7 +181,7 @@ class TransactionServiceSpec extends AnyFreeSpec with Matchers with MockFactory 
 
         service.update(transaction) shouldEqual returnVal
       }
-      "returns Left(DoesNotExist) from validation algebra categoryIdsExist" in {
+      "should return Left(DoesNotExist) from validation algebra categoryIdsExist" in {
         val returnVal =
           EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Category"), Id(4)))
         (mockValidationAlgebra exists _) when transaction returns EitherT.rightT[IdMonad, DoesNotExist](())
@@ -195,7 +195,7 @@ class TransactionServiceSpec extends AnyFreeSpec with Matchers with MockFactory 
 
         service.update(transaction) shouldEqual returnVal
       }
-      "returns Left(DoesNotExist) from validation algebra paybackIdsExist" in {
+      "should return Left(DoesNotExist) from validation algebra paybackIdsExist" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Payback"), Id(4)))
         (mockValidationAlgebra exists _) when transaction returns EitherT.rightT[IdMonad, DoesNotExist](())
         (mockValidationAlgebra descriptionIsValid _) when transaction returns
@@ -209,7 +209,7 @@ class TransactionServiceSpec extends AnyFreeSpec with Matchers with MockFactory 
 
         service.update(transaction) shouldEqual returnVal
       }
-      "returns Left(DoesNotExist) from validation algebra sourceIdsExists" in {
+      "should return Left(DoesNotExist) from validation algebra sourceIdsExists" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Source"), Id(4)))
         (mockValidationAlgebra exists _) when transaction returns EitherT.rightT[IdMonad, DoesNotExist](())
         (mockValidationAlgebra descriptionIsValid _) when transaction returns
@@ -224,7 +224,7 @@ class TransactionServiceSpec extends AnyFreeSpec with Matchers with MockFactory 
 
         service.update(transaction) shouldEqual returnVal
       }
-      "returns Left(DateNotInEffectiveTime) from validation algebra reportingDateWithinBudgetTime" in {
+      "should return Left(DateNotInEffectiveTime) from validation algebra reportingDateWithinBudgetTime" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DateNotInEffectiveTime(DateTime.now, Seq.empty))
         (mockValidationAlgebra exists _) when transaction returns EitherT.rightT[IdMonad, DoesNotExist](())
         (mockValidationAlgebra descriptionIsValid _) when transaction returns
@@ -240,7 +240,7 @@ class TransactionServiceSpec extends AnyFreeSpec with Matchers with MockFactory 
 
         service.update(transaction) shouldEqual returnVal
       }
-      "returns Right(()) and updates model when validation passes" in {
+      "should return Right(()) and updates model when validation passes" in {
         (mockValidationAlgebra exists _) when transaction returns EitherT.rightT[IdMonad, DoesNotExist](())
         (mockValidationAlgebra descriptionIsValid _) when transaction returns
           EitherT.rightT[IdMonad, DescriptionTooLong](())
@@ -258,7 +258,7 @@ class TransactionServiceSpec extends AnyFreeSpec with Matchers with MockFactory 
       }
     }
     "delete" - {
-      "returns Right(()) and deletes" in {
+      "should return Right(()) and deletes" in {
         (mockRepository delete _) expects transactionId returns ().pure[IdMonad]
 
         service.delete(transactionId) shouldEqual EitherT.rightT[IdMonad, ValidationError](())

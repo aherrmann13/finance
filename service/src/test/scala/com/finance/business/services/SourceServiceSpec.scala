@@ -23,14 +23,14 @@ class SourceServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
   "SourceService" - {
     "create" - {
-      "returns Left(IdMustBeNone) from validation algebra idIsNone" in {
+      "should return Left(IdMustBeNone) from validation algebra idIsNone" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](IdMustBeNone(ModelName("Source")))
         (mockValidationAlgebra idIsNone _) when source returns returnVal
         (mockRepository create _) expects source never
 
         service.create(source) shouldEqual returnVal
       }
-      "returns Left(NameTooLong) from validation algebra nameIsValid" in {
+      "should return Left(NameTooLong) from validation algebra nameIsValid" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](NameTooLong(ModelName("Source"), Name("Name")))
         (mockValidationAlgebra idIsNone _) when source returns EitherT.rightT[IdMonad, IdMustBeNone](())
         (mockValidationAlgebra nameIsValid _) when source returns returnVal
@@ -38,7 +38,7 @@ class SourceServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
         service.create(source) shouldEqual returnVal
       }
-      "returns Left(DescriptionTooLong) from validation algebra descriptionIsValid" in {
+      "should return Left(DescriptionTooLong) from validation algebra descriptionIsValid" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DescriptionTooLong(ModelName("Source"), Description("Desc")))
         (mockValidationAlgebra idIsNone _) when source returns EitherT.rightT[IdMonad, IdMustBeNone](())
         (mockValidationAlgebra nameIsValid _) when source returns EitherT.rightT[IdMonad, NameTooLong](())
@@ -47,7 +47,7 @@ class SourceServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
         service.create(source) shouldEqual returnVal
       }
-      "returns Right(()) and saves model when validation passes" in {
+      "should return Right(()) and saves model when validation passes" in {
         (mockValidationAlgebra idIsNone _) when source returns EitherT.rightT[IdMonad, IdMustBeNone](())
         (mockValidationAlgebra nameIsValid _) when source returns EitherT.rightT[IdMonad, NameTooLong](())
         (mockValidationAlgebra descriptionIsValid _) when source returns EitherT.rightT[IdMonad, DescriptionTooLong](())
@@ -57,14 +57,14 @@ class SourceServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       }
     }
     "update" - {
-      "returns Left(DoesNotExist) from validation algebra exists" in {
+      "should return Left(DoesNotExist) from validation algebra exists" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Source")))
         (mockValidationAlgebra exists _) when source returns returnVal
         (mockRepository update _) expects source never
 
         service.update(source) shouldEqual returnVal
       }
-      "returns Left(NameTooLong) from validation algebra nameIsValid" in {
+      "should return Left(NameTooLong) from validation algebra nameIsValid" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](NameTooLong(ModelName("Source"), Name("Name")))
         (mockValidationAlgebra exists _) when source returns EitherT.rightT[IdMonad, DoesNotExist](())
         (mockValidationAlgebra nameIsValid _) when source returns returnVal
@@ -72,7 +72,7 @@ class SourceServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
         service.update(source) shouldEqual returnVal
       }
-      "returns Left(DescriptionTooLong) from validation algebra descriptionIsValid" in {
+      "should return Left(DescriptionTooLong) from validation algebra descriptionIsValid" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DescriptionTooLong(ModelName("Source"), Description("Desc")))
         (mockValidationAlgebra exists _) when source returns EitherT.rightT[IdMonad, DoesNotExist](())
         (mockValidationAlgebra nameIsValid _) when source returns EitherT.rightT[IdMonad, NameTooLong](())
@@ -81,7 +81,7 @@ class SourceServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
         service.update(source) shouldEqual returnVal
       }
-      "returns Right(()) and updates model when validation passes" in {
+      "should return Right(()) and updates model when validation passes" in {
         (mockValidationAlgebra exists _) when source returns EitherT.rightT[IdMonad, DoesNotExist](())
         (mockValidationAlgebra nameIsValid _) when source returns EitherT.rightT[IdMonad, NameTooLong](())
         (mockValidationAlgebra descriptionIsValid _) when source returns EitherT.rightT[IdMonad, DescriptionTooLong](())
@@ -91,14 +91,14 @@ class SourceServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       }
     }
     "delete" - {
-      "returns Left(HasTransactions) from validation algebra hasNoTransactions" in {
+      "should return Left(HasTransactions) from validation algebra hasNoTransactions" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](HasTransactions(ModelName("Source")))
         (mockValidationAlgebra hasNoTransactions _) when sourceId returns returnVal
         (mockRepository delete _) expects sourceId never
 
         service.delete(sourceId) shouldEqual returnVal
       }
-      "returns Right(()) and deletes when validation passes" in {
+      "should return Right(()) and deletes when validation passes" in {
         (mockValidationAlgebra hasNoTransactions _) when sourceId returns EitherT.rightT[IdMonad, HasTransactions](())
         (mockRepository delete _) expects sourceId returns ().pure[IdMonad]
 
@@ -106,14 +106,14 @@ class SourceServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       }
     }
     "get" - {
-      "returns repository get" in {
+      "should return repository get" in {
         (mockRepository get _) expects sourceId returns OptionT.pure(source)
 
         service.get(sourceId).value shouldEqual Some(source)
       }
     }
     "getMany" - {
-      "returns repository getMany" in {
+      "should return repository getMany" in {
         (mockRepository getMany _) expects Seq(sourceId, Id(sourceId.value + 1)) returns
           Seq(source, source).pure[IdMonad]
 
@@ -121,14 +121,14 @@ class SourceServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       }
     }
     "getAll" - {
-      "returns repository getAll" - {
+      "should return repository getAll" - {
         (mockRepository.getAll _).expects().returns(Seq(source, source).pure[IdMonad])
 
         service.getAll shouldEqual Seq(source, source)
       }
     }
     "get with fuzzy search" - {
-      "returns repository getFuzzyMatch" in {
+      "should return repository getFuzzyMatch" in {
         val fuzzy = "fuzzy search"
         (mockRepository getFuzzyMatch _) expects fuzzy returns Seq(source, source).pure[IdMonad]
 

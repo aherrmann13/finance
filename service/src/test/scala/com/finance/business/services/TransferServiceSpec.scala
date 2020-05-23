@@ -24,14 +24,14 @@ class TransferServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
   private val transfer = Transfer(Some(transferId), Id(2), DateTime.now, Id(3), DateTime.now, Usd(56))
   "TransferService" - {
     "create" - {
-      "returns Left(IdMustBeNone) from validation algebra idIsNone" in {
+      "should return Left(IdMustBeNone) from validation algebra idIsNone" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](IdMustBeNone(ModelName("Transaction")))
         (mockValidationAlgebra idIsNone _) when transfer returns returnVal
         (mockRepository create _) expects transfer never
 
         service.create(transfer) shouldEqual returnVal
       }
-      "returns Left(DoesNotExist) from validation algebra fromAccountIdExists" in {
+      "should return Left(DoesNotExist) from validation algebra fromAccountIdExists" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Account"), transfer.to))
         (mockValidationAlgebra idIsNone _) when transfer returns EitherT.rightT[IdMonad, IdMustBeNone](())
         (mockValidationAlgebra fromAccountIdExists _) when transfer returns returnVal
@@ -39,7 +39,7 @@ class TransferServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
         service.create(transfer) shouldEqual returnVal
       }
-      "returns Left(DoesNotExist) from validation algebra toAccountIdExists" in {
+      "should return Left(DoesNotExist) from validation algebra toAccountIdExists" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Account"), transfer.from))
         (mockValidationAlgebra idIsNone _) when transfer returns EitherT.rightT[IdMonad, IdMustBeNone](())
         (mockValidationAlgebra fromAccountIdExists _) when transfer returns EitherT.rightT[IdMonad, DoesNotExist](())
@@ -48,7 +48,7 @@ class TransferServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
         service.create(transfer) shouldEqual returnVal
       }
-      "returns Right(()) and saves model when validation passes" in {
+      "should return Right(()) and saves model when validation passes" in {
         (mockValidationAlgebra idIsNone _) when transfer returns EitherT.rightT[IdMonad, IdMustBeNone](())
         (mockValidationAlgebra fromAccountIdExists _) when transfer returns EitherT.rightT[IdMonad, DoesNotExist](())
         (mockValidationAlgebra toAccountIdExists _) when transfer returns EitherT.rightT[IdMonad, DoesNotExist](())
@@ -58,14 +58,14 @@ class TransferServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       }
     }
     "update" - {
-      "returns Left(DoesNotExist) from validation algebra exists" in {
+      "should return Left(DoesNotExist) from validation algebra exists" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Transaction")))
         (mockValidationAlgebra exists _) when transfer returns returnVal
         (mockRepository update _) expects transfer never
 
         service.update(transfer) shouldEqual returnVal
       }
-      "returns Left(DoesNotExist) from validation algebra fromAccountIdExists" in {
+      "should return Left(DoesNotExist) from validation algebra fromAccountIdExists" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Account"), transfer.to))
         (mockValidationAlgebra exists _) when transfer returns EitherT.rightT[IdMonad, DoesNotExist](())
         (mockValidationAlgebra fromAccountIdExists _) when transfer returns returnVal
@@ -73,7 +73,7 @@ class TransferServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
         service.update(transfer) shouldEqual returnVal
       }
-      "returns Left(DoesNotExist) from validation algebra toAccountIdExists" in {
+      "should return Left(DoesNotExist) from validation algebra toAccountIdExists" in {
         val returnVal = EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Account"), transfer.from))
         (mockValidationAlgebra exists _) when transfer returns EitherT.rightT[IdMonad, DoesNotExist](())
         (mockValidationAlgebra fromAccountIdExists _) when transfer returns EitherT.rightT[IdMonad, DoesNotExist](())
@@ -82,7 +82,7 @@ class TransferServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
         service.update(transfer) shouldEqual returnVal
       }
-      "returns Right(()) and updates model when validation passes" in {
+      "should return Right(()) and updates model when validation passes" in {
         (mockValidationAlgebra exists _) when transfer returns EitherT.rightT[IdMonad, DoesNotExist](())
         (mockValidationAlgebra fromAccountIdExists _) when transfer returns EitherT.rightT[IdMonad, DoesNotExist](())
         (mockValidationAlgebra toAccountIdExists _) when transfer returns EitherT.rightT[IdMonad, DoesNotExist](())
@@ -92,21 +92,21 @@ class TransferServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       }
     }
     "delete" - {
-      "returns Right(()) and deletes" in {
+      "should return Right(()) and deletes" in {
         (mockRepository delete _) expects transferId returns ().pure[IdMonad]
 
         service.delete(transferId) shouldEqual EitherT.rightT[IdMonad, ValidationError](())
       }
     }
     "get" - {
-      "returns repository get" in {
+      "should return repository get" in {
         (mockRepository get (_: Id)) expects transferId returns OptionT.pure(transfer)
 
         service.get(transferId).value shouldEqual Some(transfer)
       }
     }
     "getMany" - {
-      "returns repository getMany" in {
+      "should return repository getMany" in {
         (mockRepository getMany _) expects Seq(transferId, Id(transferId.value + 1)) returns
           Seq(transfer, transfer).pure[IdMonad]
 
@@ -114,14 +114,14 @@ class TransferServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       }
     }
     "getAll" - {
-      "returns repository getAll" - {
+      "should return repository getAll" - {
         (mockRepository.getAll _).expects().returns(Seq(transfer, transfer).pure[IdMonad])
 
         service.getAll shouldEqual Seq(transfer, transfer)
       }
     }
     "get with query" - {
-      "returns repository get with query" in {
+      "should return repository get with query" in {
         val query = TransferQuery(None, None, Set.empty, None, None)
         (mockRepository get (_: TransferQuery)) expects query returns Seq(transfer, transfer).pure[IdMonad]
 
