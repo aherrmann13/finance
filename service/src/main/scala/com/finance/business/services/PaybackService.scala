@@ -2,16 +2,19 @@ package com.finance.business.services
 
 import cats.Monad
 import cats.data.EitherT
-import com.finance.business.model.payback.Payback
-import com.finance.business.model.types.Id
-import com.finance.business.repository.PaybackRepository
+import cats.implicits._
+import com.finance.business.model.payback.{Payback, PaybackBalance}
+import com.finance.business.model.types.{DateRange, Id, Usd}
+import com.finance.business.repository.{PaybackRepository, TransactionRepository}
 import com.finance.business.validation.PaybackValidationAlgebra
 import com.finance.business.validation.errors.ValidationError
 
-class PaybackService[F[_]: Monad](
-    validator: PaybackValidationAlgebra[F],
-    repository: PaybackRepository[F]
-) extends CommandService[F, Payback] {
+class PaybackService[F[_] : Monad](
+  validator: PaybackValidationAlgebra[F],
+  repository: PaybackRepository[F],
+  transactionRepository: TransactionRepository[F]
+) extends CommandService[F, Payback]
+  with QueryService[F, Payback] {
   override def create(model: Payback): EitherT[F, ValidationError, Payback] =
     for {
       _ <- validator idIsNone model
@@ -33,4 +36,24 @@ class PaybackService[F[_]: Monad](
       _ <- validator hasNoTransactions id
       deleted <- EitherT.liftF(repository delete id)
     } yield deleted
+
+  override def get(id: Id): F[Option[Payback]] = repository.get(id)
+
+  override def getMany(ids: Seq[Id]): F[Seq[Payback]] = repository.getMany(ids)
+
+  override def getAll: F[Seq[Payback]] = repository.getAll
+
+  def getPaybackBalance(range: DateRange): F[Seq[PaybackBalance]] =
+    for {
+      paybacks <- repository.getInRange(range)
+      paybackAmounts <- transactionRepository.getByPaybackIds(paybacks.flatMap(_.id))
+      groupedPaybackAmounts = paybackAmounts.groupBy(_.paybackId)
+    } yield paybacks map { payback =>
+      PaybackBalance(payback, payback.id.flatMap(groupedPaybackAmounts.get).getOrElse(Seq.empty))
+    }
+
+  def getPaybackBalanceSummary: F[Usd] =
+    transactionRepository.getAllPaybacks map { paybacks =>
+      Usd(paybacks.map(_.amount.value).sum)
+    }
 }

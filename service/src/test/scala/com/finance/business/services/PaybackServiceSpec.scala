@@ -3,9 +3,10 @@ package com.finance.business.services
 import cats.data.EitherT
 import cats.implicits._
 import cats.{Id => IdMonad}
-import com.finance.business.model.payback.Payback
-import com.finance.business.model.types.{Description, Id, ModelName, Name}
-import com.finance.business.repository.PaybackRepository
+import com.finance.business.model.payback.{Payback, PaybackBalance}
+import com.finance.business.model.transaction.PaybackAmount
+import com.finance.business.model.types._
+import com.finance.business.repository.{PaybackRepository, TransactionRepository}
 import com.finance.business.validation.PaybackValidationAlgebra
 import com.finance.business.validation.errors._
 import com.github.nscala_time.time.Imports.DateTime
@@ -16,12 +17,14 @@ import org.scalatest.matchers.should.Matchers
 class PaybackServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
   private val mockValidationAlgebra = stub[PaybackValidationAlgebra[IdMonad]]
   private val mockRepository = mock[PaybackRepository[IdMonad]]
+  private val mockTransactionRepository = mock[TransactionRepository[IdMonad]]
 
-  private val service = new PaybackService[IdMonad](mockValidationAlgebra, mockRepository)
+
+  private val service = new PaybackService[IdMonad](mockValidationAlgebra, mockRepository, mockTransactionRepository)
 
   private val paybackId = Id(5)
   private val payback = Payback(Some(paybackId), Name("Name"), Description("Description"), DateTime.now)
-  
+
   "PaybackService" - {
     "create" - {
       "returns Left(IdMustBeNone) from validation algebra idIsNone" in {
@@ -104,6 +107,91 @@ class PaybackServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         (mockRepository delete _) expects paybackId returns ().pure[IdMonad]
 
         service.delete(paybackId) shouldEqual EitherT.rightT[IdMonad, ValidationError](())
+      }
+    }
+    "get" - {
+      "returns repository get" in {
+        (mockRepository get _) expects paybackId returns Some(payback).pure[IdMonad]
+
+        service.get(paybackId) shouldEqual Some(payback)
+      }
+    }
+    "getMany" - {
+      "returns repository getMany" in {
+        (mockRepository getMany _) expects Seq(paybackId, Id(paybackId.value + 1)) returns
+          Seq(payback, payback).pure[IdMonad]
+
+        service.getMany(Seq(paybackId, Id(paybackId.value + 1))) shouldEqual Seq(payback, payback)
+      }
+    }
+    "getAll" - {
+      "returns repository getAll" - {
+        (mockRepository.getAll _).expects().returns(Seq(payback, payback).pure[IdMonad])
+
+        service.getAll shouldEqual Seq(payback, payback)
+      }
+    }
+    "getPaybackBalance" - {
+      val dateRange = DateRange(DateTime.now, DateTime.now)
+
+      val paybackId0 = paybackId
+      val paybackId1 = Id(paybackId.value + 1)
+      val payback0 = payback
+      val payback1 = payback.copy(id = Some(paybackId1))
+
+      val paybackAmount0 = PaybackAmount(paybackId, Id(5), Usd(40), Description("desc"), DateTime.now)
+      val paybackAmount1 = PaybackAmount(paybackId, Id(5), Usd(6), Description("desc"), DateTime.now)
+      val paybackAmount2 = PaybackAmount(paybackId1, Id(5), Usd(34), Description("desc"), DateTime.now)
+      val paybackAmount3 = PaybackAmount(paybackId1, Id(5), Usd(865), Description("desc"), DateTime.now)
+
+      "returns payback items amounts" in {
+        (mockRepository getInRange _) expects dateRange returns Seq(payback0, payback1).pure[IdMonad]
+        (mockTransactionRepository getByPaybackIds _) expects Seq(paybackId0, paybackId1) returns
+          Seq(paybackAmount0, paybackAmount1, paybackAmount2, paybackAmount3).pure[IdMonad]
+
+        service.getPaybackBalance(dateRange) shouldEqual Seq(
+          PaybackBalance(payback0, Seq(paybackAmount0, paybackAmount1)),
+          PaybackBalance(payback1, Seq(paybackAmount2, paybackAmount3))
+        )
+      }
+      "returns payback with empty list when id is None" in {
+        val paybackWithNoId = payback.copy(id = None)
+        (mockRepository getInRange _) expects dateRange returns Seq(payback0, payback1, paybackWithNoId).pure[IdMonad]
+        (mockTransactionRepository getByPaybackIds _) expects Seq(paybackId0, paybackId1) returns
+          Seq(paybackAmount0, paybackAmount1, paybackAmount2, paybackAmount3)
+
+        service.getPaybackBalance(dateRange) shouldEqual Seq(
+          PaybackBalance(payback0, Seq(paybackAmount0, paybackAmount1)),
+          PaybackBalance(payback1, Seq(paybackAmount2, paybackAmount3)),
+          PaybackBalance(paybackWithNoId, Seq.empty)
+        )
+      }
+      "returns payback with empty list when no PaybackAmounts with id" in {
+        val newId = Id(1234)
+        val paybackWithNewId = payback.copy(id = Some(newId))
+        (mockRepository getInRange _) expects dateRange returns Seq(payback0, payback1, paybackWithNewId).pure[IdMonad]
+        (mockTransactionRepository getByPaybackIds _) expects Seq(paybackId0, paybackId1, newId) returns
+          Seq(paybackAmount0, paybackAmount1, paybackAmount2, paybackAmount3)
+
+        service.getPaybackBalance(dateRange) shouldEqual Seq(
+          PaybackBalance(payback0, Seq(paybackAmount0, paybackAmount1)),
+          PaybackBalance(payback1, Seq(paybackAmount2, paybackAmount3)),
+          PaybackBalance(paybackWithNewId, Seq.empty)
+        )
+      }
+    }
+    "getPaybackBalanceSummary" - {
+      "returns sum of all payback amounts" in {
+        val paybackAmount0 = PaybackAmount(paybackId, Id(5), Usd(40), Description("desc"), DateTime.now)
+        val paybackAmount1 = PaybackAmount(paybackId, Id(5), Usd(6), Description("desc"), DateTime.now)
+        val paybackAmount2 = PaybackAmount(paybackId, Id(5), Usd(34), Description("desc"), DateTime.now)
+        val paybackAmount3 = PaybackAmount(paybackId, Id(5), Usd(865), Description("desc"), DateTime.now)
+
+        (mockTransactionRepository.getAllPaybacks _).expects().returns(
+          Seq(paybackAmount0, paybackAmount1, paybackAmount2, paybackAmount3).pure[IdMonad]
+        )
+
+        service.getPaybackBalanceSummary shouldEqual Usd(945)
       }
     }
   }
