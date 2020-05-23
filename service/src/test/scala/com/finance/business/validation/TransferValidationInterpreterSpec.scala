@@ -45,12 +45,12 @@ class TransferValidationInterpreterSpec extends AnyFreeSpec with Matchers with M
           EitherT.leftT[IdMonad, Unit](DoesNotExist(transferName)).value
       }
       "should return Left(DoesNotExist) when repository does not contain Account" in {
-        (mockTransferRepository get _).when(fakeTransferWithId.id.get).returns(None.pure[IdMonad])
+        (mockTransferRepository get(_: Id)).when(fakeTransferWithId.id.get).returns(None.pure[IdMonad])
         transferValidationInterpreter.exists(fakeTransferWithId).value shouldEqual
           EitherT.leftT[IdMonad, Unit](DoesNotExist(transferName, fakeTransferWithId.id)).value
       }
       "should return Right(()) when repository contains Account" in {
-        (mockTransferRepository get _).when(fakeTransferWithId.id.get).returns(Some(fakeTransferWithId).pure[IdMonad])
+        (mockTransferRepository get(_: Id)).when(fakeTransferWithId.id.get).returns(Some(fakeTransferWithId).pure[IdMonad])
         transferValidationInterpreter.exists(fakeTransferWithId).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
       }

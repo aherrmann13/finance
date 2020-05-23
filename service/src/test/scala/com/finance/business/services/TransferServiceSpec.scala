@@ -6,6 +6,7 @@ import cats.{Id => IdMonad}
 import com.finance.business.model.transfer.Transfer
 import com.finance.business.model.types.{Id, ModelName, Usd}
 import com.finance.business.repository.TransferRepository
+import com.finance.business.repository.query.TransferQuery
 import com.finance.business.validation.TransferValidationAlgebra
 import com.finance.business.validation.errors.{DoesNotExist, IdMustBeNone, ValidationError}
 import com.github.nscala_time.time.Imports._
@@ -95,6 +96,36 @@ class TransferServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         (mockRepository delete _) expects transferId returns ().pure[IdMonad]
 
         service.delete(transferId) shouldEqual EitherT.rightT[IdMonad, ValidationError](())
+      }
+    }
+    "get" - {
+      "returns repository get" in {
+        (mockRepository get(_: Id)) expects transferId returns Some(transfer).pure[IdMonad]
+
+        service.get(transferId) shouldEqual Some(transfer)
+      }
+    }
+    "getMany" - {
+      "returns repository getMany" in {
+        (mockRepository getMany _) expects Seq(transferId, Id(transferId.value + 1)) returns
+          Seq(transfer, transfer).pure[IdMonad]
+
+        service.getMany(Seq(transferId, Id(transferId.value + 1))) shouldEqual Seq(transfer, transfer)
+      }
+    }
+    "getAll" - {
+      "returns repository getAll" - {
+        (mockRepository.getAll _).expects().returns(Seq(transfer, transfer).pure[IdMonad])
+
+        service.getAll shouldEqual Seq(transfer, transfer)
+      }
+    }
+    "get with query" - {
+      "returns repository get with query" in {
+        val query = TransferQuery(None, None, Set.empty, None, None)
+        (mockRepository get(_: TransferQuery)) expects query returns Seq(transfer, transfer).pure[IdMonad]
+
+        service.get(query) shouldEqual Seq(transfer, transfer)
       }
     }
   }
