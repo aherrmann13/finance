@@ -1,7 +1,6 @@
 package com.finance.business.validation
 
-import cats.data.EitherT
-import cats.implicits._
+import cats.data.{EitherT, OptionT}
 import cats.{Id => IdMonad}
 import com.finance.business.model.account.{Account, Bank}
 import com.finance.business.model.category.{Budget, Category}
@@ -64,14 +63,14 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
           EitherT.leftT[IdMonad, Unit](DoesNotExist(transactionName)).value
       }
       "should return Left(DoesNotExist) when repository does not contain Account" in {
-        (mockTransactionRepository get _).when(fakeTransactionWithId.id.get).returns(None.pure[IdMonad])
+        (mockTransactionRepository get _).when(fakeTransactionWithId.id.get).returns(OptionT.none)
         transactionValidationInterpreter.exists(fakeTransactionWithId).value shouldEqual
           EitherT.leftT[IdMonad, Unit](DoesNotExist(transactionName, fakeTransactionWithId.id)).value
       }
       "should return Right(()) when repository contains Account" in {
         (mockTransactionRepository get _)
           .when(fakeTransactionWithId.id.get)
-          .returns(Some(fakeTransactionWithId).pure[IdMonad])
+          .returns(OptionT.pure(fakeTransactionWithId))
         transactionValidationInterpreter.exists(fakeTransactionWithId).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
       }
@@ -92,14 +91,14 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
     }
     "accountIdExists" - {
       "should return Left(DoesNotExist) when account does not exist" in {
-        (mockAccountRepository get _).when(fakeTransactionWithId.accountId).returns(None.pure[IdMonad])
+        (mockAccountRepository get _).when(fakeTransactionWithId.accountId).returns(OptionT.none)
         transactionValidationInterpreter.accountIdExists(fakeTransactionWithId).value shouldEqual
           EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Account"), fakeTransactionWithId.accountId)).value
       }
       "should return Right(()) when account exists" in {
         (mockAccountRepository get _)
           .when(fakeTransactionWithId.accountId)
-          .returns(Some(Account(Some(Id(2)), Name("Name"), Description("Description"), Bank)).pure[IdMonad])
+          .returns(OptionT.pure(Account(Some(Id(2)), Name("Name"), Description("Description"), Bank)))
         transactionValidationInterpreter.accountIdExists(fakeTransactionWithId).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
       }
@@ -141,8 +140,8 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
           CategoryAmount(categoryId1, Id(5), Usd(1.6), Description("amountDesc2"), DateTime.now)
         )
 
-        (mockCategoryRepository get _).when(categoryId0).returns(None.pure[IdMonad])
-        (mockCategoryRepository get _).when(categoryId1).returns(None.pure[IdMonad])
+        (mockCategoryRepository get _).when(categoryId0).returns(OptionT.none)
+        (mockCategoryRepository get _).when(categoryId1).returns(OptionT.none)
 
         transactionValidationInterpreter.categoryIdsExist(fakeTransactionWithId.copy(amounts = amounts)).value shouldEqual
           EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Category"), categoryId0)).value
@@ -158,8 +157,8 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
 
         val category = Category(Some(Id(1)), None, Name("name"), Description("desc"), Seq.empty, Seq.empty)
 
-        (mockCategoryRepository get _).when(categoryId0).returns(Some(category).pure[IdMonad])
-        (mockCategoryRepository get _).when(categoryId1).returns(Some(category).pure[IdMonad])
+        (mockCategoryRepository get _).when(categoryId0).returns(OptionT.pure(category))
+        (mockCategoryRepository get _).when(categoryId1).returns(OptionT.pure(category))
 
         transactionValidationInterpreter.categoryIdsExist(fakeTransactionWithId.copy(amounts = amounts)).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
@@ -175,8 +174,8 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
           PaybackAmount(paybackId1, Id(5), Usd(1.6), Description("amountDesc2"), DateTime.now)
         )
 
-        (mockPaybackRepository get _).when(paybackId0).returns(None.pure[IdMonad])
-        (mockPaybackRepository get _).when(paybackId1).returns(None.pure[IdMonad])
+        (mockPaybackRepository get _).when(paybackId0).returns(OptionT.none)
+        (mockPaybackRepository get _).when(paybackId1).returns(OptionT.none)
 
         transactionValidationInterpreter.paybackIdsExists(fakeTransactionWithId.copy(amounts = amounts)).value shouldEqual
           EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Payback"), paybackId0)).value
@@ -192,15 +191,15 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
 
         val payback = Payback(Some(Id(1)), Name("name"), Description("desc"), DateTime.now)
 
-        (mockPaybackRepository get _).when(paybackId0).returns(Some(payback).pure[IdMonad])
-        (mockPaybackRepository get _).when(paybackId1).returns(Some(payback).pure[IdMonad])
+        (mockPaybackRepository get _).when(paybackId0).returns(OptionT.pure(payback))
+        (mockPaybackRepository get _).when(paybackId1).returns(OptionT.pure(payback))
 
         transactionValidationInterpreter.paybackIdsExists(fakeTransactionWithId.copy(amounts = amounts)).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
       }
     }
     "sourceIdsExists" - {
-      val source = Some(Source(Some(Id(2)), Name("Name"), Description("Description"))).pure[IdMonad]
+      val source = Source(Some(Id(2)), Name("Name"), Description("Description"))
       "should return Left(DoesNotExist) for first source id that does not exist" in {
         val amountId0 = Id(6)
         val amountId1 = Id(7)
@@ -210,9 +209,9 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
           CategoryAmount(Id(15), amountId1, Usd(14.6), Description("amountDesc1"), DateTime.now),
           CategoryAmount(Id(16), amountId2, Usd(1.6), Description("amountDesc2"), DateTime.now)
         )
-        (mockSourceRepository get _).when(amountId0).returns(source)
-        (mockSourceRepository get _).when(amountId1).returns(None.pure[IdMonad])
-        (mockSourceRepository get _).when(amountId2).returns(None.pure[IdMonad])
+        (mockSourceRepository get _).when(amountId0).returns(OptionT.pure(source))
+        (mockSourceRepository get _).when(amountId1).returns(OptionT.none)
+        (mockSourceRepository get _).when(amountId2).returns(OptionT.none)
 
         transactionValidationInterpreter.sourceIdsExists(fakeTransactionWithId.copy(amounts = amounts)).value shouldEqual
           EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Source"), amountId1)).value
@@ -223,7 +222,7 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
           CategoryAmount(Id(15), Id(7), Usd(14.6), Description("amountDesc1"), DateTime.now),
           CategoryAmount(Id(16), Id(8), Usd(1.6), Description("amountDesc2"), DateTime.now)
         )
-        amounts.foreach(a => (mockSourceRepository.get _).when(a.sourceId).returns(source))
+        amounts.foreach(a => (mockSourceRepository.get _).when(a.sourceId).returns(OptionT.pure(source)))
 
         transactionValidationInterpreter.sourceIdsExists(fakeTransactionWithId.copy(amounts = amounts)).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
@@ -244,7 +243,7 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
 
       "should return Left(DateNotInEffectiveTime) for first reporting date not in category time" in {
         val badAmount = CategoryAmount(Id(7), Id(8), Usd(1.6), Description("amountDesc"), DateTime.lastYear)
-        (mockCategoryRepository get _).when(badAmount.categoryId).returns(Some(category).pure[IdMonad])
+        (mockCategoryRepository get _).when(badAmount.categoryId).returns(OptionT.pure(category))
 
         val amounts = Seq(
           PaybackAmount(Id(6), Id(5), Usd(14.6), Description("amountDesc"), DateTime.now),
@@ -279,7 +278,7 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
         amounts.foreach { amount =>
           (mockCategoryRepository get _)
             .when(amount.categoryId)
-            .returns(Some(category).pure[IdMonad])
+            .returns(OptionT.pure(category))
         }
 
         transactionValidationInterpreter
@@ -293,7 +292,7 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
           CategoryAmount(Id(8), Id(5), Usd(14.6), Description("amountDesc0"), DateTime.nextYear)
         )
 
-        amounts.foreach { amount => (mockCategoryRepository get _).when(amount.categoryId).returns(None.pure[IdMonad]) }
+        amounts.foreach { amount => (mockCategoryRepository get _).when(amount.categoryId).returns(OptionT.none) }
 
         transactionValidationInterpreter
           .reportingDateWithinBudgetTime(fakeTransactionWithId.copy(amounts = amounts)).value shouldEqual
@@ -301,7 +300,7 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
       }
       "should return Right(()) for CategoryAmount with reportingDate within category effectiveTime" in {
         val catAmount = CategoryAmount(Id(7), Id(5), Usd(1.6), Description("amountDesc1"), DateTime.lastWeek)
-        (mockCategoryRepository get _).when(catAmount.categoryId).returns(Some(category).pure[IdMonad])
+        (mockCategoryRepository get _).when(catAmount.categoryId).returns(OptionT.some(category))
 
         transactionValidationInterpreter
           .reportingDateWithinBudgetTime(fakeTransactionWithId.copy(amounts = Seq(catAmount))).value shouldEqual
@@ -315,7 +314,7 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
           Description("amountDesc1"),
           category.budget.head.effectiveTime.head.start
         )
-        (mockCategoryRepository get _).when(catAmount.categoryId).returns(Some(category).pure[IdMonad])
+        (mockCategoryRepository get _).when(catAmount.categoryId).returns(OptionT.some(category))
 
         transactionValidationInterpreter
           .reportingDateWithinBudgetTime(fakeTransactionWithId.copy(amounts = Seq(catAmount))).value shouldEqual

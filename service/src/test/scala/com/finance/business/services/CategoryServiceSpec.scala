@@ -1,11 +1,11 @@
 package com.finance.business.services
 
-import cats.data.EitherT
+import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import cats.{Id => IdMonad}
 import com.finance.business.model.category.{Budget, BudgetAmountSpent, Category, CategoryAmountSpent}
-import com.finance.business.model.transaction.{CategoryAmount, Transaction}
-import com.finance.business.model.types.{DateRange, Description, Id, ModelName, Name, Usd}
+import com.finance.business.model.transaction.CategoryAmount
+import com.finance.business.model.types._
 import com.finance.business.repository.{CategoryRepository, TransactionRepository}
 import com.finance.business.validation.CategoryValidationAlgebra
 import com.finance.business.validation.errors._
@@ -214,9 +214,9 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
     }
     "get" - {
       "returns repository get" in {
-        (mockRepository get _) expects categoryId returns Some(category).pure[IdMonad]
+        (mockRepository get _) expects categoryId returns OptionT.pure(category)
 
-        service.get(categoryId) shouldEqual Some(category)
+        service.get(categoryId).value shouldEqual Some(category)
       }
     }
     "getMany" - {

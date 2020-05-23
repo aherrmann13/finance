@@ -1,5 +1,6 @@
 package com.finance.business.repository
 
+import cats.data.OptionT
 import com.finance.business.model.base.Model
 import com.finance.business.model.types.Id
 
@@ -10,7 +11,7 @@ trait Repository[F[_], M <: Model] {
 
   def delete(id: Id): F[Unit]
 
-  def get(id: Id): F[Option[M]]
+  def get(id: Id): OptionT[F, M]
 
   def getMany(ids: Seq[Id]): F[Seq[M]]
 

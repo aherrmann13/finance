@@ -1,7 +1,7 @@
 package com.finance.business.services
 
 import cats.Monad
-import cats.data.EitherT
+import cats.data.{EitherT, OptionT}
 import com.finance.business.model.source.Source
 import com.finance.business.model.types.Id
 import com.finance.business.repository.SourceRepository
@@ -35,7 +35,7 @@ class SourceService[F[_] : Monad](
       deleted <- EitherT.liftF(repository delete id)
     } yield deleted
 
-  override def get(id: Id): F[Option[Source]] = repository.get(id)
+  override def get(id: Id): OptionT[F, Source] = repository.get(id)
 
   override def getMany(ids: Seq[Id]): F[Seq[Source]] = repository.getMany(ids)
 

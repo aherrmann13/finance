@@ -1,6 +1,6 @@
 package com.finance.business.services
 
-import cats.data.EitherT
+import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import cats.{Id => IdMonad}
 import com.finance.business.model.source.Source
@@ -107,9 +107,9 @@ class SourceServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
     }
     "get" - {
       "returns repository get" in {
-        (mockRepository get _) expects sourceId returns Some(source).pure[IdMonad]
+        (mockRepository get _) expects sourceId returns OptionT.pure(source)
 
-        service.get(sourceId) shouldEqual Some(source)
+        service.get(sourceId).value shouldEqual Some(source)
       }
     }
     "getMany" - {

@@ -1,6 +1,6 @@
 package com.finance.business.services
 
-import cats.data.EitherT
+import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import cats.{Id => IdMonad}
 import com.finance.business.model.asset._
@@ -135,9 +135,9 @@ class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
     }
     "get" - {
       "returns repository get" in {
-        (mockRepository get _) expects assetId returns Some(asset).pure[IdMonad]
+        (mockRepository get _) expects assetId returns OptionT.pure(asset)
 
-        service.get(assetId) shouldEqual Some(asset)
+        service.get(assetId).value shouldEqual Some(asset)
       }
     }
     "getMany" - {

@@ -1,6 +1,6 @@
 package com.finance.business.services
 
-import cats.data.EitherT
+import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import cats.{Id => IdMonad}
 import com.finance.business.model.transfer.Transfer
@@ -100,9 +100,9 @@ class TransferServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
     }
     "get" - {
       "returns repository get" in {
-        (mockRepository get(_: Id)) expects transferId returns Some(transfer).pure[IdMonad]
+        (mockRepository get (_: Id)) expects transferId returns OptionT.pure(transfer)
 
-        service.get(transferId) shouldEqual Some(transfer)
+        service.get(transferId).value shouldEqual Some(transfer)
       }
     }
     "getMany" - {
@@ -123,7 +123,7 @@ class TransferServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
     "get with query" - {
       "returns repository get with query" in {
         val query = TransferQuery(None, None, Set.empty, None, None)
-        (mockRepository get(_: TransferQuery)) expects query returns Seq(transfer, transfer).pure[IdMonad]
+        (mockRepository get (_: TransferQuery)) expects query returns Seq(transfer, transfer).pure[IdMonad]
 
         service.get(query) shouldEqual Seq(transfer, transfer)
       }

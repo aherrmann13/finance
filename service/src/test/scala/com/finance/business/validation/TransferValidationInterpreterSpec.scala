@@ -1,7 +1,6 @@
 package com.finance.business.validation
 
-import cats.data.EitherT
-import cats.implicits._
+import cats.data.{EitherT, OptionT}
 import cats.{Id => IdMonad}
 import com.finance.business.model.account.{Account, Bank}
 import com.finance.business.model.transfer.Transfer
@@ -45,40 +44,40 @@ class TransferValidationInterpreterSpec extends AnyFreeSpec with Matchers with M
           EitherT.leftT[IdMonad, Unit](DoesNotExist(transferName)).value
       }
       "should return Left(DoesNotExist) when repository does not contain Account" in {
-        (mockTransferRepository get(_: Id)).when(fakeTransferWithId.id.get).returns(None.pure[IdMonad])
+        (mockTransferRepository get (_: Id)).when(fakeTransferWithId.id.get).returns(OptionT.none)
         transferValidationInterpreter.exists(fakeTransferWithId).value shouldEqual
           EitherT.leftT[IdMonad, Unit](DoesNotExist(transferName, fakeTransferWithId.id)).value
       }
       "should return Right(()) when repository contains Account" in {
-        (mockTransferRepository get(_: Id)).when(fakeTransferWithId.id.get).returns(Some(fakeTransferWithId).pure[IdMonad])
+        (mockTransferRepository get (_: Id)).when(fakeTransferWithId.id.get).returns(OptionT.pure(fakeTransferWithId))
         transferValidationInterpreter.exists(fakeTransferWithId).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
       }
     }
     "toAccountIdExists" - {
       "should return Left(DoesNotExist) when account repository does not contain to id" in {
-        (mockAccountRepository get _).when(fakeTransferWithId.to).returns(None.pure[IdMonad])
+        (mockAccountRepository get _).when(fakeTransferWithId.to).returns(OptionT.none)
         transferValidationInterpreter.toAccountIdExists(fakeTransferWithId).value shouldEqual
           EitherT.leftT[IdMonad, Unit](DoesNotExist(accountName, fakeTransferWithId.to)).value
       }
       "should return Right(()) when account repository contains to id" in {
         (mockAccountRepository get _)
           .when(fakeTransferWithId.to)
-          .returns(Some(Account(Some(Id(4)), Name("Name"), Description("Description"), Bank)).pure[IdMonad])
+          .returns(OptionT.pure(Account(Some(Id(4)), Name("Name"), Description("Description"), Bank)))
         transferValidationInterpreter.toAccountIdExists(fakeTransferWithId).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
       }
     }
     "fromAccountIdExists" - {
       "should return Left(DoesNotExist) when account repository does not contain from id" in {
-        (mockAccountRepository get _).when(fakeTransferWithId.from).returns(None.pure[IdMonad])
+        (mockAccountRepository get _).when(fakeTransferWithId.from).returns(OptionT.none)
         transferValidationInterpreter.fromAccountIdExists(fakeTransferWithId).value shouldEqual
           EitherT.leftT[IdMonad, Unit](DoesNotExist(accountName, fakeTransferWithId.from)).value
       }
       "should return Right(()) when account repository contains from id" in {
         (mockAccountRepository get _)
           .when(fakeTransferWithId.from)
-          .returns(Some(Account(Some(Id(4)), Name("Name"), Description("Description"), Bank)).pure[IdMonad])
+          .returns(OptionT.pure(Account(Some(Id(4)), Name("Name"), Description("Description"), Bank)))
         transferValidationInterpreter.fromAccountIdExists(fakeTransferWithId).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
       }

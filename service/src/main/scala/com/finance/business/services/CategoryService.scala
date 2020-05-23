@@ -1,7 +1,7 @@
 package com.finance.business.services
 
 import cats.Monad
-import cats.data.EitherT
+import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import com.finance.business.model.category.{Category, CategoryAmountSpent}
 import com.finance.business.model.transaction.CategoryAmount
@@ -67,7 +67,7 @@ class CategoryService[F[_] : Monad](
       deleted <- EitherT.liftF(repository delete id)
     } yield deleted
 
-  override def get(id: Id): F[Option[Category]] = repository.get(id)
+  override def get(id: Id): OptionT[F, Category] = repository.get(id)
 
   override def getMany(ids: Seq[Id]): F[Seq[Category]] = repository.getMany(ids)
 

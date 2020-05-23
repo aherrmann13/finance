@@ -59,15 +59,13 @@ class TransactionValidationInterpreter[F[_] : Monad](
       case c: CategoryAmount => c
     }.toList.traverse { catAmt =>
       EitherT {
-        categoryRepository.get(catAmt.categoryId) map {
-          _.map { category =>
-            Either.cond(
-              category.budget.flatMap(_.effectiveTime).exists(_ contains catAmt.reportingDate),
-              (),
-              DateNotInEffectiveTime(catAmt.reportingDate, category.budget.flatMap(_.effectiveTime))
-            )
-          } getOrElse Right(())
-        }
+        categoryRepository.get(catAmt.categoryId) map { category =>
+          Either.cond(
+            category.budget.flatMap(_.effectiveTime).exists(_ contains catAmt.reportingDate),
+            (),
+            DateNotInEffectiveTime(catAmt.reportingDate, category.budget.flatMap(_.effectiveTime))
+          )
+        } getOrElse Right(())
       }
     }.as(())
 }

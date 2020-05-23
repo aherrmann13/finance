@@ -1,7 +1,7 @@
 package com.finance.business.services
 
 import cats.Monad
-import cats.data.EitherT
+import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import com.finance.business.model.payback.{Payback, PaybackBalance}
 import com.finance.business.model.types.{DateRange, Id, Usd}
@@ -37,7 +37,7 @@ class PaybackService[F[_] : Monad](
       deleted <- EitherT.liftF(repository delete id)
     } yield deleted
 
-  override def get(id: Id): F[Option[Payback]] = repository.get(id)
+  override def get(id: Id): OptionT[F, Payback] = repository.get(id)
 
   override def getMany(ids: Seq[Id]): F[Seq[Payback]] = repository.getMany(ids)
 

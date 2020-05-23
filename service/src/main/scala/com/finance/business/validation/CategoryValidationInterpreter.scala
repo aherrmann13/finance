@@ -1,7 +1,7 @@
 package com.finance.business.validation
 
 import cats.Monad
-import cats.data.EitherT
+import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import com.finance.business.model.category._
 import com.finance.business.model.category.implicits._
@@ -31,18 +31,15 @@ class CategoryValidationInterpreter[F[_] : Monad](
     PropertyValidator.exists(category.parentId, categoryRepository.get)
 
   override def withinParentTimePeriod(category: Category): EitherT[F, CategoryEffectiveTimeNotWithinParent, Unit] =
-    EitherT {
-      category.parentId map {
-        categoryRepository.get(_) map {
-          _ map { parent =>
-            Either.cond(
-              category.effectiveTime.forall(_ within parent.effectiveTime),
-              (),
-              CategoryEffectiveTimeNotWithinParent(category.effectiveTime, parent.effectiveTime))
-          } getOrElse Either.right[CategoryEffectiveTimeNotWithinParent, Unit](())
+    OptionT.fromOption[F](category.parentId).flatMap { parentId =>
+      categoryRepository.get(parentId).flatMap { parent =>
+        OptionT.fromOption[F] {
+          Option.unless(category.effectiveTime.forall(_ within parent.effectiveTime)) {
+            CategoryEffectiveTimeNotWithinParent(category.effectiveTime, parent.effectiveTime)
+          }
         }
-      } getOrElse Either.right[CategoryEffectiveTimeNotWithinParent, Unit](()).pure[F]
-    }
+      }
+    }.toLeft(())
 
   override def nameIsValid(category: Category): EitherT[F, NameTooLong, Unit] =
     PropertyValidator.nameIsValid(category)
@@ -65,8 +62,8 @@ class CategoryValidationInterpreter[F[_] : Monad](
       category.id map {
         transactionRepository
           .anyOutsideRanges(_, category.budget.flatMap(_.effectiveTime)).map { exists =>
-            Either.cond(!exists, (), TransactionNotWithinBudgetEffectiveTime(category.budget.flatMap(_.effectiveTime)))
-          }
+          Either.cond(!exists, (), TransactionNotWithinBudgetEffectiveTime(category.budget.flatMap(_.effectiveTime)))
+        }
       } getOrElse Either.right[TransactionNotWithinBudgetEffectiveTime, Unit](()).pure[F]
     }
 

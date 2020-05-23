@@ -1,7 +1,6 @@
 package com.finance.business.validation
 
-import cats.data.EitherT
-import cats.implicits._
+import cats.data.{EitherT, OptionT}
 import cats.{Id => IdMonad}
 import com.finance.business.model.types._
 import com.finance.business.validation.PropertyValidator._
@@ -37,16 +36,16 @@ class PropertyValidatorSpec extends AnyFreeSpec with Matchers {
 
     "exists with option id" - {
       "should return Left(DoesNotExist) when id is None" in {
-        exists[IdMonad, TestModel](None, _ => Some(fakeModel).pure[IdMonad]).value shouldEqual
+        exists[IdMonad, TestModel](None, _ => OptionT.pure(fakeModel)).value shouldEqual
           EitherT.leftT[IdMonad, Unit](DoesNotExist(testModelName)).value
       }
       "should return Left(DoesNotExist) when exists func returns F[None]" in {
         val id = Some(Id(1))
-        exists[IdMonad, TestModel](id, _ => None.pure[IdMonad]).value shouldEqual
+        exists[IdMonad, TestModel](id, _ => OptionT.none[IdMonad, TestModel]).value shouldEqual
           EitherT.leftT[IdMonad, Unit](DoesNotExist(testModelName, id)).value
       }
       "should return Right(()) when exists func returns F[Some]" in {
-        exists[IdMonad, TestModel](Some(Id(1)), _ => Some(fakeModel).pure[IdMonad]).value shouldEqual
+        exists[IdMonad, TestModel](Some(Id(1)), _ => OptionT.pure(fakeModel)).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
       }
     }
@@ -54,11 +53,11 @@ class PropertyValidatorSpec extends AnyFreeSpec with Matchers {
     "exists with id" - {
       "should return Left(DoesNotExist) when exists func returns F[None]" in {
         val id = Id(1)
-        exists[IdMonad, TestModel](id, _ => None.pure[IdMonad]).value shouldEqual
+        exists[IdMonad, TestModel](id, _ => OptionT.none[IdMonad, TestModel]).value shouldEqual
           EitherT.leftT[IdMonad, Unit](DoesNotExist(testModelName, id)).value
       }
       "should return Right(()) when exists func returns F[Some]" in {
-        exists[IdMonad, TestModel](Id(1), _ => Some(fakeModel).pure[IdMonad]).value shouldEqual
+        exists[IdMonad, TestModel](Id(1), _ => OptionT.pure(fakeModel)).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
       }
     }

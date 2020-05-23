@@ -1,6 +1,6 @@
 package com.finance.business.validation
 
-import cats.data.EitherT
+import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import cats.{Id => IdMonad}
 import com.finance.business.model.payback.Payback
@@ -43,12 +43,12 @@ class PaybackValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mo
           EitherT.leftT[IdMonad, Unit](DoesNotExist(paybackName)).value
       }
       "should return Left(DoesNotExist) when repository does not contain Account" in {
-        (mockPaybackRepository get _).when(fakePaybackWithId.id.get).returns(None.pure[IdMonad])
+        (mockPaybackRepository get _).when(fakePaybackWithId.id.get).returns(OptionT.none)
         paybackValidationInterpreter.exists(fakePaybackWithId).value shouldEqual
           EitherT.leftT[IdMonad, Unit](DoesNotExist(paybackName, fakePaybackWithId.id)).value
       }
       "should return Right(()) when repository contains Account" in {
-        (mockPaybackRepository get _).when(fakePaybackWithId.id.get).returns(Some(fakePaybackWithId).pure[IdMonad])
+        (mockPaybackRepository get _).when(fakePaybackWithId.id.get).returns(OptionT.pure(fakePaybackWithId))
         paybackValidationInterpreter.exists(fakePaybackWithId).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
       }

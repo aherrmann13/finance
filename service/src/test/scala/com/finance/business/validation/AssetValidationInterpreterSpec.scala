@@ -1,6 +1,6 @@
 package com.finance.business.validation
 
-import cats.data.EitherT
+import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import cats.{Id => IdMonad}
 import com.finance.business.model.account.{Account, Bank}
@@ -47,25 +47,25 @@ class AssetValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mock
           EitherT.leftT[IdMonad, Unit](DoesNotExist(assetName)).value
       }
       "should return Left(DoesNotExist) when repository does not contain Asset" in {
-        (mockAssetRepository get _).when(fakeAssetWithId.id.get).returns(None.pure[IdMonad])
+        (mockAssetRepository get _).when(fakeAssetWithId.id.get).returns(OptionT.none)
         assetValidationInterpreter.exists(fakeAssetWithId).value shouldEqual
           EitherT.leftT[IdMonad, Unit](DoesNotExist(assetName, fakeAssetWithId.id)).value
       }
       "should return Right(()) when repository contains Account" in {
-        (mockAssetRepository get _).when(fakeAssetWithId.id.get).returns(Some(fakeAssetWithId).pure[IdMonad])
+        (mockAssetRepository get _).when(fakeAssetWithId.id.get).returns(OptionT.pure(fakeAssetWithId))
         assetValidationInterpreter.exists(fakeAssetWithId).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
       }
     }
     "accountIdExists" - {
       "should return Left(DoesNotExist) when repository does not contain Account" in {
-        (mockAccountRepository get _).when(fakeAssetWithId.accountId).returns(None.pure[IdMonad])
+        (mockAccountRepository get _).when(fakeAssetWithId.accountId).returns(OptionT.none)
         assetValidationInterpreter.accountIdExists(fakeAssetWithId).value shouldEqual
           EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Account"), fakeAssetWithId.accountId)).value
       }
       "should return Right(()) when repository contains Account" in {
         (mockAccountRepository get _).when(fakeAssetWithId.accountId)
-          .returns(Some(Account(Some(Id(4)), Name("Name"), Description("Description"), Bank)).pure[IdMonad])
+          .returns(OptionT.pure(Account(Some(Id(4)), Name("Name"), Description("Description"), Bank)))
         assetValidationInterpreter.accountIdExists(fakeAssetWithId).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
       }

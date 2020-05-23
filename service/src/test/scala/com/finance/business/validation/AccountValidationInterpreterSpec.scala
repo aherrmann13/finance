@@ -1,6 +1,6 @@
 package com.finance.business.validation
 
-import cats.data.EitherT
+import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import cats.{Id => IdMonad}
 import com.finance.business.model.account.{Account, Bank, Brokerage}
@@ -46,12 +46,12 @@ class AccountValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mo
           EitherT.leftT[IdMonad, Unit](DoesNotExist(accountName)).value
       }
       "should return Left(DoesNotExist) when repository does not contain Account" in {
-        (mockAccountRepository get _).when(fakeAccountWithId.id.get).returns(None.pure[IdMonad])
+        (mockAccountRepository get _).when(fakeAccountWithId.id.get).returns(OptionT.none)
         accountValidationInterpreter.exists(fakeAccountWithId).value shouldEqual
           EitherT.leftT[IdMonad, Unit](DoesNotExist(accountName, fakeAccountWithId.id)).value
       }
       "should return Right(()) when repository contains Account" in {
-        (mockAccountRepository get _).when(fakeAccountWithId.id.get).returns(Some(fakeAccountWithId).pure[IdMonad])
+        (mockAccountRepository get _).when(fakeAccountWithId.id.get).returns(OptionT.pure(fakeAccountWithId))
         accountValidationInterpreter.exists(fakeAccountWithId).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
       }

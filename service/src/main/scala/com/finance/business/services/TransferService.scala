@@ -1,7 +1,7 @@
 package com.finance.business.services
 
 import cats.Monad
-import cats.data.EitherT
+import cats.data.{EitherT, OptionT}
 import com.finance.business.model.transfer.Transfer
 import com.finance.business.model.types.Id
 import com.finance.business.repository.TransferRepository
@@ -33,7 +33,7 @@ class TransferService[F[_] : Monad](
   override def delete(id: Id): EitherT[F, ValidationError, Unit] =
     EitherT.liftF(repository delete id)
 
-  override def get(id: Id): F[Option[Transfer]] = repository.get(id)
+  override def get(id: Id): OptionT[F, Transfer] = repository.get(id)
 
   override def getMany(ids: Seq[Id]): F[Seq[Transfer]] = repository.getMany(ids)
 

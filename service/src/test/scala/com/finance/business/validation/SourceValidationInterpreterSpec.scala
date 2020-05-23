@@ -1,6 +1,6 @@
 package com.finance.business.validation
 
-import cats.data.EitherT
+import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import cats.{Id => IdMonad}
 import com.finance.business.model.source.Source
@@ -42,12 +42,12 @@ class SourceValidationInterpreterSpec extends AnyFreeSpec with Matchers with Moc
           EitherT.leftT[IdMonad, Unit](DoesNotExist(sourceName)).value
       }
       "should return Left(DoesNotExist) when repository does not contain Account" in {
-        (mockSourceRepository get _).when(fakeSourceWithId.id.get).returns(None.pure[IdMonad])
+        (mockSourceRepository get _).when(fakeSourceWithId.id.get).returns(OptionT.none)
         sourceValidationInterpreter.exists(fakeSourceWithId).value shouldEqual
           EitherT.leftT[IdMonad, Unit](DoesNotExist(sourceName, fakeSourceWithId.id)).value
       }
       "should return Right(()) when repository contains Account" in {
-        (mockSourceRepository get _).when(fakeSourceWithId.id.get).returns(Some(fakeSourceWithId).pure[IdMonad])
+        (mockSourceRepository get _).when(fakeSourceWithId.id.get).returns(OptionT.some(fakeSourceWithId))
         sourceValidationInterpreter.exists(fakeSourceWithId).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
       }

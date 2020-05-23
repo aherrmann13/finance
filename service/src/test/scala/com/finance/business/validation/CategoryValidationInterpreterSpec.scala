@@ -1,6 +1,6 @@
 package com.finance.business.validation
 
-import cats.data.EitherT
+import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import cats.{Id => IdMonad}
 import com.finance.business.model.category._
@@ -43,24 +43,24 @@ class CategoryValidationInterpreterSpec extends AnyFreeSpec with Matchers with M
           EitherT.leftT[IdMonad, Unit](DoesNotExist(categoryName)).value
       }
       "should return Left(DoesNotExist) when repository does not contain Account" in {
-        (mockCategoryRepository get _).when(fakeCategoryWithId.id.get).returns(None.pure[IdMonad])
+        (mockCategoryRepository get _).when(fakeCategoryWithId.id.get).returns(OptionT.none)
         categoryValidationInterpreter.exists(fakeCategoryWithId).value shouldEqual
           EitherT.leftT[IdMonad, Unit](DoesNotExist(categoryName, fakeCategoryWithId.id)).value
       }
       "should return Right(()) when repository contains Account" in {
-        (mockCategoryRepository get _).when(fakeCategoryWithId.id.get).returns(Some(fakeCategoryWithId).pure[IdMonad])
+        (mockCategoryRepository get _).when(fakeCategoryWithId.id.get).returns(OptionT.pure(fakeCategoryWithId))
         categoryValidationInterpreter.exists(fakeCategoryWithId).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
       }
     }
     "parentExists" - {
       "should return Left(DoesNotExist) when id does not exist" in {
-        (mockCategoryRepository get _).when(fakeCategoryWithId.parentId.get).returns(None.pure[IdMonad])
+        (mockCategoryRepository get _).when(fakeCategoryWithId.parentId.get).returns(OptionT.none)
         categoryValidationInterpreter.parentExists(fakeCategoryWithId).value shouldEqual
           EitherT.leftT[IdMonad, Unit](DoesNotExist(categoryName, fakeCategoryWithId.parentId.get)).value
       }
       "should return Right(()) when id exists" in {
-        (mockCategoryRepository get _).when(fakeCategoryWithId.parentId.get).returns(Some(fakeCategoryWithId))
+        (mockCategoryRepository get _).when(fakeCategoryWithId.parentId.get).returns(OptionT.pure(fakeCategoryWithId))
         categoryValidationInterpreter.parentExists(fakeCategoryWithId).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
       }
@@ -72,7 +72,7 @@ class CategoryValidationInterpreterSpec extends AnyFreeSpec with Matchers with M
           effectiveTime = Seq(DateRange(DateTime.lastYear, DateTime.now))
         )
         val effectiveTime = Seq(DateRange(DateTime.lastMonth, DateTime.nextMonth))
-        (mockCategoryRepository get _).when(parent.id.get).returns(Some(parent))
+        (mockCategoryRepository get _).when(parent.id.get).returns(OptionT.pure(parent))
 
         categoryValidationInterpreter.withinParentTimePeriod(
           fakeCategoryWithId.copy(effectiveTime = effectiveTime)
@@ -85,14 +85,14 @@ class CategoryValidationInterpreterSpec extends AnyFreeSpec with Matchers with M
           id = fakeCategoryWithId.parentId,
           effectiveTime = Seq(DateRange(DateTime.lastYear, DateTime.now))
         )
-        (mockCategoryRepository get _).when(parent.id.get).returns(Some(parent).pure[IdMonad])
+        (mockCategoryRepository get _).when(parent.id.get).returns(OptionT.pure(parent))
 
         categoryValidationInterpreter.withinParentTimePeriod(
           fakeCategoryWithId.copy(effectiveTime = Seq(DateRange(DateTime.lastMonth, DateTime.lastWeek)))
         ).value shouldEqual EitherT.rightT[IdMonad, DoesNotExist](()).value
       }
       "should return Right(()) when parent does not exist" in {
-        (mockCategoryRepository get _).when(fakeCategoryWithId.parentId.get).returns(None.pure[IdMonad])
+        (mockCategoryRepository get _).when(fakeCategoryWithId.parentId.get).returns(OptionT.none)
         categoryValidationInterpreter.withinParentTimePeriod(fakeCategoryWithId).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
       }
