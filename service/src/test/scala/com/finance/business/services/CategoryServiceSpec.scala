@@ -253,9 +253,9 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
         (mockRepository.getAll _).expects().returns(Seq(category.copy(budget = Seq(budget0, budget1))).pure[IdMonad])
 
-        mockTransactionRepository.getInRange _ expects DateRange(
+        mockTransactionRepository.getCategoryAmountsInRange _ expects DateRange(
           budget1.effectiveTime.head.start, budget0.effectiveTime(1).end
-        ) returns Seq.empty[Transaction].pure[IdMonad]
+        ) returns Seq.empty[CategoryAmount].pure[IdMonad]
 
         service.getAmountSpentInRange(
           DateRange(DateTime.parse("2020-02-15"), DateTime.parse("2020-03-15"))
@@ -279,7 +279,7 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
         (mockRepository.getAll _).expects().returns(Seq(category.copy(budget = Seq(budget0, budget1))).pure[IdMonad])
 
-        mockTransactionRepository.getInRange _ expects * never
+        mockTransactionRepository.getCategoryAmountsInRange _ expects * never
 
         service.getAmountSpentInRange(
           DateRange(DateTime.parse("2019-02-15"), DateTime.parse("2019-03-15"))
@@ -308,12 +308,9 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         val amt2 = CategoryAmount(cat.id.get, Id(6), Usd(30), Description("desc"), DateTime.parse("2020-02-15"))
         val amt3 = CategoryAmount(cat.id.get, Id(6), Usd(40), Description("desc"), DateTime.parse("2020-03-15"))
 
-        val transaction0 = Transaction(Some(Id(5)), Description("desc"), DateTime.now, Id(6), Seq(amt0, amt1))
-        val transaction1 = Transaction(Some(Id(5)), Description("desc"), DateTime.now, Id(6), Seq(amt2, amt3))
-
-        mockTransactionRepository.getInRange _ expects DateRange(
+        mockTransactionRepository.getCategoryAmountsInRange _ expects DateRange(
           budget0.effectiveTime.head.start, budget1.effectiveTime.head.end
-        ) returns Seq(transaction0, transaction1).pure[IdMonad]
+        ) returns Seq(amt0, amt1, amt2, amt3).pure[IdMonad]
 
         service.getAmountSpentInRange(
           DateRange(DateTime.parse("2020-01-14"), DateTime.parse("2020-02-17"))

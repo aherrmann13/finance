@@ -4,7 +4,7 @@ import cats.Monad
 import cats.data.EitherT
 import cats.implicits._
 import com.finance.business.model.category.{Category, CategoryAmountSpent}
-import com.finance.business.model.transaction.Transaction
+import com.finance.business.model.transaction.CategoryAmount
 import com.finance.business.model.types.{DateRange, Id}
 import com.finance.business.operations.CategoryOps._
 import com.finance.business.operations.TransactionOps._
@@ -15,8 +15,9 @@ import com.finance.business.validation.errors.ValidationError
 object CategoryService {
   private def widenRange(categories: Seq[Category], range: DateRange): Option[DateRange] = {
     val ranges = overlappingDateRanges(categories, range)
-    if(ranges.isEmpty) None else Some(DateRange(ranges.map(_.start).min, ranges.map(_.end).max))
+    Option.unless(ranges.isEmpty)(DateRange(ranges.map(_.start).min, ranges.map(_.end).max))
   }
+
   private def overlappingDateRanges(categories: Seq[Category], range: DateRange): Seq[DateRange] =
     categories flatMap {
       _.budget
@@ -28,12 +29,12 @@ object CategoryService {
 
 }
 
-class CategoryService[F[_]: Monad](
-    validator: CategoryValidationAlgebra[F],
-    repository: CategoryRepository[F],
-    transactionRepository: TransactionRepository[F]
+class CategoryService[F[_] : Monad](
+  validator: CategoryValidationAlgebra[F],
+  repository: CategoryRepository[F],
+  transactionRepository: TransactionRepository[F]
 ) extends CommandService[F, Category]
-    with QueryService[F, Category] {
+  with QueryService[F, Category] {
 
   import CategoryService._
 
@@ -76,6 +77,8 @@ class CategoryService[F[_]: Monad](
     for {
       categories <- getAll
       wideRange = widenRange(categories, range)
-      transactions <- wideRange.map { transactionRepository.getInRange } getOrElse Seq.empty[Transaction].pure[F]
+      transactions <- wideRange.map {
+        transactionRepository.getCategoryAmountsInRange
+      } getOrElse Seq.empty[CategoryAmount].pure[F]
     } yield transactions.categoryValues(range, categories)
 }

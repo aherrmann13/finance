@@ -1,20 +1,16 @@
 package com.finance.business.operations
 
 import com.finance.business.model.category.{Budget, BudgetAmountSpent, Category, CategoryAmountSpent}
-import com.finance.business.model.transaction.{CategoryAmount, Transaction}
+import com.finance.business.model.transaction.CategoryAmount
 import com.finance.business.model.types.{DateRange, Usd}
 import com.finance.business.operations.CategoryOps._
 
 object TransactionOps {
 
   // TODO: cleanup
-  implicit class TransactionSeqOperations(transactions: Seq[Transaction]) {
+  implicit class CategoryAmountSeqOperations(amounts: Seq[CategoryAmount]) {
     def categoryValues(range: DateRange, categories: Seq[Category]): Seq[CategoryAmountSpent] = {
-      val amountByCat = transactions.flatMap {
-        _.amounts
-      } collect { case c: CategoryAmount => c } groupBy {
-        _.categoryId
-      }
+      val amountByCat = amounts.groupBy { _.categoryId }
 
       categories.map { category =>
         CategoryAmountSpent(

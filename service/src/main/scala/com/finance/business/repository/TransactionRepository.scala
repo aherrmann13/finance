@@ -1,6 +1,6 @@
 package com.finance.business.repository
 
-import com.finance.business.model.transaction.{PaybackAmount, Transaction}
+import com.finance.business.model.transaction.{CategoryAmount, PaybackAmount, Transaction}
 import com.finance.business.model.types.{DateRange, Id}
 
 trait TransactionRepository[F[_]] extends Repository[F, Transaction] {
@@ -15,8 +15,7 @@ trait TransactionRepository[F[_]] extends Repository[F, Transaction] {
   // TODO: better method of determining this
   def anyOutsideRanges(categoryId: Id, ranges: Seq[DateRange]): F[Boolean]
 
-  // TODO: must be amount range not Transaction range or return 'Amount'
-  def getInRange(range: DateRange): F[Seq[Transaction]]
+  def getCategoryAmountsInRange(range: DateRange): F[Seq[CategoryAmount]]
 
   def getByPaybackIds(paybackIds: Seq[Id]): F[Seq[PaybackAmount]]
 

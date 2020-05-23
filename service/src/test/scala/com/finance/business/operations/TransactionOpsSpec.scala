@@ -1,7 +1,7 @@
 package com.finance.business.operations
 
 import com.finance.business.model.category.{Budget, BudgetAmountSpent, Category, CategoryAmountSpent}
-import com.finance.business.model.transaction.{CategoryAmount, Transaction}
+import com.finance.business.model.transaction.CategoryAmount
 import com.finance.business.operations.TransactionOps._
 import com.finance.business.model.types.{DateRange, Description, Id, Name, Usd}
 import org.scalatest.freespec.AnyFreeSpec
@@ -64,7 +64,7 @@ class TransactionOpsSpec extends AnyFreeSpec with Matchers {
     "categoryValues" - {
       "should copy all category and budget attributes to CategoryAmountSpent and BudgetAmountSpent" in {
         val dateRange = DateRange(DateTime.parse("2018-01-01"), DateTime.parse("2020-12-31"))
-        Seq.empty[Transaction].categoryValues(dateRange, Seq(cat0, cat1)) shouldEqual
+        Seq.empty[CategoryAmount].categoryValues(dateRange, Seq(cat0, cat1)) shouldEqual
           Seq(
             CategoryAmountSpent(cat0, Seq(
               BudgetAmountSpent(budget0.effectiveTime, Usd(0), Usd(0), budget0.amount),
@@ -88,10 +88,7 @@ class TransactionOpsSpec extends AnyFreeSpec with Matchers {
         val amt3 = CategoryAmount(cat1.id.get, Id(6), Usd(90), Description("desc"), timeWithinBudget2FirstPeriod)
         val amt4 = CategoryAmount(cat0.id.get, Id(6), Usd(20), Description("desc"), timeWithinBudget1FirstPeriod)
 
-        val transaction0 = Transaction(Some(Id(5)), Description("desc"), DateTime.now, Id(6), Seq(amt0, amt1))
-        val transaction1 = Transaction(Some(Id(5)), Description("desc"), DateTime.now, Id(6), Seq(amt2, amt3, amt4))
-
-        Seq(transaction0, transaction1).categoryValues(dateRange, Seq(cat0, cat1)) shouldEqual
+        Seq(amt0, amt1, amt2, amt3, amt4).categoryValues(dateRange, Seq(cat0, cat1)) shouldEqual
           Seq(
             CategoryAmountSpent(cat0, Seq(
               BudgetAmountSpent(budget0.effectiveTime, Usd(130), Usd(0), budget0.amount),
@@ -115,10 +112,7 @@ class TransactionOpsSpec extends AnyFreeSpec with Matchers {
         val amt3 = CategoryAmount(cat1.id.get, Id(6), Usd(90), Description("desc"), timeWithinBudget2FirstPeriod)
         val amt4 = CategoryAmount(cat0.id.get, Id(6), Usd(20), Description("desc"), timeWithinBudget1FirstPeriod)
 
-        val transaction0 = Transaction(Some(Id(5)), Description("desc"), DateTime.now, Id(6), Seq(amt0, amt1))
-        val transaction1 = Transaction(Some(Id(5)), Description("desc"), DateTime.now, Id(6), Seq(amt2, amt3, amt4))
-
-        Seq(transaction0, transaction1).categoryValues(dateRange, Seq(cat0, cat1)) shouldEqual
+        Seq(amt0, amt1, amt2, amt3, amt4).categoryValues(dateRange, Seq(cat0, cat1)) shouldEqual
           Seq(
             CategoryAmountSpent(cat0, Seq(
               BudgetAmountSpent(budget0.effectiveTime, Usd(0), Usd(130), budget0.amount),
@@ -138,10 +132,7 @@ class TransactionOpsSpec extends AnyFreeSpec with Matchers {
         val amt3 = CategoryAmount(cat1.id.get, Id(6), Usd(90), Description("desc"), DateTime.parse("2015-01-01"))
         val amt4 = CategoryAmount(cat0.id.get, Id(6), Usd(20), Description("desc"), DateTime.parse("2015-01-01"))
 
-        val transaction0 = Transaction(Some(Id(5)), Description("desc"), DateTime.now, Id(6), Seq(amt0, amt1))
-        val transaction1 = Transaction(Some(Id(5)), Description("desc"), DateTime.now, Id(6), Seq(amt2, amt3, amt4))
-
-        Seq(transaction0, transaction1).categoryValues(dateRange, Seq(cat0, cat1)) shouldEqual
+        Seq(amt0, amt1, amt2, amt3, amt4).categoryValues(dateRange, Seq(cat0, cat1)) shouldEqual
           Seq(
             CategoryAmountSpent(cat0, Seq(
               BudgetAmountSpent(budget0.effectiveTime, Usd(0), Usd(0), budget0.amount),
@@ -174,10 +165,7 @@ class TransactionOpsSpec extends AnyFreeSpec with Matchers {
         val amt1 = CategoryAmount(cat0.id.get, Id(6), Usd(20), Description("desc"), DateTime.parse("2019-02-15"))
         val amt2 = CategoryAmount(cat0.id.get, Id(6), Usd(60), Description("desc"), DateTime.parse("2019-03-15"))
 
-        val transaction0 = Transaction(Some(Id(5)), Description("desc"), DateTime.now, Id(6), Seq(amt0, amt1))
-        val transaction1 = Transaction(Some(Id(5)), Description("desc"), DateTime.now, Id(6), Seq(amt2))
-
-        Seq(transaction0, transaction1).categoryValues(dateRange, Seq(cat2)) shouldEqual
+        Seq(amt0, amt1, amt2).categoryValues(dateRange, Seq(cat2)) shouldEqual
           Seq(
             CategoryAmountSpent(cat2, Seq(
               BudgetAmountSpent(budget4.effectiveTime, Usd(70), Usd(0), budget4.amount),
@@ -188,7 +176,7 @@ class TransactionOpsSpec extends AnyFreeSpec with Matchers {
       "should use empty BudgetAmountSpent if category id is None" in {
         val cat2 = cat1.copy(id = None)
         val dateRange = DateRange(DateTime.parse("2018-01-01"), DateTime.parse("2020-12-31"))
-        Seq.empty[Transaction].categoryValues(dateRange, Seq(cat0, cat1, cat2)) shouldEqual
+        Seq.empty[CategoryAmount].categoryValues(dateRange, Seq(cat0, cat1, cat2)) shouldEqual
           Seq(
             CategoryAmountSpent(cat0, Seq(
               BudgetAmountSpent(budget0.effectiveTime, Usd(0), Usd(0), budget0.amount),
