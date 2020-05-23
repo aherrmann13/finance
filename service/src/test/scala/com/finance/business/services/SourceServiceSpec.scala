@@ -105,5 +105,35 @@ class SourceServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         service.delete(sourceId) shouldEqual EitherT.rightT[IdMonad, ValidationError](())
       }
     }
+    "get" - {
+      "returns repository get" in {
+        (mockRepository get _) expects sourceId returns Some(source).pure[IdMonad]
+
+        service.get(sourceId) shouldEqual Some(source)
+      }
+    }
+    "getMany" - {
+      "returns repository getMany" in {
+        (mockRepository getMany _) expects Seq(sourceId, Id(sourceId.value + 1)) returns
+          Seq(source, source).pure[IdMonad]
+
+        service.getMany(Seq(sourceId, Id(sourceId.value + 1))) shouldEqual Seq(source, source)
+      }
+    }
+    "getAll" - {
+      "returns repository getAll" - {
+        (mockRepository.getAll _).expects().returns(Seq(source, source).pure[IdMonad])
+
+        service.getAll shouldEqual Seq(source, source)
+      }
+    }
+    "get with fuzzy search" - {
+      "returns repository getFuzzyMatch" in {
+        val fuzzy = "fuzzy search"
+        (mockRepository getFuzzyMatch _) expects fuzzy returns Seq(source, source).pure[IdMonad]
+
+        service.get(fuzzy) shouldEqual Seq(source, source)
+      }
+    }
   }
 }
