@@ -68,3 +68,35 @@ UpdateDeletePayback:
         $ref: "../responses/common.yaml#/Empty200"
       400:
         $ref: "../responses/common.yaml#/Error"
+
+GetPaybackBalance:
+  get:
+    operationId: GetPaybackBalance
+    summary: "gets balance of all paybacks"
+    tags:
+      - payback
+    x-scala-package: payback
+    parameters:
+      - in: query
+        name: query
+        schema:
+          $ref: "../schemas/payback.yaml#/PaybackBalanceQuery"
+        required: true
+    responses:
+      200:
+        $ref: "../responses/payback.yaml#/GetPaybackBalanceResponse"
+      400:
+        $ref: "../responses/common.yaml#/Error"
+
+GetPaybackBalanceSummary:
+  get:
+    operationId: GetPaybackBalanceSummary
+    summary: "gets the outstanding total of all paybacks"
+    tags:
+      - payback
+    x-scala-package: payback
+    responses:
+      200:
+        $ref: "../responses/payback.yaml#/GetPaybackBalanceSummaryResponse"
+      400:
+        $ref: "../responses/common.yaml#/Error"

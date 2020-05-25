@@ -46,3 +46,49 @@ PaybackQuery:
       enum: [ "Asc", "Desc"]
       writeOnly: true
 
+PaybackBalanceQuery:
+  type: object
+  properties:
+    range:
+      allOf:
+        - $ref: "./common.yaml#/DateRange"
+      writeOnly: true
+  required:
+    - range
+
+PaybackBalance:
+  type: object
+  properties:
+    payback:
+      allOf:
+        - $ref: "#/Payback"
+      readOnly: true
+    paybackAmounts:
+      type: array
+      items:
+        $ref: "#/PaybackAmount"
+      readOnly: true
+  required:
+    - payback
+    - paybackAmounts
+
+## TODO: put in transaction?
+PaybackAmount:
+  type: object
+  properties:
+    sourceId:
+      type: integer
+      format: int32
+    amount:
+      type: number
+    description:
+      type: string
+    reportingDate:
+      type: string
+      format: date
+  required:
+    - sourceId
+    - amount
+    - description
+    - reportingDate
+

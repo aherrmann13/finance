@@ -43,6 +43,10 @@ paths:
     $ref: "paths/payback.yaml#/CreateGetPayback"
   /payback/{id}:
     $ref: "paths/payback.yaml#/UpdateDeletePayback"
+  /payback/balance:
+    $ref: "paths/payback.yaml#/GetPaybackBalance"
+  /payback/balancesummary:
+    $ref: "paths/payback.yaml#/GetPaybackBalanceSummary"
 components:
   schemas:
     Category:
@@ -93,6 +97,12 @@ components:
       $ref: "schemas/payback.yaml#/Payback"
     PaybackQuery:
       $ref: "schemas/payback.yaml#/PaybackQuery"
+    PaybackBalanceQuery:
+      $ref: "schemas/payback.yaml#/PaybackBalanceQuery"
+    PaybackBalance:
+      $ref: "schemas/payback.yaml#/PaybackBalance"
+    PaybackAmount:
+      $ref: "schemas/payback.yaml#/PaybackAmount"
     DateRange:
       $ref: "schemas/common.yaml#/DateRange"
   requestBodies:
@@ -173,6 +183,10 @@ components:
       $ref: "responses/payback.yaml#/UpdatePaybackResponse"
     GetPaybacksResponse:
       $ref: "responses/payback.yaml#/GetPaybacksResponse"
+    GetPaybackBalanceResponse:
+      $ref: "responses/payback.yaml#/GetPaybackBalanceResponse"
+    GetPaybackBalanceSummaryResponse:
+      $ref: "responses/payback.yaml#/GetPaybackBalanceSummaryResponse"
     Empty200:
       $ref: "responses/common.yaml#/Empty200"
     Error:
