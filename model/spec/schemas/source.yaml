@@ -17,14 +17,6 @@ Source:
 SourceQuery:
   type: object
   properties:
-    skip:
-      type: integer
-      format: int32
-      writeOnly: true
-    take:
-      type: integer
-      format: int32
-      writeOnly: true
     search:
       type: string
       writeOnly: true
