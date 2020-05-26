@@ -51,7 +51,7 @@ class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
         "should return Left(StockActionsInvalid) from validation algebra stockActionsAreValid" in {
           val returnVal = EitherT.leftT[IdMonad, Unit][StockActionsInvalid](
-            SellingMoreThanCurrentlyHave(StockAction(DateTime.now(), Buy, 6, Usd(12.0), Usd(15.0)))
+            SellingMoreThanCurrentlyHave(FifoSell(DateTime.now(), 6, Usd(12.0), Usd(15.0)))
           )
           (mockValidationAlgebra idIsNone _) when stock returns EitherT.rightT[IdMonad, IdMustBeNone](())
           (mockValidationAlgebra accountIdExists _) when stock returns EitherT.rightT[IdMonad, DoesNotExist](())
@@ -99,7 +99,7 @@ class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
         "should return Left(StockActionsInvalid) from validation algebra stockActionsAreValid" in {
           val returnVal = EitherT.leftT[IdMonad, Unit][StockActionsInvalid](
-            SellingMoreThanCurrentlyHave(StockAction(DateTime.now(), Buy, 6, Usd(12.0), Usd(15.0)))
+            SellingMoreThanCurrentlyHave(FifoSell(DateTime.now(), 6, Usd(12.0), Usd(15.0)))
           )
           (mockValidationAlgebra exists _) when stock returns EitherT.rightT[IdMonad, DoesNotExist](())
           (mockValidationAlgebra accountIdExists _) when stock returns EitherT.rightT[IdMonad, DoesNotExist](())
@@ -183,7 +183,7 @@ class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         Stock(Some(Id(4)), Id(19), "ticker2", Seq.empty)
       )
       "should return repository getStocks" in {
-        val query = StockQuery(None, Set.empty, None, None, Set.empty)
+        val query = StockQuery(None, None, None, Set.empty)
         (mockRepository.getStocks _).expects(query).returns(stocks.pure[IdMonad])
 
         service.getStocks(query) shouldEqual stocks

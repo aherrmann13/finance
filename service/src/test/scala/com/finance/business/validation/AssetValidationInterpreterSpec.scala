@@ -1,7 +1,6 @@
 package com.finance.business.validation
 
 import cats.data.{EitherT, OptionT}
-import cats.implicits._
 import cats.{Id => IdMonad}
 import com.finance.business.model.account.{Account, Bank}
 import com.finance.business.model.asset._
@@ -74,10 +73,10 @@ class AssetValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mock
       val fakeStock = Stock(Some(Id(2)), Id(17), "ticker", Seq.empty)
 
       "should return Left(NoStockToPayDividend) when StockDividend occurs with no units" in {
-        val action0 = StockAction(DateTime.now(), Buy, 6, Usd(12.0), Usd(15.0))
+        val action0 = Buy(DateTime.now, 6, Usd(12.0), Usd(15.0))
         val action1 = action0.copy(units = 5)
-        val action2 = action0.copy(units = action0.units + action1.units, actionType = LifoSell)
-        val badAction = action0.copy(actionType = StockDividend)
+        val action2 = LifoSell(DateTime.now, action0.units + action1.units, Usd(12.0), Usd(15.0))
+        val badAction = StockDividend(DateTime.now, action0.units + action1.units, Usd(12.0), Usd(15.0))
 
         assetValidationInterpreter
           .stockActionsAreValid(fakeStock.copy(actions = Seq(action0, action1, action2, badAction)))
@@ -85,10 +84,10 @@ class AssetValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mock
           EitherT.leftT[IdMonad, Unit](NoStockToPayDividend(badAction)).value
       }
       "should return Left(NoStockToPayDividend) when CashDividend occurs with no units" in {
-        val action0 = StockAction(DateTime.now(), Buy, 6, Usd(12.0), Usd(15.0))
+        val action0 = Buy(DateTime.now, 6, Usd(12.0), Usd(15.0))
         val action1 = action0.copy(units = 5)
-        val action2 = action0.copy(units = action0.units + action1.units, actionType = FifoSell)
-        val badAction = action0.copy(actionType = CashDividend)
+        val action2 = LifoSell(DateTime.now, action0.units + action1.units, Usd(12.0), Usd(15.0))
+        val badAction = CashDividend(DateTime.now, action0.units + action1.units, Usd(12.0), Usd(15.0))
 
         assetValidationInterpreter
           .stockActionsAreValid(fakeStock.copy(actions = Seq(action0, action1, action2, badAction)))
@@ -96,10 +95,10 @@ class AssetValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mock
           EitherT.leftT[IdMonad, Unit](NoStockToPayDividend(badAction)).value
       }
       "should return Left(NoStockToPayDividend) when Lifo sale occurs greater than current units" in {
-        val action0 = StockAction(DateTime.now(), Buy, 6, Usd(12.0), Usd(15.0))
+        val action0 = Buy(DateTime.now, 6, Usd(12.0), Usd(15.0))
         val action1 = action0.copy(units = 5)
-        val badAction = action0.copy(units = action0.units + action1.units + 1, actionType = LifoSell)
-        val action2 = action0.copy(actionType = CashDividend)
+        val badAction = LifoSell(DateTime.now, action0.units + action1.units + 1, Usd(12.0), Usd(15.0))
+        val action2 = CashDividend(DateTime.now, action0.units + action1.units, Usd(12.0), Usd(15.0))
 
         assetValidationInterpreter
           .stockActionsAreValid(fakeStock.copy(actions = Seq(action0, action1, badAction, action2)))
@@ -107,10 +106,10 @@ class AssetValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mock
           EitherT.leftT[IdMonad, Unit](SellingMoreThanCurrentlyHave(badAction)).value
       }
       "should return Left(NoStockToPayDividend) when Fifo sale occurs greater than current units" in {
-        val action0 = StockAction(DateTime.now(), Buy, 6, Usd(12.0), Usd(15.0))
+        val action0 = Buy(DateTime.now, 6, Usd(12.0), Usd(15.0))
         val action1 = action0.copy(units = 5)
-        val badAction = action0.copy(units = action0.units + action1.units + 1, actionType = FifoSell)
-        val action2 = action0.copy(actionType = CashDividend)
+        val badAction = FifoSell(DateTime.now, action0.units + action1.units + 1, Usd(12.0), Usd(15.0))
+        val action2 = CashDividend(DateTime.now, action0.units + action1.units, Usd(12.0), Usd(15.0))
 
         assetValidationInterpreter
           .stockActionsAreValid(fakeStock.copy(actions = Seq(action0, action1, badAction, action2)))
@@ -118,11 +117,11 @@ class AssetValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mock
           EitherT.leftT[IdMonad, Unit](SellingMoreThanCurrentlyHave(badAction)).value
       }
       "should return Right(()) for valid action list" in {
-        val action0 = StockAction(DateTime.now(), Buy, 6, Usd(12.0), Usd(15.0))
+        val action0 = Buy(DateTime.now, 6, Usd(12.0), Usd(15.0))
         val action1 = action0.copy(units = 5)
-        val action2 = action0.copy(actionType = CashDividend)
-        val action3 = action0.copy(actionType = StockDividend, units = 1)
-        val action4 = action0.copy(actionType = FifoSell, units = action0.units + action1.units + action3.units)
+        val action2 = CashDividend(DateTime.now, 6, Usd(12.0), Usd(15.0))
+        val action3 = StockDividend(DateTime.now, 1, Usd(12.0), Usd(15.0))
+        val action4 = FifoSell(DateTime.now, action0.units + action1.units + action3.units, Usd(12.0), Usd(15.0))
 
         assetValidationInterpreter
           .stockActionsAreValid(fakeStock.copy(actions = Seq(action0, action1, action2, action3, action4)))

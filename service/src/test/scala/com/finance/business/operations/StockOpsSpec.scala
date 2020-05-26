@@ -25,25 +25,25 @@ class StockOpsSpec extends AnyFreeSpec with Matchers {
         }
         "calculates quantity" - {
           val buys = Seq(
-            StockAction(DateTime.now, Buy, 30.123, Usd(1), Usd(1)),
-            StockAction(DateTime.now, Buy, 30.543, Usd(1), Usd(1)),
-            StockAction(DateTime.now, Buy, 3.123, Usd(1), Usd(1))
+            Buy(DateTime.now, 30.123, Usd(1), Usd(1)),
+            Buy(DateTime.now, 30.543, Usd(1), Usd(1)),
+            Buy(DateTime.now, 3.123, Usd(1), Usd(1))
           )
 
           val sells = Seq(
-            StockAction(DateTime.now, FifoSell, 27.9, Usd(1), Usd(1)),
-            StockAction(DateTime.now, LifoSell, 22.88, Usd(1), Usd(1)),
-            StockAction(DateTime.now, FifoSell, 19.88, Usd(1), Usd(1))
+            FifoSell(DateTime.now, 27.9, Usd(1), Usd(1)),
+            LifoSell(DateTime.now, 22.88, Usd(1), Usd(1)),
+            FifoSell(DateTime.now, 19.88, Usd(1), Usd(1))
           )
 
           val stockDividends = Seq(
-            StockAction(DateTime.now, StockDividend, 6.9, Usd(1), Usd(1)),
-            StockAction(DateTime.now, StockDividend, 14.537, Usd(1), Usd(1))
+            StockDividend(DateTime.now, 6.9, Usd(1), Usd(1)),
+            StockDividend(DateTime.now, 14.537, Usd(1), Usd(1))
           )
 
           val cashDividends = Seq(
-            StockAction(DateTime.now, CashDividend, 5.986, Usd(1), Usd(1)),
-            StockAction(DateTime.now, CashDividend, 2.6532, Usd(1), Usd(1))
+            CashDividend(DateTime.now, 5.986, Usd(1), Usd(1)),
+            CashDividend(DateTime.now, 2.6532, Usd(1), Usd(1))
           )
 
           val buySum = buys.map(_.units).sum
@@ -75,9 +75,9 @@ class StockOpsSpec extends AnyFreeSpec with Matchers {
         }
         "calculates days gain" in {
           val buys = Seq(
-            StockAction(DateTime.now, Buy, 30.123, Usd(1), Usd(1)),
-            StockAction(DateTime.now, Buy, 30.543, Usd(1), Usd(1)),
-            StockAction(DateTime.now, Buy, 3.123, Usd(1), Usd(1))
+            Buy(DateTime.now, 30.123, Usd(1), Usd(1)),
+            Buy(DateTime.now, 30.543, Usd(1), Usd(1)),
+            Buy(DateTime.now, 3.123, Usd(1), Usd(1))
           )
 
           (fakeStock.copy(actions = buys) withPrice fakeStockPriceAsOf).daysGain shouldEqual
@@ -87,41 +87,41 @@ class StockOpsSpec extends AnyFreeSpec with Matchers {
         }
         "calculates price paid" - {
           val buys = Seq(
-            StockAction(DateTime.now, Buy, 3, Usd(67.8), Usd(165.3)),
-            StockAction(DateTime.now, Buy, 3, Usd(32.90), Usd(35.87)),
-            StockAction(DateTime.now, Buy, 3, Usd(52), Usd(53))
+            Buy(DateTime.now, 3, Usd(67.8), Usd(165.3)),
+            Buy(DateTime.now, 3, Usd(32.90), Usd(35.87)),
+            Buy(DateTime.now, 3, Usd(52), Usd(53))
           )
 
           "adds stock buys" in {
             (fakeStock.copy(actions = buys) withPrice fakeStockPriceAsOf).pricePaid shouldEqual
-              Usd(buys.map(_.amountPaid.value).sum)
+              Usd(buys.map(_.amount.value).sum)
           }
           "ignores all other actions" in {
             (fakeStock.copy(
               actions = buys :+
-                buys.head.copy(actionType = FifoSell) :+
-                buys.head.copy(actionType = LifoSell) :+
-                buys.head.copy(actionType = CashDividend) :+
-                buys.head.copy(actionType = StockDividend)
+                FifoSell(DateTime.now, 27.9, Usd(1), Usd(1)) :+
+                LifoSell(DateTime.now, 22.88, Usd(1), Usd(1)) :+
+                StockDividend(DateTime.now, 6.9, Usd(1), Usd(1)) :+
+                CashDividend(DateTime.now, 14.537, Usd(1), Usd(1))
             ) withPrice fakeStockPriceAsOf).pricePaid shouldEqual
-              buys.map(_.amountPaid).reduce((x, y) => Usd(x.value + y.value))
+              buys.map(_.amount).reduce((x, y) => Usd(x.value + y.value))
           }
         }
         "calculates total gain" in {
           val buys = Seq(
-            StockAction(DateTime.now, Buy, 3, Usd(67.8), Usd(165.3)),
-            StockAction(DateTime.now, Buy, 3, Usd(32.90), Usd(35.87)),
-            StockAction(DateTime.now, Buy, 3, Usd(52), Usd(53))
+            Buy(DateTime.now, 3, Usd(67.8), Usd(165.3)),
+            Buy(DateTime.now, 3, Usd(32.90), Usd(35.87)),
+            Buy(DateTime.now, 3, Usd(52), Usd(53))
           )
           val totalValue = fakeStockPriceAsOf.current.value * buys.map(_.units).sum
-          val pricePaid = buys.map(_.amountPaid.value).sum
+          val pricePaid = buys.map(_.amount.value).sum
           (fakeStock.copy(actions = buys) withPrice fakeStockPriceAsOf).totalGain shouldEqual Usd(totalValue - pricePaid)
         }
         "calculates value" in {
           val buys = Seq(
-            StockAction(DateTime.now, Buy, 3, Usd(67.8), Usd(165.3)),
-            StockAction(DateTime.now, Buy, 3, Usd(32.90), Usd(35.87)),
-            StockAction(DateTime.now, Buy, 3, Usd(52), Usd(53))
+            Buy(DateTime.now, 3, Usd(67.8), Usd(165.3)),
+            Buy(DateTime.now, 3, Usd(32.90), Usd(35.87)),
+            Buy(DateTime.now, 3, Usd(52), Usd(53))
           )
 
           (fakeStock.copy(actions = buys) withPrice fakeStockPriceAsOf).value shouldEqual

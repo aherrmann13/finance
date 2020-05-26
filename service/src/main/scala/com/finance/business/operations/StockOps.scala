@@ -24,22 +24,18 @@ object StockOps {
     }
 
     private def getQuantity: BigDecimal =
-      stock.actions map { action =>
-        action.actionType match {
-          case Buy => action.units
-          case LifoSell => action.units * -1
-          case FifoSell => action.units * -1
-          case StockDividend => action.units
-          case CashDividend => BigDecimal(0)
-        }
+      stock.actions map {
+        case Buy(_, units, _, _) => units
+        case LifoSell(_, units, _, _) => units * -1
+        case FifoSell(_, units, _, _) => units * -1
+        case StockDividend(_, units, _, _) => units
+        case CashDividend(_, _, _, _) => BigDecimal(0)
       } sum
 
     private def getPricePaid: Usd =
-      stock.actions map { action =>
-        action.actionType match {
-          case Buy => action.amountPaid
-          case _ => Usd(0)
-        }
+      stock.actions map {
+        case Buy(_, _, _, amount) => amount
+        case _ => Usd(0)
       } reduceOption { (x, y) =>
         Usd(x.value + y.value)
       } getOrElse Usd(0)

@@ -15,20 +15,20 @@ object AssetValidationInterpreter {
   }
 
   case class StockActionValidator(currentUnits: BigDecimal) extends AnyVal {
-    def +(action: StockAction): StockActionValidator = action.actionType match {
-      case Buy => copy(currentUnits = currentUnits + action.units)
-      case LifoSell => copy(currentUnits = currentUnits - action.units)
-      case FifoSell => copy(currentUnits = currentUnits - action.units)
-      case StockDividend => copy(currentUnits = currentUnits + action.units)
-      case CashDividend => this
+    def +(action: StockAction): StockActionValidator = action match {
+      case Buy(_, units, _, _) => copy(currentUnits = currentUnits + units)
+      case LifoSell(_, units, _, _) => copy(currentUnits = currentUnits - units)
+      case FifoSell(_, units, _, _) => copy(currentUnits = currentUnits - units)
+      case StockDividend(_, units, _, _) => copy(currentUnits = currentUnits + units)
+      case CashDividend(_, _, _, _) => this
     }
 
-    def ?(action: StockAction): Option[StockActionsInvalid] = action.actionType match {
-      case Buy => None
-      case LifoSell => Option.unless(currentUnits >= action.units)(SellingMoreThanCurrentlyHave(action))
-      case FifoSell => Option.unless(currentUnits >= action.units)(SellingMoreThanCurrentlyHave(action))
-      case StockDividend => Option.unless(currentUnits >= action.units)(NoStockToPayDividend(action))
-      case CashDividend => Option.unless(currentUnits >= action.units)(NoStockToPayDividend(action))
+    def ?(action: StockAction): Option[StockActionsInvalid] = action match {
+      case Buy(_, _, _, _) => None
+      case LifoSell(_, units, _, _) => Option.unless(currentUnits >= units)(SellingMoreThanCurrentlyHave(action))
+      case FifoSell(_, units, _, _) => Option.unless(currentUnits >= units)(SellingMoreThanCurrentlyHave(action))
+      case StockDividend(_, units, _, _) => Option.unless(currentUnits >= units)(NoStockToPayDividend(action))
+      case CashDividend(_, units, _, _) => Option.unless(currentUnits >= units)(NoStockToPayDividend(action))
     }
   }
 
