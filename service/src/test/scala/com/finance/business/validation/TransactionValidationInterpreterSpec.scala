@@ -63,12 +63,12 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
           EitherT.leftT[IdMonad, Unit](DoesNotExist(transactionName)).value
       }
       "should return Left(DoesNotExist) when repository does not contain Account" in {
-        (mockTransactionRepository get _).when(fakeTransactionWithId.id.get).returns(OptionT.none)
+        (mockTransactionRepository get (_: Id)).when(fakeTransactionWithId.id.get).returns(OptionT.none)
         transactionValidationInterpreter.exists(fakeTransactionWithId).value shouldEqual
           EitherT.leftT[IdMonad, Unit](DoesNotExist(transactionName, fakeTransactionWithId.id)).value
       }
       "should return Right(()) when repository contains Account" in {
-        (mockTransactionRepository get _)
+        (mockTransactionRepository get (_: Id))
           .when(fakeTransactionWithId.id.get)
           .returns(OptionT.pure(fakeTransactionWithId))
         transactionValidationInterpreter.exists(fakeTransactionWithId).value shouldEqual

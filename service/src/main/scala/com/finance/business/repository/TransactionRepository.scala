@@ -2,8 +2,11 @@ package com.finance.business.repository
 
 import com.finance.business.model.transaction.{CategoryAmount, PaybackAmount, Transaction}
 import com.finance.business.model.types.{DateRange, Id}
+import com.finance.business.repository.query.TransactionQuery
 
 trait TransactionRepository[F[_]] extends Repository[F, Transaction] {
+  def get(query: TransactionQuery): F[Seq[Transaction]]
+
   def anyWithAccountId(accountId: Id): F[Boolean]
 
   def anyWithPaybackId(paybackId: Id): F[Boolean]

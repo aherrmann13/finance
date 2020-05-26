@@ -1,11 +1,12 @@
 package com.finance.business.services
 
-import cats.data.EitherT
+import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import cats.{Id => IdMonad}
 import com.finance.business.model.transaction.{CategoryAmount, PaybackAmount, Transaction}
 import com.finance.business.model.types.{Description, Id, ModelName, Usd}
 import com.finance.business.repository.TransactionRepository
+import com.finance.business.repository.query.TransactionQuery
 import com.finance.business.validation.TransactionValidationAlgebra
 import com.finance.business.validation.errors._
 import com.github.nscala_time.time.Imports._
@@ -262,6 +263,36 @@ class TransactionServiceSpec extends AnyFreeSpec with Matchers with MockFactory 
         (mockRepository delete _) expects transactionId returns ().pure[IdMonad]
 
         service.delete(transactionId) shouldEqual EitherT.rightT[IdMonad, ValidationError](())
+      }
+    }
+    "get" - {
+      "should return repository get" in {
+        (mockRepository get (_: Id)) expects transactionId returns OptionT.pure(transaction)
+
+        service.get(transactionId).value shouldEqual Some(transaction)
+      }
+    }
+    "getMany" - {
+      "should return repository getMany" in {
+        (mockRepository getMany _) expects Seq(transactionId, Id(transactionId.value + 1)) returns
+          Seq(transaction, transaction).pure[IdMonad]
+
+        service.getMany(Seq(transactionId, Id(transactionId.value + 1))) shouldEqual Seq(transaction, transaction)
+      }
+    }
+    "getAll" - {
+      "should return repository getAll" - {
+        (mockRepository.getAll _).expects().returns(Seq(transaction, transaction).pure[IdMonad])
+
+        service.getAll shouldEqual Seq(transaction, transaction)
+      }
+    }
+    "get with query" - {
+      "should return repository get with query" in {
+        val query = TransactionQuery(None, None, Set.empty, Set.empty, None, None, None)
+        (mockRepository get (_: TransactionQuery)) expects query returns Seq(transaction, transaction).pure[IdMonad]
+
+        service.get(query) shouldEqual Seq(transaction, transaction)
       }
     }
   }
