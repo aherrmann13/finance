@@ -5,6 +5,7 @@ import com.finance.business.model.types.{DateRange, Id}
 import com.finance.business.repository.query.TransactionQuery
 
 trait TransactionRepository[F[_]] extends Repository[F, Transaction] {
+  // TODO: clear def of what is returned when reporting date of amount is used
   def get(query: TransactionQuery): F[Seq[Transaction]]
 
   def anyWithAccountId(accountId: Id): F[Boolean]

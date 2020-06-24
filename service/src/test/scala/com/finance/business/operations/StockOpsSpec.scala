@@ -453,6 +453,49 @@ class StockOpsSpec extends AnyFreeSpec with Matchers {
             .unitsRemaining shouldEqual 75
         }
       }
+      "valueWithPrice" - {
+        "should return price of buy concatenated with all other actions" in {
+          StockPurchaseLifecycle(
+            stock = fakeStock,
+            buy = Buy(DateTime.now, 10, Usd(60), Usd(605)),
+            lifecycle = Seq(
+              StockDividend(DateTime.now, 2, Usd(70), Usd(140)),
+              CashDividend(DateTime.now, 2, Usd(70), Usd(140)),
+              LifoSell(DateTime.now, 5, Usd(70), Usd(350)),
+              FifoSell(DateTime.now, 5, Usd(80), Usd(400)),
+            )
+          ) valueWithPrice Usd(80) shouldEqual Usd(1050)
+        }
+      }
+    }
+    "StockActionOperations" - {
+      "valueWithPrice" - {
+        "should return value of current stock at the given price" in {
+          Seq(
+            Buy(DateTime.now, 10, Usd(60), Usd(605)),
+            Buy(DateTime.now, 10, Usd(60), Usd(605)),
+          ) valueWithPrice Usd(40) shouldEqual Usd(800)
+        }
+        "should return value of what was sold regardless of the given price" in {
+          Seq(
+            Buy(DateTime.now, 10, Usd(60), Usd(605)),
+            LifoSell(DateTime.now, 5, Usd(70), Usd(350)),
+            FifoSell(DateTime.now, 5, Usd(80), Usd(400)),
+          ) valueWithPrice Usd(40) shouldEqual Usd(750)
+        }
+        "should return value of cash dividend as the amount of the dividend" in {
+          Seq(
+            Buy(DateTime.now, 10, Usd(60), Usd(605)),
+            CashDividend(DateTime.now, 2, Usd(70), Usd(140))
+          ) valueWithPrice Usd(40) shouldEqual Usd(540)
+        }
+        "should return value of stock dividend as the amount times the current price" in {
+          Seq(
+            Buy(DateTime.now, 10, Usd(60), Usd(605)),
+            StockDividend(DateTime.now, 2, Usd(70), Usd(140))
+          ) valueWithPrice Usd(40) shouldEqual Usd(480)
+        }
+      }
     }
   }
 }

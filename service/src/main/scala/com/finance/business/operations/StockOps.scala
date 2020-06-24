@@ -116,5 +116,28 @@ object StockOps {
         case StockDividend(_, units, _, _) => units
         case _ => BigDecimal(0)
       }.sum
+
+    def valueWithPrice(price: Usd): Usd =
+      (stockPurchaseLifecycle.buy +: stockPurchaseLifecycle.lifecycle) valueWithPrice price
+  }
+
+  implicit class StockActionOperations(actions: Seq[StockAction]) {
+    def valueWithPrice(price: Usd): Usd =
+      calculateCurrentValue(
+        soldAndRemaining = actions.foldLeft((BigDecimal(0), Usd(0)))(calculateSoldAndRemaining),
+        price = price
+      )
+
+    private def calculateSoldAndRemaining(current: (BigDecimal, Usd), action: StockAction): (BigDecimal, Usd) =
+      action match {
+        case Buy(_, units, _, _) => (current._1 + units, current._2)
+        case LifoSell(_, units, _, amount) => (current._1 - units, Usd(current._2.value + amount.value))
+        case FifoSell(_, units, _, amount) => (current._1 - units, Usd(current._2.value + amount.value))
+        case StockDividend(_, units, _, _) => (current._1 + units, current._2)
+        case CashDividend(_, _, _, amount) => (current._1, Usd(current._2.value + amount.value))
+      }
+
+    private def calculateCurrentValue(soldAndRemaining: (BigDecimal, Usd), price: Usd): Usd =
+      Usd((soldAndRemaining._1 * price.value) + soldAndRemaining._2.value)
   }
 }

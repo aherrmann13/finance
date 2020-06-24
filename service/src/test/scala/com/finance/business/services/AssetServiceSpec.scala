@@ -168,7 +168,7 @@ class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       "should return each stock with price" in {
         (mockRepository.getAllStocks _).expects().returns(stocks.pure[IdMonad])
         stocks.zip(values).foreach { x =>
-          mockStockPriceRetriever.call _ expects x._1.ticker returns x._2.pure[IdMonad]
+          (mockStockPriceRetriever.call(_: String)) expects x._1.ticker returns x._2.pure[IdMonad]
         }
 
         service.getStockValue shouldEqual stocks.zip(values).map { x =>
