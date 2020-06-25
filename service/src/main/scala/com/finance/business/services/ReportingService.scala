@@ -23,6 +23,12 @@ object ReportingService {
       amount <- transaction.amounts.collect { case c: CategoryAmount => c }
       date = if (useReportingDate) amount.reportingDate else transaction.transactionDate
     } yield AccountValueItem(transaction.accountId, date, amount.amount)
+
+  // TODO: right spot for these?
+  // these are here so we can use `groupByNel` to get a non empty in the group by
+  private implicit val dateTimeOrder: Order[DateTime] = Order.fromOrdering
+  private implicit val dateRangeAcctTupleOrder: Order[(DateRange, Id)] =
+    Order.by[(DateRange, Id), (Int, DateTime, DateTime)](t => (t._2.value, t._1.start, t._1.end))
 }
 
 class ReportingService[F[_] : Monad](
@@ -32,11 +38,17 @@ class ReportingService[F[_] : Monad](
 ) {
   import ReportingService._
 
-  // TODO: right spot for these?
-  // these are here so we can use `groupByNel` to get a non empty in the group by
-  private implicit val dateTimeOrder: Order[DateTime] = Order.fromOrdering
-  private implicit val dateRangeAcctTupleOrder: Order[(DateRange, Id)] =
-    Order.by[(DateRange, Id), (Int, DateTime, DateTime)](t => (t._2.value, t._1.start, t._1.end))
+  def getNetWorth: F[Usd] =
+    for {
+      transactions <- transactionRepository.getAll
+      stocks <- assetRepository.getAllStocks
+      stockValues <- stocks.toList.traverse { stock =>
+        stockPriceRetriever.call(stock.ticker).map(p => stock.actions valueWithPrice p.current)
+      }
+      transactionValue = transactions.flatMap(_.amounts).collect { case c: CategoryAmount => c }.map(_.amount)
+        .reduceOption((x, y) => Usd(x.value + y.value)).getOrElse(Usd(0))
+      stockValue = stockValues.reduceOption((x, y) => Usd(x.value + y.value)).getOrElse(Usd(0))
+    } yield Usd(transactionValue.value + stockValue.value)
 
   def getAccountValue(query: AccountValueQuery): F[Seq[AccountValue]] =
     for {
@@ -45,7 +57,7 @@ class ReportingService[F[_] : Monad](
       group = (transactions ++ stocks).toList.groupByNel(v => (v.dateRange, v.accountId))
       merged = group.toSeq.map { entry =>
         AccountValue(entry._1._1, entry._1._2, Usd(entry._2.map(_.value.value).reduce))
-      } F
+      }
     } yield merged
 
   private def getTransactionAmounts(query: AccountValueQuery): F[Seq[AccountValue]] =
