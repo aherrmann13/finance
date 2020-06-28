@@ -4,9 +4,9 @@ import com.finance.business.model.types.{Id, Usd}
 import com.github.nscala_time.time.Imports.DateTime
 
 case class TransferQuery(
-  to: Option[DateTime],
-  from: Option[DateTime],
-  accountIds: Set[Id],
-  lessThan: Option[Usd],
-  greaterThan:  Option[Usd]
+  to: Option[DateTime] = None,
+  from: Option[DateTime] = None,
+  accountIds: Set[Id] = Set.empty,
+  lessThan: Option[Usd] = None,
+  greaterThan:  Option[Usd] = None
 )
