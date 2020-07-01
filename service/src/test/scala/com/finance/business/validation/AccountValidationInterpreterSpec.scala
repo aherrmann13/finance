@@ -4,7 +4,7 @@ import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import cats.{Id => IdMonad}
 import com.finance.business.model.account.{Account, Bank, Brokerage}
-import com.finance.business.model.types.{Description, Id, ModelName, Name}
+import com.finance.business.model.types._
 import com.finance.business.repository.{AccountRepository, AssetRepository, PaybackRepository, TransactionRepository}
 import com.finance.business.validation.errors._
 import org.scalamock.scalatest.MockFactory
@@ -25,7 +25,7 @@ class AccountValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mo
     mockPaybackRepository
   )
 
-  private val fakeAccountWithId = Account(Some(Id(4)), Name("Name"), Description("Description"), Bank)
+  private val fakeAccountWithId = Account(Some(Id(4)), Name("Name"), Description("Description"), Bank, Usd(50))
   private val fakeAccountWithNoId = fakeAccountWithId.copy(id = None)
   private val accountName = ModelName("Account")
 

@@ -105,6 +105,8 @@ components:
       $ref: "schemas/payback.yaml#/PaybackAmount"
     DateRange:
       $ref: "schemas/common.yaml#/DateRange"
+    Error:
+      $ref: "schemas/common.yaml#/Error"
   requestBodies:
     CreateCategoryRequest:
       $ref: "requestBodies/category.yaml#/CreateCategoryRequest"

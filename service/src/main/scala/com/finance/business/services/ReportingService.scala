@@ -10,7 +10,7 @@ import com.finance.business.operations.CategoryOps._
 import com.finance.business.operations.StockOps._
 import com.finance.business.remotecalls.StockPriceRetriever
 import com.finance.business.repository.query.TransactionQuery
-import com.finance.business.repository.{AssetRepository, TransactionRepository}
+import com.finance.business.repository.{AccountRepository, AssetRepository, TransactionRepository}
 import com.finance.business.services.query.AccountValueQuery
 import com.github.nscala_time.time.Imports._
 
@@ -32,6 +32,7 @@ object ReportingService {
 }
 
 class ReportingService[F[_] : Monad](
+  accountRepository: AccountRepository[F],
   transactionRepository: TransactionRepository[F],
   assetRepository: AssetRepository[F],
   stockPriceRetriever: StockPriceRetriever[F]
@@ -40,15 +41,17 @@ class ReportingService[F[_] : Monad](
 
   def getNetWorth: F[Usd] =
     for {
+      accounts <- accountRepository.getAll
       transactions <- transactionRepository.getAll
       stocks <- assetRepository.getAllStocks
       stockValues <- stocks.toList.traverse { stock =>
         stockPriceRetriever.call(stock.ticker).map(p => stock.actions valueWithPrice p.current)
       }
+      existingAccountValue = Usd(accounts.map(_.initialAmount.value).sum)
       transactionValue = transactions.flatMap(_.amounts).collect { case c: CategoryAmount => c }.map(_.amount)
         .reduceOption((x, y) => Usd(x.value + y.value)).getOrElse(Usd(0))
       stockValue = stockValues.reduceOption((x, y) => Usd(x.value + y.value)).getOrElse(Usd(0))
-    } yield Usd(transactionValue.value + stockValue.value)
+    } yield Usd(existingAccountValue.value + transactionValue.value + stockValue.value)
 
   def getAccountValue(query: AccountValueQuery): F[Seq[AccountValue]] =
     for {

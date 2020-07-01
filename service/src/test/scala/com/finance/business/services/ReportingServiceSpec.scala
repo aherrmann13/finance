@@ -2,13 +2,14 @@ package com.finance.business.services
 
 import cats.implicits._
 import cats.{Id => IdMonad}
+import com.finance.business.model.account.{Account, Bank}
 import com.finance.business.model.asset._
 import com.finance.business.model.reporting.AccountValue
 import com.finance.business.model.transaction.{CategoryAmount, PaybackAmount, Transaction}
-import com.finance.business.model.types.{DateRange, Description, Id, Usd}
+import com.finance.business.model.types._
 import com.finance.business.remotecalls.StockPriceRetriever
 import com.finance.business.repository.query.TransactionQuery
-import com.finance.business.repository.{AssetRepository, TransactionRepository}
+import com.finance.business.repository.{AccountRepository, AssetRepository, TransactionRepository}
 import com.finance.business.services.query.AccountValueQuery
 import com.github.nscala_time.time.Imports._
 import org.scalamock.scalatest.MockFactory
@@ -18,16 +19,19 @@ import org.scalatest.matchers.should.Matchers
 class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
   private val January = DateRange(DateTime.parse("2020-01-01"), DateTime.parse("2020-01-31"))
   private val February = DateRange(DateTime.parse("2020-02-01"), DateTime.parse("2020-02-28"))
+  private val mockAccountRepository = stub[AccountRepository[IdMonad]]
   private val mockTransactionRepository = stub[TransactionRepository[IdMonad]]
   private val mockAssetRepository = stub[AssetRepository[IdMonad]]
   private val mockStockPriceRetriever = stub[StockPriceRetriever[IdMonad]]
 
   private val service = new ReportingService[IdMonad](
+    mockAccountRepository,
     mockTransactionRepository,
     mockAssetRepository,
     mockStockPriceRetriever
   )
 
+  private val fakeAccount = Account(Some(Id(6)), Name("Name"), Description("Description"), Bank, Usd(100))
   private val fakeAmount = CategoryAmount(Id(4), Id(5), Usd(20), Description("desc"), DateTime.now)
   private val fakeTransaction = Transaction(Some(Id(2)), Description("desc"), DateTime.now, Id(3), Seq(fakeAmount))
   private val fakeStock = Stock(Some(Id(2)), Id(3), "ticker", Seq(Buy(DateTime.now, 12, Usd(60), Usd(65))))
@@ -35,6 +39,17 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
   // TODO: compare `Seq` better (order independent but exact same elements)
   "ReportingService" - {
     "getNetWorth" - {
+      "should return value of all account initial amounts" in {
+        val a0 = fakeAccount.copy(id = Some(Id(5)), initialAmount = Usd(50))
+        val a1 = fakeAccount.copy(id = Some(Id(5)), initialAmount = Usd(60))
+        val a2 = fakeAccount.copy(id = Some(Id(5)), initialAmount = Usd(70))
+
+        (mockAccountRepository.getAll _).when().returns(Seq(a0, a1, a2))
+        (mockTransactionRepository.getAll _).when().returns(Seq.empty)
+        (mockAssetRepository.getAllStocks _).when().returns(Seq.empty)
+
+        service.getNetWorth shouldEqual Usd(180)
+      }
       "should return value of all transactions" in {
         val t0 = fakeTransaction.copy(amounts = Seq(
           fakeAmount.copy(reportingDate = DateTime.parse("2020-01-10"), amount = Usd(-30)),
@@ -51,6 +66,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
           PaybackAmount(Id(4), Id(5), Usd(20), Description("desc"), DateTime.now)
         ))
 
+        (mockAccountRepository.getAll _).when().returns(Seq.empty)
         (mockTransactionRepository.getAll _).when().returns(Seq(t0, t1, t2))
         (mockAssetRepository.getAllStocks _).when().returns(Seq.empty)
 
@@ -66,6 +82,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
           LifoSell(DateTime.parse("2019-01-01"), 2, Usd(10), Usd(20))
         ))
 
+        (mockAccountRepository.getAll _).when().returns(Seq.empty)
         (mockTransactionRepository.getAll _).when().returns(Seq.empty)
         (mockAssetRepository.getAllStocks _).when().returns(Seq(s0, s1))
         (mockStockPriceRetriever.call(_: String)).when(s0.ticker).returns(StockPriceAsOf(Usd(6), Usd(10), DateTime.now))
@@ -73,7 +90,11 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
         service.getNetWorth shouldEqual Usd(244)
       }
-      "should return value of both stocks and transactions" in {
+      "should return value of accounts stocks and transactions" in {
+        val a0 = fakeAccount.copy(id = Some(Id(5)), initialAmount = Usd(50))
+        val a1 = fakeAccount.copy(id = Some(Id(5)), initialAmount = Usd(60))
+        val a2 = fakeAccount.copy(id = Some(Id(5)), initialAmount = Usd(70))
+
         val t0 = fakeTransaction.copy(amounts = Seq(
           fakeAmount.copy(reportingDate = DateTime.parse("2020-01-10"), amount = Usd(-30)),
           fakeAmount.copy(reportingDate = DateTime.parse("2020-01-15"), amount = Usd(-60)),
@@ -98,12 +119,13 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
           LifoSell(DateTime.parse("2019-01-01"), 2, Usd(10), Usd(20))
         ))
 
+        (mockAccountRepository.getAll _).when().returns(Seq(a0, a1, a2))
         (mockTransactionRepository.getAll _).when().returns(Seq(t0, t1, t2))
         (mockAssetRepository.getAllStocks _).when().returns(Seq(s0, s1))
         (mockStockPriceRetriever.call(_: String)).when(s0.ticker).returns(StockPriceAsOf(Usd(6), Usd(10), DateTime.now))
         (mockStockPriceRetriever.call(_: String)).when(s1.ticker).returns(StockPriceAsOf(Usd(6), Usd(8), DateTime.now))
 
-        service.getNetWorth shouldEqual Usd(879)
+        service.getNetWorth shouldEqual Usd(1059)
       }
     }
     "getAccountValue" - {

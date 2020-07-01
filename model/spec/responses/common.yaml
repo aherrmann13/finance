@@ -6,9 +6,4 @@ Error:
   content:
     application/json:
       schema:
-        type: object
-        properties:
-# TODO: enums w/ errors here?
-          message:
-            type: string
-                  
+        $ref: "../schemas/common.yaml#/Error"

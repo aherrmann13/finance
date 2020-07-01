@@ -4,7 +4,7 @@ import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import cats.{Id => IdMonad}
 import com.finance.business.model.account.{Account, Bank}
-import com.finance.business.model.types.{Description, Id, ModelName, Name}
+import com.finance.business.model.types._
 import com.finance.business.repository.AccountRepository
 import com.finance.business.validation.AccountValidationAlgebra
 import com.finance.business.validation.errors._
@@ -19,7 +19,7 @@ class AccountServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
   private val service = new AccountService[IdMonad](mockValidationAlgebra, mockRepository)
 
   private val accountId = Id(4)
-  private val account = Account(Some(accountId), Name("Name"), Description("Description"), Bank)
+  private val account = Account(Some(accountId), Name("Name"), Description("Description"), Bank, Usd(30))
 
   "AccountService" - {
     "create" - {

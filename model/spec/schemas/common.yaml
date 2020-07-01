@@ -10,3 +10,12 @@ DateRange:
   required:
     - start
     - end
+
+Error: 
+  type: object
+  properties:
+    message:
+      type: string
+      readOnly: true
+  required:
+      - string

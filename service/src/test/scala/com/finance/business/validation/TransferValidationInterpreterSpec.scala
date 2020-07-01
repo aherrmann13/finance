@@ -63,7 +63,7 @@ class TransferValidationInterpreterSpec extends AnyFreeSpec with Matchers with M
       "should return Right(()) when account repository contains to id" in {
         (mockAccountRepository get _)
           .when(fakeTransferWithId.to)
-          .returns(OptionT.pure(Account(Some(Id(4)), Name("Name"), Description("Description"), Bank)))
+          .returns(OptionT.pure(Account(Some(Id(4)), Name("Name"), Description("Description"), Bank, Usd(50))))
         transferValidationInterpreter.toAccountIdExists(fakeTransferWithId).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
       }
@@ -77,7 +77,7 @@ class TransferValidationInterpreterSpec extends AnyFreeSpec with Matchers with M
       "should return Right(()) when account repository contains from id" in {
         (mockAccountRepository get _)
           .when(fakeTransferWithId.from)
-          .returns(OptionT.pure(Account(Some(Id(4)), Name("Name"), Description("Description"), Bank)))
+          .returns(OptionT.pure(Account(Some(Id(4)), Name("Name"), Description("Description"), Bank, Usd(50))))
         transferValidationInterpreter.fromAccountIdExists(fakeTransferWithId).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
       }

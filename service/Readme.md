@@ -30,4 +30,19 @@
     maybe move to <a href="https://github.com/typelevel/simulacrum">this lib</a> in the future but for now to reduce
     complexity and to get used to how the scala implementation works im going to code the typeclasses by hand
   </p> 
-</details>
+</details>  
+
+<details>
+  <summary>scalamock complaining about mocking classes</summary>
+  <p>
+    according to the <a href="https://github.com/paulbutcher/ScalaMock/issues/56">github issue here</a> this should be
+    possible but I was getting errors
+<pre><code>[error] /home/adam/code/finance/service/src/test/scala/com/finance/service/converters/AccountHandlerImplSpec.scala:25:40: type mismatch;
+[error]  found   : com.finance.business.validation.AccountValidationAlgebra[F]
+[error]  required: com.finance.business.validation.AccountValidationAlgebra[cats.Id]
+[error]   private val mockAccountService = stub[AccountService[IdMonad]]
+</code></pre>
+    when I tried to compile without extending the Service class to a test class with ctor parameters
+    passed in
+  </p>
+</details>  

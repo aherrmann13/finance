@@ -98,7 +98,7 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
       "should return Right(()) when account exists" in {
         (mockAccountRepository get _)
           .when(fakeTransactionWithId.accountId)
-          .returns(OptionT.pure(Account(Some(Id(2)), Name("Name"), Description("Description"), Bank)))
+          .returns(OptionT.pure(Account(Some(Id(2)), Name("Name"), Description("Description"), Bank, Usd(50))))
         transactionValidationInterpreter.accountIdExists(fakeTransactionWithId).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value
       }
