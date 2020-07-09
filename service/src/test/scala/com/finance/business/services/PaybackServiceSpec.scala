@@ -1,5 +1,7 @@
 package com.finance.business.services
 
+import java.time.OffsetDateTime
+
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import cats.{Id => IdMonad}
@@ -9,7 +11,6 @@ import com.finance.business.model.types._
 import com.finance.business.repository.{PaybackRepository, TransactionRepository}
 import com.finance.business.validation.PaybackValidationAlgebra
 import com.finance.business.validation.errors._
-import com.github.nscala_time.time.Imports.DateTime
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
@@ -23,7 +24,7 @@ class PaybackServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
   private val service = new PaybackService[IdMonad](mockValidationAlgebra, mockRepository, mockTransactionRepository)
 
   private val paybackId = Id(5)
-  private val payback = Payback(Some(paybackId), Name("Name"), Description("Description"), DateTime.now)
+  private val payback = Payback(Some(paybackId), Name("Name"), Description("Description"), OffsetDateTime.now)
 
   "PaybackService" - {
     "create" - {
@@ -132,17 +133,17 @@ class PaybackServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       }
     }
     "getPaybackBalance" - {
-      val dateRange = DateRange(DateTime.now, DateTime.now)
+      val dateRange = DateRange(OffsetDateTime.now, OffsetDateTime.now)
 
       val paybackId0 = paybackId
       val paybackId1 = Id(paybackId.value + 1)
       val payback0 = payback
       val payback1 = payback.copy(id = Some(paybackId1))
 
-      val paybackAmount0 = PaybackAmount(paybackId, Id(5), Usd(40), Description("desc"), DateTime.now)
-      val paybackAmount1 = PaybackAmount(paybackId, Id(5), Usd(6), Description("desc"), DateTime.now)
-      val paybackAmount2 = PaybackAmount(paybackId1, Id(5), Usd(34), Description("desc"), DateTime.now)
-      val paybackAmount3 = PaybackAmount(paybackId1, Id(5), Usd(865), Description("desc"), DateTime.now)
+      val paybackAmount0 = PaybackAmount(paybackId, Id(5), Usd(40), Description("desc"), OffsetDateTime.now)
+      val paybackAmount1 = PaybackAmount(paybackId, Id(5), Usd(6), Description("desc"), OffsetDateTime.now)
+      val paybackAmount2 = PaybackAmount(paybackId1, Id(5), Usd(34), Description("desc"), OffsetDateTime.now)
+      val paybackAmount3 = PaybackAmount(paybackId1, Id(5), Usd(865), Description("desc"), OffsetDateTime.now)
 
       "should return payback items amounts" in {
         (mockRepository getInRange _) expects dateRange returns Seq(payback0, payback1).pure[IdMonad]
@@ -182,10 +183,10 @@ class PaybackServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
     }
     "getPaybackBalanceSummary" - {
       "should return sum of all payback amounts" in {
-        val paybackAmount0 = PaybackAmount(paybackId, Id(5), Usd(40), Description("desc"), DateTime.now)
-        val paybackAmount1 = PaybackAmount(paybackId, Id(5), Usd(6), Description("desc"), DateTime.now)
-        val paybackAmount2 = PaybackAmount(paybackId, Id(5), Usd(34), Description("desc"), DateTime.now)
-        val paybackAmount3 = PaybackAmount(paybackId, Id(5), Usd(865), Description("desc"), DateTime.now)
+        val paybackAmount0 = PaybackAmount(paybackId, Id(5), Usd(40), Description("desc"), OffsetDateTime.now)
+        val paybackAmount1 = PaybackAmount(paybackId, Id(5), Usd(6), Description("desc"), OffsetDateTime.now)
+        val paybackAmount2 = PaybackAmount(paybackId, Id(5), Usd(34), Description("desc"), OffsetDateTime.now)
+        val paybackAmount3 = PaybackAmount(paybackId, Id(5), Usd(865), Description("desc"), OffsetDateTime.now)
 
         (mockTransactionRepository.getAllPaybacks _).expects().returns(
           Seq(paybackAmount0, paybackAmount1, paybackAmount2, paybackAmount3).pure[IdMonad]

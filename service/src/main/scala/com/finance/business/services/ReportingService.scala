@@ -1,5 +1,7 @@
 package com.finance.business.services
 
+import java.time.OffsetDateTime
+
 import cats.Monad
 import cats.implicits._
 import cats.kernel.Order
@@ -12,10 +14,9 @@ import com.finance.business.remotecalls.StockPriceRetriever
 import com.finance.business.repository.query.TransactionQuery
 import com.finance.business.repository.{AccountRepository, AssetRepository, TransactionRepository}
 import com.finance.business.services.query.AccountValueQuery
-import com.github.nscala_time.time.Imports._
 
 object ReportingService {
-  private case class AccountValueItem(account: Id, date: DateTime, value: Usd)
+  private case class AccountValueItem(account: Id, date: OffsetDateTime, value: Usd)
 
   private def toAccountValueItems(useReportingDate: Boolean, transactions: Seq[Transaction]): Seq[AccountValueItem] =
     for {
@@ -26,9 +27,9 @@ object ReportingService {
 
   // TODO: right spot for these?
   // these are here so we can use `groupByNel` to get a non empty in the group by
-  private implicit val dateTimeOrder: Order[DateTime] = Order.fromOrdering
+  private implicit val dateTimeOrder: Order[OffsetDateTime] = Order.by[OffsetDateTime, Long](_.toInstant.getEpochSecond)
   private implicit val dateRangeAcctTupleOrder: Order[(DateRange, Id)] =
-    Order.by[(DateRange, Id), (Int, DateTime, DateTime)](t => (t._2.value, t._1.start, t._1.end))
+    Order.by[(DateRange, Id), (Int, OffsetDateTime, OffsetDateTime)](t => (t._2.value, t._1.start, t._1.end))
 }
 
 class ReportingService[F[_] : Monad](

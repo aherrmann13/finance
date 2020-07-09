@@ -1,5 +1,7 @@
 package com.finance.business.services
 
+import java.time.OffsetDateTime
+
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import cats.{Id => IdMonad}
@@ -11,7 +13,6 @@ import com.finance.business.repository.AssetRepository
 import com.finance.business.repository.query.StockQuery
 import com.finance.business.validation.AssetValidationAlgebra
 import com.finance.business.validation.errors._
-import com.github.nscala_time.time.Imports.DateTime
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
@@ -51,7 +52,7 @@ class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
         "should return Left(StockActionsInvalid) from validation algebra stockActionsAreValid" in {
           val returnVal = EitherT.leftT[IdMonad, Unit][StockActionsInvalid](
-            SellingMoreThanCurrentlyHave(FifoSell(DateTime.now(), 6, Usd(12.0), Usd(15.0)))
+            SellingMoreThanCurrentlyHave(FifoSell(OffsetDateTime.now, 6, Usd(12.0), Usd(15.0)))
           )
           (mockValidationAlgebra idIsNone _) when stock returns EitherT.rightT[IdMonad, IdMustBeNone](())
           (mockValidationAlgebra accountIdExists _) when stock returns EitherT.rightT[IdMonad, DoesNotExist](())
@@ -99,7 +100,7 @@ class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
         "should return Left(StockActionsInvalid) from validation algebra stockActionsAreValid" in {
           val returnVal = EitherT.leftT[IdMonad, Unit][StockActionsInvalid](
-            SellingMoreThanCurrentlyHave(FifoSell(DateTime.now(), 6, Usd(12.0), Usd(15.0)))
+            SellingMoreThanCurrentlyHave(FifoSell(OffsetDateTime.now, 6, Usd(12.0), Usd(15.0)))
           )
           (mockValidationAlgebra exists _) when stock returns EitherT.rightT[IdMonad, DoesNotExist](())
           (mockValidationAlgebra accountIdExists _) when stock returns EitherT.rightT[IdMonad, DoesNotExist](())
@@ -161,9 +162,9 @@ class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         Stock(Some(Id(4)), Id(19), "ticker2", Seq.empty)
       )
       val values = Seq(
-        StockPriceAsOf(Usd(54.3), Usd(52.1), DateTime.now),
-        StockPriceAsOf(Usd(2.35), Usd(54.59), DateTime.now),
-        StockPriceAsOf(Usd(17.65), Usd(52.1), DateTime.now)
+        StockPriceAsOf(Usd(54.3), Usd(52.1), OffsetDateTime.now),
+        StockPriceAsOf(Usd(2.35), Usd(54.59), OffsetDateTime.now),
+        StockPriceAsOf(Usd(17.65), Usd(52.1), OffsetDateTime.now)
       )
       "should return each stock with price" in {
         (mockRepository.getAllStocks _).expects().returns(stocks.pure[IdMonad])

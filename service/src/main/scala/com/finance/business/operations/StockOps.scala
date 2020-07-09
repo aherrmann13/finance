@@ -64,10 +64,10 @@ object StockOps {
               val split = splitSell(action, currentLifecycle.value.unitsRemaining)
               val modifiedLifecycle = currentLifecycle.value
                 .copy(lifecycle = currentLifecycle.value.lifecycle :+ split._1)
-              append(lifecycles.filterNot(_ == currentLifecycle) :+ Closed(modifiedLifecycle), split._2)
+              append(lifecycles.filterNot(_ eq currentLifecycle) :+ Closed(modifiedLifecycle), split._2)
             } else {
               val modifiedLifecycle = currentLifecycle.value.copy(lifecycle = currentLifecycle.value.lifecycle :+ action)
-              lifecycles.filterNot(_ == currentLifecycle) :+ LifecycleStatus(modifiedLifecycle)
+              lifecycles.filterNot(_ eq currentLifecycle) :+ LifecycleStatus(modifiedLifecycle)
             }
           } getOrElse lifecycles
         case action: LifoSell =>
@@ -76,11 +76,11 @@ object StockOps {
               val split = splitSell(action, currentLifecycle.value.unitsRemaining)
               val modifiedLifecycle = currentLifecycle.value
                 .copy(lifecycle = currentLifecycle.value.lifecycle :+ split._1)
-              append(lifecycles.filterNot(_ == currentLifecycle) :+ Closed(modifiedLifecycle), split._2)
+              append(lifecycles.filterNot(_ eq currentLifecycle) :+ Closed(modifiedLifecycle), split._2)
             } else {
               val modifiedLifecycle = currentLifecycle.value
                 .copy(lifecycle = currentLifecycle.value.lifecycle :+ action)
-              lifecycles.filterNot(_ == currentLifecycle) :+ LifecycleStatus(modifiedLifecycle)
+              lifecycles.filterNot(_ eq currentLifecycle) :+ LifecycleStatus(modifiedLifecycle)
             }
           } getOrElse lifecycles
         case action: CashDividend =>

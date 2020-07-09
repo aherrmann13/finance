@@ -1,13 +1,14 @@
 package com.finance.business.model.asset
 
+import java.time.OffsetDateTime
+
 import com.finance.business.model.types.Usd
-import com.github.nscala_time.time.Imports._
 
 // TODO: correct place?
 case class StockValue(
   stock: Stock,
   price: Usd,
-  asOf: DateTime,
+  asOf: OffsetDateTime,
   quantity: BigDecimal,
   daysChange: Usd,
   daysChangePercentage: BigDecimal,

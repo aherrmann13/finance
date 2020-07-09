@@ -1,5 +1,7 @@
 package com.finance.business.services
 
+import java.time.OffsetDateTime
+
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import cats.{Id => IdMonad}
@@ -9,7 +11,6 @@ import com.finance.business.repository.TransferRepository
 import com.finance.business.repository.query.TransferQuery
 import com.finance.business.validation.TransferValidationAlgebra
 import com.finance.business.validation.errors.{DoesNotExist, IdMustBeNone, ValidationError}
-import com.github.nscala_time.time.Imports._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
@@ -21,7 +22,7 @@ class TransferServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
   private val service = new TransferService[IdMonad](mockValidationAlgebra, mockRepository)
 
   private val transferId = Id(1)
-  private val transfer = Transfer(Some(transferId), Id(2), DateTime.now, Id(3), DateTime.now, Usd(56))
+  private val transfer = Transfer(Some(transferId), Id(2), OffsetDateTime.now, Id(3), OffsetDateTime.now, Usd(56))
   "TransferService" - {
     "create" - {
       "should return Left(IdMustBeNone) from validation algebra idIsNone" in {

@@ -18,7 +18,6 @@ val ScalaMockVersion = "4.4.0"
 val ScalaTestVersion = "3.1.1"
 
 libraryDependencies ++= Seq(
-    "com.github.nscala-time"  %% "nscala-time"          % NScalaTimeVersion,
     "io.circe"                %% "circe-generic"        % CirceVersion,
     "org.http4s"              %% "http4s-blaze-client"  % Http4sVersion,
     "org.http4s"              %% "http4s-blaze-server"  % Http4sVersion,

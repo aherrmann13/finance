@@ -11,7 +11,6 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
 
-
 class SourceValidationInterpreterSpec extends AnyFreeSpec with Matchers with MockFactory {
   private val mockSourceRepository = stub[SourceRepository[IdMonad]]
   private val mockTransactionRepository = stub[TransactionRepository[IdMonad]]

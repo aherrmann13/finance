@@ -1,5 +1,7 @@
 package com.finance.business.validation
 
+import java.time.OffsetDateTime
+
 import cats.data.{EitherT, OptionT}
 import cats.{Id => IdMonad}
 import com.finance.business.model.account.{Account, Bank}
@@ -7,7 +9,6 @@ import com.finance.business.model.transfer.Transfer
 import com.finance.business.model.types._
 import com.finance.business.repository.{AccountRepository, TransferRepository}
 import com.finance.business.validation.errors.{DoesNotExist, IdMustBeNone}
-import com.github.nscala_time.time.Imports._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
@@ -24,7 +25,14 @@ class TransferValidationInterpreterSpec extends AnyFreeSpec with Matchers with M
   private val transferName = ModelName("Transfer")
   private val accountName = ModelName("Account")
 
-  private val fakeTransferWithId = Transfer(Some(Id(3)), Id(4), DateTime.now, Id(5), DateTime.now, Usd(56.7))
+  private val fakeTransferWithId = Transfer(
+    Some(Id(3)),
+    Id(4),
+    OffsetDateTime.now,
+    Id(5),
+    OffsetDateTime.now,
+    Usd(56.7)
+  )
   private val fakeTransferWithNoId = fakeTransferWithId.copy(id = None)
 
   "TransferValidationInterpreter" - {

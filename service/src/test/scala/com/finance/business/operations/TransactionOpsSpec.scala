@@ -1,40 +1,41 @@
 package com.finance.business.operations
 
+import java.time.OffsetDateTime
+
 import com.finance.business.model.category.{Budget, BudgetAmountSpent, Category, CategoryAmountSpent}
 import com.finance.business.model.transaction.CategoryAmount
 import com.finance.business.operations.TransactionOps._
 import com.finance.business.model.types.{DateRange, Description, Id, Name, Usd}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
-import com.github.nscala_time.time.Imports._
 
 
 class TransactionOpsSpec extends AnyFreeSpec with Matchers {
   private val budget0 = Budget(
     Seq(
-      DateRange(DateTime.parse("2019-01-01"), DateTime.parse("2019-01-31")),
-      DateRange(DateTime.parse("2019-02-01"), DateTime.parse("2019-02-28"))
+      DateRange(OffsetDateTime.parse("2019-01-01T00:00:00Z"), OffsetDateTime.parse("2019-01-31T00:00:00Z")),
+      DateRange(OffsetDateTime.parse("2019-02-01T00:00:00Z"), OffsetDateTime.parse("2019-02-28T00:00:00Z"))
     ),
     Usd(50.00)
   )
   private val budget1 = Budget(
     Seq(
-      DateRange(DateTime.parse("2019-03-01"), DateTime.parse("2019-03-31")),
-      DateRange(DateTime.parse("2019-04-01"), DateTime.parse("2019-04-30"))
+      DateRange(OffsetDateTime.parse("2019-03-01T00:00:00Z"), OffsetDateTime.parse("2019-03-31T00:00:00Z")),
+      DateRange(OffsetDateTime.parse("2019-04-01T00:00:00Z"), OffsetDateTime.parse("2019-04-30T00:00:00Z"))
     ),
     Usd(50.00)
   )
   private val budget2 = Budget(
     Seq(
-      DateRange(DateTime.parse("2019-05-01"), DateTime.parse("2019-05-31")),
-      DateRange(DateTime.parse("2019-06-01"), DateTime.parse("2019-06-30"))
+      DateRange(OffsetDateTime.parse("2019-05-01T00:00:00Z"), OffsetDateTime.parse("2019-05-31T00:00:00Z")),
+      DateRange(OffsetDateTime.parse("2019-06-01T00:00:00Z"), OffsetDateTime.parse("2019-06-30T00:00:00Z"))
     ),
     Usd(50.00)
   )
   private val budget3 = Budget(
     Seq(
-      DateRange(DateTime.parse("2019-07-01"), DateTime.parse("2019-07-31")),
-      DateRange(DateTime.parse("2019-08-01"), DateTime.parse("2019-08-31"))
+      DateRange(OffsetDateTime.parse("2019-07-01T00:00:00Z"), OffsetDateTime.parse("2019-07-31T00:00:00Z")),
+      DateRange(OffsetDateTime.parse("2019-08-01T00:00:00Z"), OffsetDateTime.parse("2019-08-31T00:00:00Z"))
     ),
     Usd(50.00)
   )
@@ -44,8 +45,8 @@ class TransactionOpsSpec extends AnyFreeSpec with Matchers {
     Name("name"),
     Description("description"),
     Seq(
-      DateRange(DateTime.parse("2019-01-01"), DateTime.parse("2019-05-31")),
-      DateRange(DateTime.parse("2019-06-01"), DateTime.parse("2019-12-31"))
+      DateRange(OffsetDateTime.parse("2019-01-01T00:00:00Z"), OffsetDateTime.parse("2019-05-31T00:00:00Z")),
+      DateRange(OffsetDateTime.parse("2019-06-01T00:00:00Z"), OffsetDateTime.parse("2019-12-31T00:00:00Z"))
     ),
     Seq(budget0, budget1)
   )
@@ -55,15 +56,18 @@ class TransactionOpsSpec extends AnyFreeSpec with Matchers {
     Name("name"),
     Description("description"),
     Seq(
-      DateRange(DateTime.parse("2018-01-01"), DateTime.parse("2018-12-31")),
-      DateRange(DateTime.parse("2019-01-01"), DateTime.parse("2019-12-31"))
+      DateRange(OffsetDateTime.parse("2018-01-01T00:00:00Z"), OffsetDateTime.parse("2018-12-31T00:00:00Z")),
+      DateRange(OffsetDateTime.parse("2019-01-01T00:00:00Z"), OffsetDateTime.parse("2019-12-31T00:00:00Z"))
     ),
     Seq(budget2, budget3)
   )
   "TransactionOps" - {
     "categoryValues" - {
       "should copy all category and budget attributes to CategoryAmountSpent and BudgetAmountSpent" in {
-        val dateRange = DateRange(DateTime.parse("2018-01-01"), DateTime.parse("2020-12-31"))
+        val dateRange = DateRange(
+          OffsetDateTime.parse("2018-01-01T00:00:00Z"),
+          OffsetDateTime.parse("2020-12-31T00:00:00Z")
+        )
         Seq.empty[CategoryAmount].categoryValues(dateRange, Seq(cat0, cat1)) shouldEqual
           Seq(
             CategoryAmountSpent(cat0, Seq(
@@ -77,7 +81,10 @@ class TransactionOpsSpec extends AnyFreeSpec with Matchers {
           )
       }
       "should put amounts inside date range in budget date range as 'in'" in {
-        val dateRange = DateRange(DateTime.parse("2018-01-01"), DateTime.parse("2020-12-31"))
+        val dateRange = DateRange(
+          OffsetDateTime.parse("2018-01-01T00:00:00Z"),
+          OffsetDateTime.parse("2020-12-31T00:00:00Z")
+        )
         val timeWithinBudget0FirstPeriod = budget0.effectiveTime.head.start.plusDays(1)
         val timeWithinBudget0SecondPeriod = budget0.effectiveTime(1).start.plusDays(1)
         val timeWithinBudget1FirstPeriod = budget1.effectiveTime.head.start.plusDays(1)
@@ -101,7 +108,10 @@ class TransactionOpsSpec extends AnyFreeSpec with Matchers {
           )
       }
       "should put amounts outside date range in budget date range as 'out'" in {
-        val dateRange = DateRange(DateTime.parse("2020-01-01"), DateTime.parse("2020-12-31"))
+        val dateRange = DateRange(
+          OffsetDateTime.parse("2020-01-01T00:00:00Z"),
+          OffsetDateTime.parse("2020-12-31T00:00:00Z")
+        )
         val timeWithinBudget0FirstPeriod = budget0.effectiveTime.head.start.plusDays(1)
         val timeWithinBudget0SecondPeriod = budget0.effectiveTime(1).start.plusDays(1)
         val timeWithinBudget1FirstPeriod = budget1.effectiveTime.head.start.plusDays(1)
@@ -125,12 +135,20 @@ class TransactionOpsSpec extends AnyFreeSpec with Matchers {
           )
       }
       "should ignore amounts outside date range outside budget date range" in {
-        val dateRange = DateRange(DateTime.parse("2020-01-01"), DateTime.parse("2020-12-31"))
-        val amt0 = CategoryAmount(cat0.id.get, Id(6), Usd(50), Description("desc"), DateTime.parse("2015-01-01"))
-        val amt1 = CategoryAmount(cat0.id.get, Id(6), Usd(20), Description("desc"), DateTime.parse("2015-01-01"))
-        val amt2 = CategoryAmount(cat0.id.get, Id(6), Usd(60), Description("desc"), DateTime.parse("2015-01-01"))
-        val amt3 = CategoryAmount(cat1.id.get, Id(6), Usd(90), Description("desc"), DateTime.parse("2015-01-01"))
-        val amt4 = CategoryAmount(cat0.id.get, Id(6), Usd(20), Description("desc"), DateTime.parse("2015-01-01"))
+        val dateRange = DateRange(
+          OffsetDateTime.parse("2020-01-01T00:00:00Z"),
+          OffsetDateTime.parse("2020-12-31T00:00:00Z")
+        )
+        val amt0 =
+          CategoryAmount(cat0.id.get, Id(6), Usd(50), Description("desc"), OffsetDateTime.parse("2015-01-01T00:00:00Z"))
+        val amt1 =
+          CategoryAmount(cat0.id.get, Id(6), Usd(20), Description("desc"), OffsetDateTime.parse("2015-01-01T00:00:00Z"))
+        val amt2 =
+          CategoryAmount(cat0.id.get, Id(6), Usd(60), Description("desc"), OffsetDateTime.parse("2015-01-01T00:00:00Z"))
+        val amt3 =
+          CategoryAmount(cat1.id.get, Id(6), Usd(90), Description("desc"), OffsetDateTime.parse("2015-01-01T00:00:00Z"))
+        val amt4 =
+          CategoryAmount(cat0.id.get, Id(6), Usd(20), Description("desc"), OffsetDateTime.parse("2015-01-01T00:00:00Z"))
 
         Seq(amt0, amt1, amt2, amt3, amt4).categoryValues(dateRange, Seq(cat0, cat1)) shouldEqual
           Seq(
@@ -147,23 +165,29 @@ class TransactionOpsSpec extends AnyFreeSpec with Matchers {
       "should include amount in multiple budgets with containing date ranges" in {
         val budget4 = Budget(
           Seq(
-            DateRange(DateTime.parse("2019-01-01"), DateTime.parse("2019-01-31")),
-            DateRange(DateTime.parse("2019-02-01"), DateTime.parse("2019-02-28"))
+            DateRange(OffsetDateTime.parse("2019-01-01T00:00:00Z"), OffsetDateTime.parse("2019-01-31T00:00:00Z")),
+            DateRange(OffsetDateTime.parse("2019-02-01T00:00:00Z"), OffsetDateTime.parse("2019-02-28T00:00:00Z"))
           ),
           Usd(50.00)
         )
         val budget5 = Budget(
           Seq(
-            DateRange(DateTime.parse("2019-02-01"), DateTime.parse("2019-02-28")),
-            DateRange(DateTime.parse("2019-03-01"), DateTime.parse("2019-03-31"))
+            DateRange(OffsetDateTime.parse("2019-02-01T00:00:00Z"), OffsetDateTime.parse("2019-02-28T00:00:00Z")),
+            DateRange(OffsetDateTime.parse("2019-03-01T00:00:00Z"), OffsetDateTime.parse("2019-03-31T00:00:00Z"))
           ),
           Usd(50.00)
         )
         val cat2 = cat0.copy(budget = Seq(budget4, budget5))
-        val dateRange = DateRange(DateTime.parse("2019-01-01"), DateTime.parse("2020-12-31"))
-        val amt0 = CategoryAmount(cat0.id.get, Id(6), Usd(50), Description("desc"), DateTime.parse("2019-01-15"))
-        val amt1 = CategoryAmount(cat0.id.get, Id(6), Usd(20), Description("desc"), DateTime.parse("2019-02-15"))
-        val amt2 = CategoryAmount(cat0.id.get, Id(6), Usd(60), Description("desc"), DateTime.parse("2019-03-15"))
+        val dateRange = DateRange(
+          OffsetDateTime.parse("2019-01-01T00:00:00Z"),
+          OffsetDateTime.parse("2020-12-31T00:00:00Z")
+        )
+        val amt0 =
+          CategoryAmount(cat0.id.get, Id(6), Usd(50), Description("desc"), OffsetDateTime.parse("2019-01-15T00:00:00Z"))
+        val amt1 =
+          CategoryAmount(cat0.id.get, Id(6), Usd(20), Description("desc"), OffsetDateTime.parse("2019-02-15T00:00:00Z"))
+        val amt2 =
+          CategoryAmount(cat0.id.get, Id(6), Usd(60), Description("desc"), OffsetDateTime.parse("2019-03-15T00:00:00Z"))
 
         Seq(amt0, amt1, amt2).categoryValues(dateRange, Seq(cat2)) shouldEqual
           Seq(
@@ -175,7 +199,10 @@ class TransactionOpsSpec extends AnyFreeSpec with Matchers {
       }
       "should use empty BudgetAmountSpent if category id is None" in {
         val cat2 = cat1.copy(id = None)
-        val dateRange = DateRange(DateTime.parse("2018-01-01"), DateTime.parse("2020-12-31"))
+        val dateRange = DateRange(
+          OffsetDateTime.parse("2018-01-01T00:00:00Z"),
+          OffsetDateTime.parse("2020-12-31T00:00:00Z")
+        )
         Seq.empty[CategoryAmount].categoryValues(dateRange, Seq(cat0, cat1, cat2)) shouldEqual
           Seq(
             CategoryAmountSpent(cat0, Seq(

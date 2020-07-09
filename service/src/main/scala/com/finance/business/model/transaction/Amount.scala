@@ -1,13 +1,14 @@
 package com.finance.business.model.transaction
 
+import java.time.OffsetDateTime
+
 import com.finance.business.model.types._
-import com.github.nscala_time.time.Imports._
 
 sealed trait Amount {
   val amount: Usd
   val sourceId: Id
   val description: Description
-  val reportingDate: DateTime
+  val reportingDate: OffsetDateTime
 }
 
 case class CategoryAmount(
@@ -15,7 +16,7 @@ case class CategoryAmount(
   sourceId: Id,
   amount: Usd,
   description: Description,
-  reportingDate: DateTime
+  reportingDate: OffsetDateTime
 ) extends Amount
 
 case class PaybackAmount(
@@ -23,5 +24,5 @@ case class PaybackAmount(
   sourceId: Id,
   amount: Usd,
   description: Description,
-  reportingDate: DateTime
+  reportingDate: OffsetDateTime
 ) extends Amount

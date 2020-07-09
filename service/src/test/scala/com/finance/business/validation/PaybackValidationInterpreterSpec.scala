@@ -1,5 +1,7 @@
 package com.finance.business.validation
 
+import java.time.OffsetDateTime
+
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import cats.{Id => IdMonad}
@@ -7,11 +9,9 @@ import com.finance.business.model.payback.Payback
 import com.finance.business.model.types.{Description, Id, ModelName, Name}
 import com.finance.business.repository.{PaybackRepository, TransactionRepository}
 import com.finance.business.validation.errors._
-import com.github.nscala_time.time.Imports._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
-
 
 class PaybackValidationInterpreterSpec extends AnyFreeSpec with Matchers with MockFactory {
   private val mockPaybackRepository = stub[PaybackRepository[IdMonad]]
@@ -23,7 +23,7 @@ class PaybackValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mo
   )
 
   private val paybackName = ModelName("Payback")
-  private val fakePaybackWithId = Payback(Some(Id(2)), Name("Name"), Description("Description"), DateTime.now())
+  private val fakePaybackWithId = Payback(Some(Id(2)), Name("Name"), Description("Description"), OffsetDateTime.now)
   private val fakePaybackWithNoId = fakePaybackWithId.copy(id = None)
 
   "PaybackValidationInterpreter" - {

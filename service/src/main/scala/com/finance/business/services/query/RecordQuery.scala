@@ -1,10 +1,11 @@
 package com.finance.business.services.query
 
+import java.time.OffsetDateTime
+
 import com.finance.business.model.types.Id
-import com.github.nscala_time.time.Imports.DateTime
 
 case class RecordQuery(
-  to: Option[DateTime] = None,
-  from: Option[DateTime] = None,
+  to: Option[OffsetDateTime] = None,
+  from: Option[OffsetDateTime] = None,
   accountIds: Set[Id] = Set.empty,
 )

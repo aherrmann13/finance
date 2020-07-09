@@ -1,5 +1,5 @@
 package com.finance.business.model.types
 
-import com.github.nscala_time.time.Imports._
+import java.time.OffsetDateTime
 
-case class DateRange(start: DateTime, end: DateTime)
+case class DateRange(start: OffsetDateTime, end: OffsetDateTime)

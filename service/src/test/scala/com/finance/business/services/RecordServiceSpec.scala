@@ -1,5 +1,7 @@
 package com.finance.business.services
 
+import java.time.OffsetDateTime
+
 import cats.{Id => IdMonad}
 import com.finance.business.model.asset.{Buy, Stock}
 import com.finance.business.model.record.{AssetRecord, TransactionRecord, TransferRecord}
@@ -9,7 +11,6 @@ import com.finance.business.model.types.{Description, Id, Usd}
 import com.finance.business.repository.query.{StockQuery, TransactionQuery, TransferQuery}
 import com.finance.business.repository.{AssetRepository, TransactionRepository, TransferRepository}
 import com.finance.business.services.query.RecordQuery
-import com.github.nscala_time.time.Imports.DateTime
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
@@ -26,14 +27,14 @@ class RecordServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
     mockTransactionRepository
   )
 
-  private val fakeStock = Stock(Some(Id(2)), Id(3), "ticker", Seq(Buy(DateTime.now, 12, Usd(60), Usd(65))))
-  private val fakeTransfer = Transfer(Some(Id(4)), Id(5), DateTime.now, Id(6), DateTime.now, Usd(50))
-  private val fakeTransaction = Transaction(Some(Id(2)), Description("desc"), DateTime.now, Id(3), Seq.empty)
+  private val fakeStock = Stock(Some(Id(2)), Id(3), "ticker", Seq(Buy(OffsetDateTime.now, 12, Usd(60), Usd(65))))
+  private val fakeTransfer = Transfer(Some(Id(4)), Id(5), OffsetDateTime.now, Id(6), OffsetDateTime.now, Usd(50))
+  private val fakeTransaction = Transaction(Some(Id(2)), Description("desc"), OffsetDateTime.now, Id(3), Seq.empty)
 
 
   private val query = RecordQuery(
-    from = Some(DateTime.parse("2020-01-01")),
-    to = Some(DateTime.parse("2020-02-01")),
+    from = Some(OffsetDateTime.parse("2020-01-01T00:00:00Z")),
+    to = Some(OffsetDateTime.parse("2020-02-01T00:00:00Z")),
     accountIds = Set(Id(1), Id(2))
   )
 

@@ -1,5 +1,7 @@
 package com.finance.business.services
 
+import java.time.OffsetDateTime
+
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import cats.{Id => IdMonad}
@@ -9,7 +11,6 @@ import com.finance.business.model.types._
 import com.finance.business.repository.{CategoryRepository, TransactionRepository}
 import com.finance.business.validation.CategoryValidationAlgebra
 import com.finance.business.validation.errors._
-import com.github.nscala_time.time.Imports._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
@@ -238,15 +239,15 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       "requests transactions with wider range than passed in" in {
         val budget0 = Budget(
           Seq(
-            DateRange(DateTime.parse("2020-01-01"), DateTime.parse("2020-01-31")),
-            DateRange(DateTime.parse("2020-03-01"), DateTime.parse("2020-03-31"))
+            DateRange(OffsetDateTime.parse("2020-01-01T00:00:00Z"), OffsetDateTime.parse("2020-01-31T00:00:00Z")),
+            DateRange(OffsetDateTime.parse("2020-03-01T00:00:00Z"), OffsetDateTime.parse("2020-03-31T00:00:00Z"))
           ),
           Usd(30)
         )
         val budget1 = Budget(
           Seq(
-            DateRange(DateTime.parse("2020-02-01"), DateTime.parse("2020-02-28")),
-            DateRange(DateTime.parse("2020-04-01"), DateTime.parse("2020-04-30"))
+            DateRange(OffsetDateTime.parse("2020-02-01T00:00:00Z"), OffsetDateTime.parse("2020-02-28T00:00:00Z")),
+            DateRange(OffsetDateTime.parse("2020-04-01T00:00:00Z"), OffsetDateTime.parse("2020-04-30T00:00:00Z"))
           ),
           Usd(30)
         )
@@ -258,21 +259,21 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         ) returns Seq.empty[CategoryAmount].pure[IdMonad]
 
         service.getAmountSpentInRange(
-          DateRange(DateTime.parse("2020-02-15"), DateTime.parse("2020-03-15"))
+          DateRange(OffsetDateTime.parse("2020-02-15T00:00:00Z"), OffsetDateTime.parse("2020-03-15T00:00:00Z"))
         )
       }
       "does not requests transactions if no valid date range" in {
         val budget0 = Budget(
           Seq(
-            DateRange(DateTime.parse("2020-01-01"), DateTime.parse("2020-01-31")),
-            DateRange(DateTime.parse("2020-03-01"), DateTime.parse("2020-03-31"))
+            DateRange(OffsetDateTime.parse("2020-01-01T00:00:00Z"), OffsetDateTime.parse("2020-01-31T00:00:00Z")),
+            DateRange(OffsetDateTime.parse("2020-03-01T00:00:00Z"), OffsetDateTime.parse("2020-03-31T00:00:00Z"))
           ),
           Usd(30)
         )
         val budget1 = Budget(
           Seq(
-            DateRange(DateTime.parse("2020-02-01"), DateTime.parse("2020-02-28")),
-            DateRange(DateTime.parse("2020-04-01"), DateTime.parse("2020-04-30"))
+            DateRange(OffsetDateTime.parse("2020-02-01T00:00:00Z"), OffsetDateTime.parse("2020-02-28T00:00:00Z")),
+            DateRange(OffsetDateTime.parse("2020-04-01T00:00:00Z"), OffsetDateTime.parse("2020-04-30T00:00:00Z"))
           ),
           Usd(30)
         )
@@ -282,20 +283,18 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         mockTransactionRepository.getCategoryAmountsInRange _ expects * never
 
         service.getAmountSpentInRange(
-          DateRange(DateTime.parse("2019-02-15"), DateTime.parse("2019-03-15"))
+          DateRange(OffsetDateTime.parse("2019-02-15T00:00:00Z"), OffsetDateTime.parse("2019-03-15T00:00:00Z"))
         )
       }
       "should return all categories as category values with amount totals" in {
         val budget0 = Budget(
           Seq(
-            DateRange(DateTime.parse("2020-01-01"), DateTime.parse("2020-01-31"))
+            DateRange(OffsetDateTime.parse("2020-01-01T00:00:00Z"), OffsetDateTime.parse("2020-01-31T00:00:00Z"))
           ),
           Usd(30)
         )
         val budget1 = Budget(
-          Seq(
-            DateRange(DateTime.parse("2020-02-01"), DateTime.parse("2020-02-28"))
-          ),
+          Seq(DateRange(OffsetDateTime.parse("2020-02-01T00:00:00Z"), OffsetDateTime.parse("2020-02-28T00:00:00Z"))),
           Usd(30)
         )
 
@@ -303,17 +302,23 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
         (mockRepository.getAll _).expects().returns(Seq(cat).pure[IdMonad])
 
-        val amt0 = CategoryAmount(cat.id.get, Id(6), Usd(10), Description("desc"), DateTime.parse("2020-01-13"))
-        val amt1 = CategoryAmount(cat.id.get, Id(6), Usd(20), Description("desc"), DateTime.parse("2020-01-15"))
-        val amt2 = CategoryAmount(cat.id.get, Id(6), Usd(30), Description("desc"), DateTime.parse("2020-02-15"))
-        val amt3 = CategoryAmount(cat.id.get, Id(6), Usd(40), Description("desc"), DateTime.parse("2020-03-15"))
+        val amt0 = CategoryAmount(
+          cat.id.get,
+          Id(6),
+          Usd(10),
+          Description("desc"),
+          OffsetDateTime.parse("2020-01-13T00:00:00Z")
+        )
+        val amt1 = amt0.copy(amount = Usd(20), reportingDate = OffsetDateTime.parse("2020-01-15T00:00:00Z"))
+        val amt2 = amt0.copy(amount = Usd(30), reportingDate = OffsetDateTime.parse("2020-02-15T00:00:00Z"))
+        val amt3 = amt0.copy(amount = Usd(40), reportingDate = OffsetDateTime.parse("2020-03-15T00:00:00Z"))
 
         mockTransactionRepository.getCategoryAmountsInRange _ expects DateRange(
           budget0.effectiveTime.head.start, budget1.effectiveTime.head.end
         ) returns Seq(amt0, amt1, amt2, amt3).pure[IdMonad]
 
         service.getAmountSpentInRange(
-          DateRange(DateTime.parse("2020-01-14"), DateTime.parse("2020-02-17"))
+          DateRange(OffsetDateTime.parse("2020-01-14T00:00:00Z"), OffsetDateTime.parse("2020-02-17T00:00:00Z"))
         ) shouldEqual Seq(
           CategoryAmountSpent(cat, Seq(
             BudgetAmountSpent(budget0.effectiveTime, Usd(20), Usd(10), budget0.amount),

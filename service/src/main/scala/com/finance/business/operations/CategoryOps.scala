@@ -1,7 +1,8 @@
 package com.finance.business.operations
 
+import java.time.OffsetDateTime
+
 import com.finance.business.model.types.DateRange
-import com.github.nscala_time.time.Imports._
 
 object CategoryOps {
   implicit class DateRangeOperations(range: DateRange) {
@@ -11,7 +12,7 @@ object CategoryOps {
           (otherRange.end.isAfter(range.end) || otherRange.end.isEqual(range.end))
       }
 
-    def contains(time: DateTime): Boolean =
+    def contains(time: OffsetDateTime): Boolean =
       (range.start.isBefore(time) || range.start.isEqual(time)) &&
         (range.end.isAfter(time) || range.end.isEqual(time))
 

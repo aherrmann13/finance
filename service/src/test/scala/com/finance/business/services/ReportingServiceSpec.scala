@@ -1,5 +1,7 @@
 package com.finance.business.services
 
+import java.time.OffsetDateTime
+
 import cats.implicits._
 import cats.{Id => IdMonad}
 import com.finance.business.model.account.{Account, Bank}
@@ -11,14 +13,19 @@ import com.finance.business.remotecalls.StockPriceRetriever
 import com.finance.business.repository.query.TransactionQuery
 import com.finance.business.repository.{AccountRepository, AssetRepository, TransactionRepository}
 import com.finance.business.services.query.AccountValueQuery
-import com.github.nscala_time.time.Imports._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
 
 class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
-  private val January = DateRange(DateTime.parse("2020-01-01"), DateTime.parse("2020-01-31"))
-  private val February = DateRange(DateTime.parse("2020-02-01"), DateTime.parse("2020-02-28"))
+  private val January = DateRange(
+    OffsetDateTime.parse("2020-01-01T00:00:00Z"),
+    OffsetDateTime.parse("2020-01-31T00:00:00Z")
+  )
+  private val February = DateRange(
+    OffsetDateTime.parse("2020-02-01T00:00:00Z"),
+    OffsetDateTime.parse("2020-02-28T00:00:00Z")
+  )
   private val mockAccountRepository = stub[AccountRepository[IdMonad]]
   private val mockTransactionRepository = stub[TransactionRepository[IdMonad]]
   private val mockAssetRepository = stub[AssetRepository[IdMonad]]
@@ -32,9 +39,9 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
   )
 
   private val fakeAccount = Account(Some(Id(6)), Name("Name"), Description("Description"), Bank, Usd(100))
-  private val fakeAmount = CategoryAmount(Id(4), Id(5), Usd(20), Description("desc"), DateTime.now)
-  private val fakeTransaction = Transaction(Some(Id(2)), Description("desc"), DateTime.now, Id(3), Seq(fakeAmount))
-  private val fakeStock = Stock(Some(Id(2)), Id(3), "ticker", Seq(Buy(DateTime.now, 12, Usd(60), Usd(65))))
+  private val fakeAmount = CategoryAmount(Id(4), Id(5), Usd(20), Description("desc"), OffsetDateTime.now)
+  private val fakeTransaction = Transaction(Some(Id(2)), Description("desc"), OffsetDateTime.now, Id(3), Seq(fakeAmount))
+  private val fakeStock = Stock(Some(Id(2)), Id(3), "ticker", Seq(Buy(OffsetDateTime.now, 12, Usd(60), Usd(65))))
 
   // TODO: compare `Seq` better (order independent but exact same elements)
   "ReportingService" - {
@@ -52,18 +59,18 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       }
       "should return value of all transactions" in {
         val t0 = fakeTransaction.copy(amounts = Seq(
-          fakeAmount.copy(reportingDate = DateTime.parse("2020-01-10"), amount = Usd(-30)),
-          fakeAmount.copy(reportingDate = DateTime.parse("2020-01-15"), amount = Usd(-60)),
-          PaybackAmount(Id(4), Id(5), Usd(20), Description("desc"), DateTime.now)
+          fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-10T00:00:00Z"), amount = Usd(-30)),
+          fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-15T00:00:00Z"), amount = Usd(-60)),
+          PaybackAmount(Id(4), Id(5), Usd(20), Description("desc"), OffsetDateTime.now)
         ))
         val t1 = fakeTransaction.copy(amounts = Seq(
-          fakeAmount.copy(reportingDate = DateTime.parse("2020-01-10"), amount = Usd(400)),
-          fakeAmount.copy(reportingDate = DateTime.parse("2020-01-15"), amount = Usd(300)),
+          fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-10T00:00:00Z"), amount = Usd(400)),
+          fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-15T00:00:00Z"), amount = Usd(300)),
         ))
         val t2 = fakeTransaction.copy(amounts = Seq(
-          fakeAmount.copy(reportingDate = DateTime.parse("2020-02-10"), amount = Usd(50)),
-          fakeAmount.copy(reportingDate = DateTime.parse("2020-02-15"), amount = Usd(-25)),
-          PaybackAmount(Id(4), Id(5), Usd(20), Description("desc"), DateTime.now)
+          fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-02-10T00:00:00Z"), amount = Usd(50)),
+          fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-02-15T00:00:00Z"), amount = Usd(-25)),
+          PaybackAmount(Id(4), Id(5), Usd(20), Description("desc"), OffsetDateTime.now)
         ))
 
         (mockAccountRepository.getAll _).when().returns(Seq.empty)
@@ -74,19 +81,23 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       }
       "should return value of all stocks" in {
         val s0 = fakeStock.copy(ticker = "a", actions = Seq(
-          Buy(DateTime.parse("2019-01-01"), 10, Usd(10), Usd(105)),
-          Buy(DateTime.parse("2019-02-01"), 10, Usd(11), Usd(115))
+          Buy(OffsetDateTime.parse("2019-01-01T00:00:00Z"), 10, Usd(10), Usd(105)),
+          Buy(OffsetDateTime.parse("2019-02-01T00:00:00Z"), 10, Usd(11), Usd(115))
         ))
         val s1 = fakeStock.copy(ticker = "b", actions = Seq(
-          Buy(DateTime.parse("2019-01-01"), 5, Usd(10), Usd(55)),
-          LifoSell(DateTime.parse("2019-01-01"), 2, Usd(10), Usd(20))
+          Buy(OffsetDateTime.parse("2019-01-01T00:00:00Z"), 5, Usd(10), Usd(55)),
+          LifoSell(OffsetDateTime.parse("2019-01-01T00:00:00Z"), 2, Usd(10), Usd(20))
         ))
 
         (mockAccountRepository.getAll _).when().returns(Seq.empty)
         (mockTransactionRepository.getAll _).when().returns(Seq.empty)
         (mockAssetRepository.getAllStocks _).when().returns(Seq(s0, s1))
-        (mockStockPriceRetriever.call(_: String)).when(s0.ticker).returns(StockPriceAsOf(Usd(6), Usd(10), DateTime.now))
-        (mockStockPriceRetriever.call(_: String)).when(s1.ticker).returns(StockPriceAsOf(Usd(6), Usd(8), DateTime.now))
+        (mockStockPriceRetriever.call(_: String))
+          .when(s0.ticker)
+          .returns(StockPriceAsOf(Usd(6), Usd(10), OffsetDateTime.now))
+        (mockStockPriceRetriever.call(_: String))
+          .when(s1.ticker)
+          .returns(StockPriceAsOf(Usd(6), Usd(8), OffsetDateTime.now))
 
         service.getNetWorth shouldEqual Usd(244)
       }
@@ -96,41 +107,45 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         val a2 = fakeAccount.copy(id = Some(Id(5)), initialAmount = Usd(70))
 
         val t0 = fakeTransaction.copy(amounts = Seq(
-          fakeAmount.copy(reportingDate = DateTime.parse("2020-01-10"), amount = Usd(-30)),
-          fakeAmount.copy(reportingDate = DateTime.parse("2020-01-15"), amount = Usd(-60)),
-          PaybackAmount(Id(4), Id(5), Usd(20), Description("desc"), DateTime.now)
+          fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-10T00:00:00Z"), amount = Usd(-30)),
+          fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-15T00:00:00Z"), amount = Usd(-60)),
+          PaybackAmount(Id(4), Id(5), Usd(20), Description("desc"), OffsetDateTime.now)
         ))
         val t1 = fakeTransaction.copy(amounts = Seq(
-          fakeAmount.copy(reportingDate = DateTime.parse("2020-01-10"), amount = Usd(400)),
-          fakeAmount.copy(reportingDate = DateTime.parse("2020-01-15"), amount = Usd(300)),
+          fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-10T00:00:00Z"), amount = Usd(400)),
+          fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-15T00:00:00Z"), amount = Usd(300)),
         ))
         val t2 = fakeTransaction.copy(amounts = Seq(
-          fakeAmount.copy(reportingDate = DateTime.parse("2020-02-10"), amount = Usd(50)),
-          fakeAmount.copy(reportingDate = DateTime.parse("2020-02-15"), amount = Usd(-25)),
-          PaybackAmount(Id(4), Id(5), Usd(20), Description("desc"), DateTime.now)
+          fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-02-10T00:00:00Z"), amount = Usd(50)),
+          fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-02-15T00:00:00Z"), amount = Usd(-25)),
+          PaybackAmount(Id(4), Id(5), Usd(20), Description("desc"), OffsetDateTime.now)
         ))
 
         val s0 = fakeStock.copy(ticker = "a", actions = Seq(
-          Buy(DateTime.parse("2019-01-01"), 10, Usd(10), Usd(105)),
-          Buy(DateTime.parse("2019-02-01"), 10, Usd(11), Usd(115))
+          Buy(OffsetDateTime.parse("2019-01-01T00:00:00Z"), 10, Usd(10), Usd(105)),
+          Buy(OffsetDateTime.parse("2019-02-01T00:00:00Z"), 10, Usd(11), Usd(115))
         ))
         val s1 = fakeStock.copy(ticker = "b", actions = Seq(
-          Buy(DateTime.parse("2019-01-01"), 5, Usd(10), Usd(55)),
-          LifoSell(DateTime.parse("2019-01-01"), 2, Usd(10), Usd(20))
+          Buy(OffsetDateTime.parse("2019-01-01T00:00:00Z"), 5, Usd(10), Usd(55)),
+          LifoSell(OffsetDateTime.parse("2019-01-01T00:00:00Z"), 2, Usd(10), Usd(20))
         ))
 
         (mockAccountRepository.getAll _).when().returns(Seq(a0, a1, a2))
         (mockTransactionRepository.getAll _).when().returns(Seq(t0, t1, t2))
         (mockAssetRepository.getAllStocks _).when().returns(Seq(s0, s1))
-        (mockStockPriceRetriever.call(_: String)).when(s0.ticker).returns(StockPriceAsOf(Usd(6), Usd(10), DateTime.now))
-        (mockStockPriceRetriever.call(_: String)).when(s1.ticker).returns(StockPriceAsOf(Usd(6), Usd(8), DateTime.now))
+        (mockStockPriceRetriever.call(_: String))
+          .when(s0.ticker)
+          .returns(StockPriceAsOf(Usd(6), Usd(10), OffsetDateTime.now))
+        (mockStockPriceRetriever.call(_: String))
+          .when(s1.ticker)
+          .returns(StockPriceAsOf(Usd(6), Usd(8), OffsetDateTime.now))
 
         service.getNetWorth shouldEqual Usd(1059)
       }
     }
     "getAccountValue" - {
       "when useReportingDate is None should return transaction amount value as if it was Some(false)" in {
-        val t0 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-01-10"))
+        val t0 = fakeTransaction.copy(transactionDate = OffsetDateTime.parse("2020-01-10T00:00:00Z"))
         val q = AccountValueQuery(Seq(January, February), Set(Id(3)), None, None)
 
         val expectedTransQuery = TransactionQuery(accountIds = q.accountIds, useReportingDate = q.useReportingDate)
@@ -150,7 +165,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       }
       "when useReportingDate is false" - {
         "should return amount value on transaction date" in {
-          val t0 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-01-10"))
+          val t0 = fakeTransaction.copy(transactionDate = OffsetDateTime.parse("2020-01-10T00:00:00Z"))
           val q = AccountValueQuery(Seq(January, February), Set(Id(3)), Some(false), None)
 
           val expectedTransQuery = TransactionQuery(accountIds = q.accountIds, useReportingDate = q.useReportingDate)
@@ -169,10 +184,10 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
           result should contain(AccountValue(February, t0.accountId, Usd(0)))
         }
         "should not return transaction payback value" in {
-          val t0 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-01-10"), amounts = Seq(
-            CategoryAmount(Id(4), Id(5), Usd(20), Description("desc"), DateTime.now),
-            CategoryAmount(Id(4), Id(5), Usd(20), Description("desc"), DateTime.now),
-            PaybackAmount(Id(4), Id(5), Usd(20), Description("desc"), DateTime.now)
+          val t0 = fakeTransaction.copy(transactionDate = OffsetDateTime.parse("2020-01-10T00:00:00Z"), amounts = Seq(
+            CategoryAmount(Id(4), Id(5), Usd(20), Description("desc"), OffsetDateTime.now),
+            CategoryAmount(Id(4), Id(5), Usd(20), Description("desc"), OffsetDateTime.now),
+            PaybackAmount(Id(4), Id(5), Usd(20), Description("desc"), OffsetDateTime.now)
           ))
           val q = AccountValueQuery(Seq(January), Set(Id(3)), Some(false), None)
 
@@ -188,10 +203,10 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
           result should contain(AccountValue(January, t0.accountId, Usd(40)))
         }
         "should return amount value counted in date ranges transaction falls in" in {
-          val t0 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-01-10"))
-          val t1 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-01-15"))
-          val t2 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-02-10"))
-          val t3 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-02-15"))
+          val t0 = fakeTransaction.copy(transactionDate = OffsetDateTime.parse("2020-01-10T00:00:00Z"))
+          val t1 = fakeTransaction.copy(transactionDate = OffsetDateTime.parse("2020-01-15T00:00:00Z"))
+          val t2 = fakeTransaction.copy(transactionDate = OffsetDateTime.parse("2020-02-10T00:00:00Z"))
+          val t3 = fakeTransaction.copy(transactionDate = OffsetDateTime.parse("2020-02-15T00:00:00Z"))
 
           val q = AccountValueQuery(Seq(January, February), Set(Id(3)), Some(false), None)
 
@@ -210,15 +225,15 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
           result should contain(AccountValue(February, t0.accountId, Usd(40)))
         }
         "should return amount value counted in all date ranges transaction falls in" in {
-          val t0 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-01-10"))
-          val t1 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-01-15"))
-          val t2 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-02-10"))
-          val t3 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-02-15"))
+          val t0 = fakeTransaction.copy(transactionDate = OffsetDateTime.parse("2020-01-10T00:00:00Z"))
+          val t1 = fakeTransaction.copy(transactionDate = OffsetDateTime.parse("2020-01-15T00:00:00Z"))
+          val t2 = fakeTransaction.copy(transactionDate = OffsetDateTime.parse("2020-02-10T00:00:00Z"))
+          val t3 = fakeTransaction.copy(transactionDate = OffsetDateTime.parse("2020-02-15T00:00:00Z"))
 
           val q = AccountValueQuery(
             Seq(
-              DateRange(DateTime.parse("2020-01-01"), DateTime.parse("2020-02-14")),
-              DateRange(DateTime.parse("2020-01-14"), DateTime.parse("2020-03-01"))
+              DateRange(OffsetDateTime.parse("2020-01-01T00:00:00Z"), OffsetDateTime.parse("2020-02-14T00:00:00Z")),
+              DateRange(OffsetDateTime.parse("2020-01-14T00:00:00Z"), OffsetDateTime.parse("2020-03-01T00:00:00Z"))
             ),
             Set(Id(3)),
             None,
@@ -240,10 +255,14 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
           result should contain(AccountValue(q.dateRanges(1), t0.accountId, Usd(60)))
         }
         "should return amount value counted in transaction accounts" in {
-          val t0 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-01-10"), accountId = Id(2))
-          val t1 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-01-15"), accountId = Id(3))
-          val t2 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-02-10"), accountId = Id(4))
-          val t3 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-02-15"), accountId = Id(4))
+          val t0 = fakeTransaction
+            .copy(transactionDate = OffsetDateTime.parse("2020-01-10T00:00:00Z"), accountId = Id(2))
+          val t1 = fakeTransaction
+            .copy(transactionDate = OffsetDateTime.parse("2020-01-15T00:00:00Z"), accountId = Id(3))
+          val t2 = fakeTransaction
+            .copy(transactionDate = OffsetDateTime.parse("2020-02-10T00:00:00Z"), accountId = Id(4))
+          val t3 = fakeTransaction
+            .copy(transactionDate = OffsetDateTime.parse("2020-02-15T00:00:00Z"), accountId = Id(4))
 
           val q = AccountValueQuery(Seq(January, February), Set(Id(2), Id(3), Id(4)), Some(false), None)
 
@@ -287,12 +306,16 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
           result should contain(AccountValue(February, Id(4), Usd(0)))
         }
         "should return amount value of all amounts in transaction" in {
-          val amt0 = CategoryAmount(Id(4), Id(5), Usd(50), Description("desc"), DateTime.now)
-          val amt1 = CategoryAmount(Id(4), Id(5), Usd(80), Description("desc"), DateTime.now)
-          val t0 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-01-10"), amounts = Seq(amt0, amt1))
-          val t1 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-01-15"), amounts = Seq(amt0, amt1))
-          val t2 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-02-10"), amounts = Seq(amt0, amt1))
-          val t3 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-02-15"), amounts = Seq(amt0, amt1))
+          val amt0 = CategoryAmount(Id(4), Id(5), Usd(50), Description("desc"), OffsetDateTime.now)
+          val amt1 = CategoryAmount(Id(4), Id(5), Usd(80), Description("desc"), OffsetDateTime.now)
+          val t0 = fakeTransaction
+            .copy(transactionDate = OffsetDateTime.parse("2020-01-10T00:00:00Z"), amounts = Seq(amt0, amt1))
+          val t1 = fakeTransaction
+            .copy(transactionDate = OffsetDateTime.parse("2020-01-15T00:00:00Z"), amounts = Seq(amt0, amt1))
+          val t2 = fakeTransaction
+            .copy(transactionDate = OffsetDateTime.parse("2020-02-10T00:00:00Z"), amounts = Seq(amt0, amt1))
+          val t3 = fakeTransaction
+            .copy(transactionDate = OffsetDateTime.parse("2020-02-15T00:00:00Z"), amounts = Seq(amt0, amt1))
 
           val q = AccountValueQuery(Seq(January, February), Set(Id(3)), Some(false), None)
 
@@ -314,7 +337,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       "when useReportingDate is true" - {
         "should return amount value on amount date" in {
           val t0 = fakeTransaction.copy(
-            amounts = Seq(fakeAmount.copy(reportingDate = DateTime.parse("2020-01-10")))
+            amounts = Seq(fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-10T00:00:00Z")))
           )
           val q = AccountValueQuery(Seq(January, February), Set(Id(3)), Some(true), None)
 
@@ -335,8 +358,8 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         }
         "should not return transaction payback value" in {
           val t0 = fakeTransaction.copy(amounts = Seq(
-            fakeAmount.copy(reportingDate = DateTime.parse("2020-01-10")),
-            PaybackAmount(Id(4), Id(5), Usd(20), Description("desc"), DateTime.parse("2020-01-10"))
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-10T00:00:00Z")),
+            PaybackAmount(Id(4), Id(5), Usd(20), Description("desc"), OffsetDateTime.parse("2020-01-10T00:00:00Z"))
           ))
           val q = AccountValueQuery(Seq(January, February), Set(Id(3)), Some(true), None)
 
@@ -357,16 +380,16 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         }
         "should return amount value counted in date ranges amount falls in" in {
           val t0 = fakeTransaction.copy(amounts = Seq(
-            fakeAmount.copy(reportingDate = DateTime.parse("2020-01-10")),
-            fakeAmount.copy(reportingDate = DateTime.parse("2020-01-15")),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-10T00:00:00Z")),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-15T00:00:00Z")),
           ))
           val t1 = fakeTransaction.copy(amounts = Seq(
-            fakeAmount.copy(reportingDate = DateTime.parse("2020-01-10")),
-            fakeAmount.copy(reportingDate = DateTime.parse("2020-01-15")),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-10T00:00:00Z")),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-15T00:00:00Z")),
           ))
           val t2 = fakeTransaction.copy(amounts = Seq(
-            fakeAmount.copy(reportingDate = DateTime.parse("2020-02-10")),
-            fakeAmount.copy(reportingDate = DateTime.parse("2020-02-15")),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-02-10T00:00:00Z")),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-02-15T00:00:00Z")),
           ))
 
           val q = AccountValueQuery(Seq(January, February), Set(Id(3)), Some(true), None)
@@ -387,22 +410,22 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         }
         "should return amount value counted in all date ranges amount falls in" in {
           val t0 = fakeTransaction.copy(amounts = Seq(
-            fakeAmount.copy(reportingDate = DateTime.parse("2020-01-10")),
-            fakeAmount.copy(reportingDate = DateTime.parse("2020-01-15")),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-10T00:00:00Z")),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-15T00:00:00Z")),
           ))
           val t1 = fakeTransaction.copy(amounts = Seq(
-            fakeAmount.copy(reportingDate = DateTime.parse("2020-01-10")),
-            fakeAmount.copy(reportingDate = DateTime.parse("2020-01-15")),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-10T00:00:00Z")),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-15T00:00:00Z")),
           ))
           val t2 = fakeTransaction.copy(amounts = Seq(
-            fakeAmount.copy(reportingDate = DateTime.parse("2020-02-10")),
-            fakeAmount.copy(reportingDate = DateTime.parse("2020-02-15")),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-02-10T00:00:00Z")),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-02-15T00:00:00Z")),
           ))
 
           val q = AccountValueQuery(
             Seq(
-              DateRange(DateTime.parse("2020-01-01"), DateTime.parse("2020-02-14")),
-              DateRange(DateTime.parse("2020-01-14"), DateTime.parse("2020-03-01"))
+              DateRange(OffsetDateTime.parse("2020-01-01T00:00:00Z"), OffsetDateTime.parse("2020-02-14T00:00:00Z")),
+              DateRange(OffsetDateTime.parse("2020-01-14T00:00:00Z"), OffsetDateTime.parse("2020-03-01T00:00:00Z"))
             ),
             Set(Id(3)),
             Some(true),
@@ -425,16 +448,16 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         }
         "should return amount value counted in transaction accounts" in {
           val t0 = fakeTransaction.copy(accountId = Id(3), amounts = Seq(
-            fakeAmount.copy(reportingDate = DateTime.parse("2020-01-10")),
-            fakeAmount.copy(reportingDate = DateTime.parse("2020-01-15")),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-10T00:00:00Z")),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-15T00:00:00Z")),
           ))
           val t1 = fakeTransaction.copy(accountId = Id(4), amounts = Seq(
-            fakeAmount.copy(reportingDate = DateTime.parse("2020-01-10")),
-            fakeAmount.copy(reportingDate = DateTime.parse("2020-01-15")),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-10T00:00:00Z")),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-15T00:00:00Z")),
           ))
           val t2 = fakeTransaction.copy(accountId = Id(3), amounts = Seq(
-            fakeAmount.copy(reportingDate = DateTime.parse("2020-02-10")),
-            fakeAmount.copy(reportingDate = DateTime.parse("2020-02-15")),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-02-10T00:00:00Z")),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-02-15T00:00:00Z")),
           ))
 
           val q = AccountValueQuery(Seq(January, February), Set(Id(3), Id(4)), Some(true), None)
@@ -479,11 +502,11 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       }
       "when countAssetGrowthInPurchaseMonth not set should return stock value as if it was Some(false)" in {
         val s0 = fakeStock.copy(ticker = "a", actions = Seq(
-          Buy(DateTime.parse("2019-01-01"), 10, Usd(10), Usd(105)),
-          Buy(DateTime.parse("2019-02-01"), 10, Usd(11), Usd(115))
+          Buy(OffsetDateTime.parse("2019-01-01T00:00:00Z"), 10, Usd(10), Usd(105)),
+          Buy(OffsetDateTime.parse("2019-02-01T00:00:00Z"), 10, Usd(11), Usd(115))
         ))
         val s1 = fakeStock.copy(ticker = "b", actions = Seq(
-          Buy(DateTime.parse("2019-01-01"), 5, Usd(10), Usd(55))
+          Buy(OffsetDateTime.parse("2019-01-01T00:00:00Z"), 5, Usd(10), Usd(55))
         ))
         val s0Prices = Map(
           January.start -> StockPriceAsOf(Usd(20), Usd(25), January.start),
@@ -501,12 +524,12 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         (mockTransactionRepository.get(_: TransactionQuery)).when(*).returns(Seq.empty)
         (mockAssetRepository.getAllStocks _).when().returns(Seq(s0, s1))
         s0Prices.foreach { priceWithDate =>
-          (mockStockPriceRetriever.call(_: String, _: DateTime))
+          (mockStockPriceRetriever.call(_: String, _: OffsetDateTime))
             .when(s0.ticker, priceWithDate._1)
             .returns(priceWithDate._2.pure[IdMonad])
         }
         s1Prices.foreach { priceWithDate =>
-          (mockStockPriceRetriever.call(_: String, _: DateTime))
+          (mockStockPriceRetriever.call(_: String, _: OffsetDateTime))
             .when(s1.ticker, priceWithDate._1)
             .returns(priceWithDate._2.pure[IdMonad])
         }
@@ -522,11 +545,11 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       "when countAssetGrowthInPurchaseMonth is false" - {
         "should return stock value as value at date range end minus value at date range beginning" in {
           val s0 = fakeStock.copy(ticker = "a", actions = Seq(
-            Buy(DateTime.parse("2019-01-01"), 10, Usd(10), Usd(105)),
-            Buy(DateTime.parse("2019-02-01"), 10, Usd(11), Usd(115))
+            Buy(OffsetDateTime.parse("2019-01-01T00:00:00Z"), 10, Usd(10), Usd(105)),
+            Buy(OffsetDateTime.parse("2019-02-01T00:00:00Z"), 10, Usd(11), Usd(115))
           ))
           val s1 = fakeStock.copy(ticker = "b", actions = Seq(
-            Buy(DateTime.parse("2019-01-01"), 5, Usd(10), Usd(55))
+            Buy(OffsetDateTime.parse("2019-01-01T00:00:00Z"), 5, Usd(10), Usd(55))
           ))
           val s0Prices = Map(
             January.start -> StockPriceAsOf(Usd(20), Usd(25), January.start),
@@ -544,12 +567,12 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
           (mockTransactionRepository.get(_: TransactionQuery)).when(*).returns(Seq.empty)
           (mockAssetRepository.getAllStocks _).when().returns(Seq(s0, s1))
           s0Prices.foreach { priceWithDate =>
-            (mockStockPriceRetriever.call(_: String, _: DateTime))
+            (mockStockPriceRetriever.call(_: String, _: OffsetDateTime))
               .when(s0.ticker, priceWithDate._1)
               .returns(priceWithDate._2.pure[IdMonad])
           }
           s1Prices.foreach { priceWithDate =>
-            (mockStockPriceRetriever.call(_: String, _: DateTime))
+            (mockStockPriceRetriever.call(_: String, _: OffsetDateTime))
               .when(s1.ticker, priceWithDate._1)
               .returns(priceWithDate._2.pure[IdMonad])
           }
@@ -564,16 +587,16 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         }
         "should return stock value with values in date range counted as growth and past end ignored" in {
           val s0 = fakeStock.copy(ticker = "a", actions = Seq(
-            Buy(DateTime.parse("2019-01-01"), 10, Usd(10), Usd(105)),
-            Buy(DateTime.parse("2019-02-01"), 10, Usd(11), Usd(115)),
-            Buy(DateTime.parse("2020-01-15"), 10, Usd(15), Usd(155)),
-            LifoSell(DateTime.parse("2020-02-15"), 10, Usd(15), Usd(155)),
-            Buy(DateTime.parse("2020-03-15"), 10, Usd(15), Usd(155))
+            Buy(OffsetDateTime.parse("2019-01-01T00:00:00Z"), 10, Usd(10), Usd(105)),
+            Buy(OffsetDateTime.parse("2019-02-01T00:00:00Z"), 10, Usd(11), Usd(115)),
+            Buy(OffsetDateTime.parse("2020-01-15T00:00:00Z"), 10, Usd(15), Usd(155)),
+            LifoSell(OffsetDateTime.parse("2020-02-15T00:00:00Z"), 10, Usd(15), Usd(155)),
+            Buy(OffsetDateTime.parse("2020-03-15T00:00:00Z"), 10, Usd(15), Usd(155))
           ))
           val s1 = fakeStock.copy(ticker = "b", actions = Seq(
-            Buy(DateTime.parse("2019-01-01"), 5, Usd(10), Usd(55)),
-            CashDividend(DateTime.parse("2020-02-15"), 1, Usd(10), Usd(10)),
-            Buy(DateTime.parse("2020-03-01"), 100, Usd(15), Usd(1505))
+            Buy(OffsetDateTime.parse("2019-01-01T00:00:00Z"), 5, Usd(10), Usd(55)),
+            CashDividend(OffsetDateTime.parse("2020-02-15T00:00:00Z"), 1, Usd(10), Usd(10)),
+            Buy(OffsetDateTime.parse("2020-03-01T00:00:00Z"), 100, Usd(15), Usd(1505))
           ))
           val s0Prices = Map(
             January.start -> StockPriceAsOf(Usd(20), Usd(21), January.start),
@@ -591,12 +614,12 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
           (mockTransactionRepository.get(_: TransactionQuery)).when(*).returns(Seq.empty)
           (mockAssetRepository.getAllStocks _).when().returns(Seq(s0, s1))
           s0Prices.foreach { priceWithDate =>
-            (mockStockPriceRetriever.call(_: String, _: DateTime))
+            (mockStockPriceRetriever.call(_: String, _: OffsetDateTime))
               .when(s0.ticker, priceWithDate._1)
               .returns(priceWithDate._2.pure[IdMonad])
           }
           s1Prices.foreach { priceWithDate =>
-            (mockStockPriceRetriever.call(_: String, _: DateTime))
+            (mockStockPriceRetriever.call(_: String, _: OffsetDateTime))
               .when(s1.ticker, priceWithDate._1)
               .returns(priceWithDate._2.pure[IdMonad])
           }
@@ -612,16 +635,16 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         }
         "should return stock value counted in correct accounts" in {
           val s0 = fakeStock.copy(ticker = "a", accountId = Id(3), actions = Seq(
-            Buy(DateTime.parse("2020-01-01"), 10, Usd(10), Usd(105))
+            Buy(OffsetDateTime.parse("2020-01-01T00:00:00Z"), 10, Usd(10), Usd(105))
           ))
           val s1 = fakeStock.copy(ticker = "b", accountId = Id(3), actions = Seq(
-            Buy(DateTime.parse("2020-01-01"), 5, Usd(10), Usd(55))
+            Buy(OffsetDateTime.parse("2020-01-01T00:00:00Z"), 5, Usd(10), Usd(55))
           ))
           val s2 = fakeStock.copy(ticker = "c", accountId = Id(4), actions = Seq(
-            Buy(DateTime.parse("2020-02-01"), 20, Usd(10), Usd(205))
+            Buy(OffsetDateTime.parse("2020-02-01T00:00:00Z"), 20, Usd(10), Usd(205))
           ))
           val s3 = fakeStock.copy(ticker = "d", accountId = Id(5), actions = Seq(
-            Buy(DateTime.parse("2020-02-01"), 1, Usd(100), Usd(105))
+            Buy(OffsetDateTime.parse("2020-02-01T00:00:00Z"), 1, Usd(100), Usd(105))
           ))
           val allPrices = Map(
             January.start -> StockPriceAsOf(Usd(10), Usd(10), January.start),
@@ -633,7 +656,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
           (mockTransactionRepository.get(_: TransactionQuery)).when(*).returns(Seq.empty)
           (mockAssetRepository.getAllStocks _).when().returns(Seq(s0, s1, s2, s3))
           allPrices.foreach { priceWithDate =>
-            (mockStockPriceRetriever.call(_: String, _: DateTime))
+            (mockStockPriceRetriever.call(_: String, _: OffsetDateTime))
               .when(*, priceWithDate._1)
               .returns(priceWithDate._2.pure[IdMonad])
           }
@@ -656,21 +679,21 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       "when countAssetGrowthInPurchaseMonth is true" - {
         "should return stock value as growth in purchase month" in {
           val s0 = fakeStock.copy(ticker = "a", actions = Seq(
-            Buy(DateTime.parse("2020-01-01"), 10, Usd(10), Usd(105)),
-            LifoSell(DateTime.parse("2020-02-15"), 2, Usd(20), Usd(40)),
-            LifoSell(DateTime.parse("2020-05-01"), 2, Usd(30), Usd(60))
+            Buy(OffsetDateTime.parse("2020-01-01T00:00:00Z"), 10, Usd(10), Usd(105)),
+            LifoSell(OffsetDateTime.parse("2020-02-15T00:00:00Z"), 2, Usd(20), Usd(40)),
+            LifoSell(OffsetDateTime.parse("2020-05-01T00:00:00Z"), 2, Usd(30), Usd(60))
           ))
           val s1 = fakeStock.copy(ticker = "b", actions = Seq(
-            Buy(DateTime.parse("2020-01-01"), 5, Usd(10), Usd(55))
+            Buy(OffsetDateTime.parse("2020-01-01T00:00:00Z"), 5, Usd(10), Usd(55))
           ))
           val s2 = fakeStock.copy(ticker = "c", actions = Seq(
-            Buy(DateTime.parse("2020-02-01"), 10, Usd(10), Usd(105)),
-            Buy(DateTime.parse("2020-02-15"), 10, Usd(15), Usd(155)),
-            StockDividend(DateTime.parse("2020-06-01"), 1, Usd(20), Usd(20)),
+            Buy(OffsetDateTime.parse("2020-02-01T00:00:00Z"), 10, Usd(10), Usd(105)),
+            Buy(OffsetDateTime.parse("2020-02-15T00:00:00Z"), 10, Usd(15), Usd(155)),
+            StockDividend(OffsetDateTime.parse("2020-06-01T00:00:00Z"), 1, Usd(20), Usd(20)),
           ))
-          val s0Price = StockPriceAsOf(Usd(20), Usd(30), DateTime.now)
-          val s1Price = StockPriceAsOf(Usd(40), Usd(45), DateTime.now)
-          val s2Price = StockPriceAsOf(Usd(20), Usd(22), DateTime.now)
+          val s0Price = StockPriceAsOf(Usd(20), Usd(30), OffsetDateTime.now)
+          val s1Price = StockPriceAsOf(Usd(40), Usd(45), OffsetDateTime.now)
+          val s2Price = StockPriceAsOf(Usd(20), Usd(22), OffsetDateTime.now)
           val q = AccountValueQuery(Seq(January, February), Set(Id(3)), None, Some(true))
 
           (mockTransactionRepository.get(_: TransactionQuery)).when(*).returns(Seq.empty)
@@ -690,18 +713,18 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         }
         "should return stock value as value of lifecycle with buy in date range" in {
           val s0 = fakeStock.copy(ticker = "a", actions = Seq(
-            Buy(DateTime.parse("2020-01-01"), 10, Usd(10), Usd(105)),
-            LifoSell(DateTime.parse("2020-01-01"), 2, Usd(20), Usd(40)),
-            LifoSell(DateTime.parse("2020-01-01"), 2, Usd(30), Usd(60))
+            Buy(OffsetDateTime.parse("2020-01-01T00:00:00Z"), 10, Usd(10), Usd(105)),
+            LifoSell(OffsetDateTime.parse("2020-01-01T00:00:00Z"), 2, Usd(20), Usd(40)),
+            LifoSell(OffsetDateTime.parse("2020-01-01T00:00:00Z"), 2, Usd(30), Usd(60))
           ))
           val s1 = fakeStock.copy(ticker = "b", actions = Seq(
-            Buy(DateTime.parse("2020-01-01"), 10, Usd(10), Usd(105)),
-            Buy(DateTime.parse("2020-02-01"), 10, Usd(15), Usd(155)),
-            StockDividend(DateTime.parse("2020-02-01"), 1, Usd(10), Usd(105)),
+            Buy(OffsetDateTime.parse("2020-01-01T00:00:00Z"), 10, Usd(10), Usd(105)),
+            Buy(OffsetDateTime.parse("2020-02-01T00:00:00Z"), 10, Usd(15), Usd(155)),
+            StockDividend(OffsetDateTime.parse("2020-02-01T00:00:00Z"), 1, Usd(10), Usd(105)),
           ))
           val q = AccountValueQuery(Seq(January, February), Set(Id(3)), None, Some(true))
-          val s0Price = StockPriceAsOf(Usd(20), Usd(30), DateTime.now)
-          val s1Price = StockPriceAsOf(Usd(40), Usd(45), DateTime.now)
+          val s0Price = StockPriceAsOf(Usd(20), Usd(30), OffsetDateTime.now)
+          val s1Price = StockPriceAsOf(Usd(40), Usd(45), OffsetDateTime.now)
 
           (mockTransactionRepository.get(_: TransactionQuery)).when(*).returns(Seq.empty)
           (mockAssetRepository.getAllStocks _).when().returns(Seq(s0, s1))
@@ -719,26 +742,26 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         }
         "should return stock value counted in all date ranges the buy in lifecycle falls in" in {
           val s0 = fakeStock.copy(ticker = "a", actions = Seq(
-            Buy(DateTime.parse("2020-01-01"), 10, Usd(10), Usd(105)),
-            LifoSell(DateTime.parse("2020-01-01"), 2, Usd(20), Usd(40)),
-            LifoSell(DateTime.parse("2020-01-01"), 2, Usd(30), Usd(60))
+            Buy(OffsetDateTime.parse("2020-01-01T00:00:00Z"), 10, Usd(10), Usd(105)),
+            LifoSell(OffsetDateTime.parse("2020-01-01T00:00:00Z"), 2, Usd(20), Usd(40)),
+            LifoSell(OffsetDateTime.parse("2020-01-01T00:00:00Z"), 2, Usd(30), Usd(60))
           ))
           val s1 = fakeStock.copy(ticker = "b", actions = Seq(
-            Buy(DateTime.parse("2020-01-01"), 10, Usd(10), Usd(105)),
-            Buy(DateTime.parse("2020-02-01"), 10, Usd(15), Usd(155)),
-            StockDividend(DateTime.parse("2020-02-01"), 1, Usd(10), Usd(105)),
+            Buy(OffsetDateTime.parse("2020-01-01T00:00:00Z"), 10, Usd(10), Usd(105)),
+            Buy(OffsetDateTime.parse("2020-02-01T00:00:00Z"), 10, Usd(15), Usd(155)),
+            StockDividend(OffsetDateTime.parse("2020-02-01T00:00:00Z"), 1, Usd(10), Usd(105)),
           ))
           val q = AccountValueQuery(
             Seq(
-              DateRange(DateTime.parse("2020-01-01"), DateTime.parse("2020-03-01")),
-              DateRange(DateTime.parse("2020-01-15"), DateTime.parse("2020-03-01")),
+              DateRange(OffsetDateTime.parse("2020-01-01T00:00:00Z"), OffsetDateTime.parse("2020-03-01T00:00:00Z")),
+              DateRange(OffsetDateTime.parse("2020-01-15T00:00:00Z"), OffsetDateTime.parse("2020-03-01T00:00:00Z")),
             ),
             Set(Id(3)),
             None,
             Some(true)
           )
-          val s0Price = StockPriceAsOf(Usd(20), Usd(30), DateTime.now)
-          val s1Price = StockPriceAsOf(Usd(40), Usd(45), DateTime.now)
+          val s0Price = StockPriceAsOf(Usd(20), Usd(30), OffsetDateTime.now)
+          val s1Price = StockPriceAsOf(Usd(40), Usd(45), OffsetDateTime.now)
 
           (mockTransactionRepository.get(_: TransactionQuery)).when(*).returns(Seq.empty)
           (mockAssetRepository.getAllStocks _).when().returns(Seq(s0, s1))
@@ -755,21 +778,21 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         }
         "should return stock value counted in correct accounts" in {
           val s0 = fakeStock.copy(ticker = "a", accountId = Id(4), actions = Seq(
-            Buy(DateTime.parse("2020-01-01"), 10, Usd(10), Usd(105)),
-            LifoSell(DateTime.parse("2020-02-15"), 2, Usd(20), Usd(40)),
-            LifoSell(DateTime.parse("2020-05-01"), 2, Usd(30), Usd(60))
+            Buy(OffsetDateTime.parse("2020-01-01T00:00:00Z"), 10, Usd(10), Usd(105)),
+            LifoSell(OffsetDateTime.parse("2020-02-15T00:00:00Z"), 2, Usd(20), Usd(40)),
+            LifoSell(OffsetDateTime.parse("2020-05-01T00:00:00Z"), 2, Usd(30), Usd(60))
           ))
           val s1 = fakeStock.copy(ticker = "b", accountId = Id(4), actions = Seq(
-            Buy(DateTime.parse("2020-01-01"), 5, Usd(10), Usd(55))
+            Buy(OffsetDateTime.parse("2020-01-01T00:00:00Z"), 5, Usd(10), Usd(55))
           ))
           val s2 = fakeStock.copy(ticker = "c", accountId = Id(5), actions = Seq(
-            Buy(DateTime.parse("2020-01-01"), 10, Usd(10), Usd(105)),
-            Buy(DateTime.parse("2020-02-15"), 10, Usd(15), Usd(155)),
-            StockDividend(DateTime.parse("2020-06-01"), 1, Usd(20), Usd(20)),
+            Buy(OffsetDateTime.parse("2020-01-01T00:00:00Z"), 10, Usd(10), Usd(105)),
+            Buy(OffsetDateTime.parse("2020-02-15T00:00:00Z"), 10, Usd(15), Usd(155)),
+            StockDividend(OffsetDateTime.parse("2020-06-01T00:00:00Z"), 1, Usd(20), Usd(20)),
           ))
-          val s0Price = StockPriceAsOf(Usd(20), Usd(30), DateTime.now)
-          val s1Price = StockPriceAsOf(Usd(40), Usd(45), DateTime.now)
-          val s2Price = StockPriceAsOf(Usd(20), Usd(22), DateTime.now)
+          val s0Price = StockPriceAsOf(Usd(20), Usd(30), OffsetDateTime.now)
+          val s1Price = StockPriceAsOf(Usd(40), Usd(45), OffsetDateTime.now)
+          val s2Price = StockPriceAsOf(Usd(20), Usd(22), OffsetDateTime.now)
           val q = AccountValueQuery(Seq(January, February), Set(Id(3), Id(4), Id(5)), None, Some(true))
 
           (mockTransactionRepository.get(_: TransactionQuery)).when(*).returns(Seq.empty)
@@ -793,22 +816,22 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         }
       }
       "should return transactions and stock in same account in same date range added together" in {
-        val t0 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-01-10"), accountId = Id(3))
-        val t1 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-01-15"), accountId = Id(4))
-        val t2 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-02-10"), accountId = Id(5))
-        val t3 = fakeTransaction.copy(transactionDate = DateTime.parse("2020-02-15"), accountId = Id(5))
+        val t0 = fakeTransaction.copy(transactionDate = OffsetDateTime.parse("2020-01-10T00:00:00Z"), accountId = Id(3))
+        val t1 = fakeTransaction.copy(transactionDate = OffsetDateTime.parse("2020-01-15T00:00:00Z"), accountId = Id(4))
+        val t2 = fakeTransaction.copy(transactionDate = OffsetDateTime.parse("2020-02-10T00:00:00Z"), accountId = Id(5))
+        val t3 = fakeTransaction.copy(transactionDate = OffsetDateTime.parse("2020-02-15T00:00:00Z"), accountId = Id(5))
 
         val s0 = fakeStock.copy(ticker = "a", accountId = Id(3), actions = Seq(
-          Buy(DateTime.parse("2020-01-01"), 10, Usd(10), Usd(105))
+          Buy(OffsetDateTime.parse("2020-01-01T00:00:00Z"), 10, Usd(10), Usd(105))
         ))
         val s1 = fakeStock.copy(ticker = "b", accountId = Id(3), actions = Seq(
-          Buy(DateTime.parse("2020-01-01"), 5, Usd(10), Usd(55))
+          Buy(OffsetDateTime.parse("2020-01-01T00:00:00Z"), 5, Usd(10), Usd(55))
         ))
         val s2 = fakeStock.copy(ticker = "c", accountId = Id(4), actions = Seq(
-          Buy(DateTime.parse("2020-02-01"), 20, Usd(10), Usd(205))
+          Buy(OffsetDateTime.parse("2020-02-01T00:00:00Z"), 20, Usd(10), Usd(205))
         ))
         val s3 = fakeStock.copy(ticker = "d", accountId = Id(5), actions = Seq(
-          Buy(DateTime.parse("2020-02-01"), 1, Usd(100), Usd(105))
+          Buy(OffsetDateTime.parse("2020-02-01T00:00:00Z"), 1, Usd(100), Usd(105))
         ))
         val allPrices = Map(
           January.start -> StockPriceAsOf(Usd(10), Usd(10), January.start),
@@ -829,7 +852,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         (mockTransactionRepository.get(_: TransactionQuery)).when(*).returns(Seq.empty)
         (mockAssetRepository.getAllStocks _).when().returns(Seq(s0, s1, s2, s3))
         allPrices.foreach { priceWithDate =>
-          (mockStockPriceRetriever.call(_: String, _: DateTime))
+          (mockStockPriceRetriever.call(_: String, _: OffsetDateTime))
             .when(*, priceWithDate._1)
             .returns(priceWithDate._2.pure[IdMonad])
         }

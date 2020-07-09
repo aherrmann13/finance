@@ -1,5 +1,7 @@
 package com.finance.business.validation
 
+import java.time.OffsetDateTime
+
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import cats.{Id => IdMonad}
@@ -7,7 +9,6 @@ import com.finance.business.model.category._
 import com.finance.business.model.types._
 import com.finance.business.repository.{CategoryRepository, TransactionRepository}
 import com.finance.business.validation.errors._
-import com.github.nscala_time.time.Imports._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
@@ -69,9 +70,9 @@ class CategoryValidationInterpreterSpec extends AnyFreeSpec with Matchers with M
       "should return Left(CategoryEffectiveTimeNotWithinParent) when not in parent time period" in {
         val parent = fakeCategoryWithId.copy(
           id = fakeCategoryWithId.parentId,
-          effectiveTime = Seq(DateRange(DateTime.lastYear, DateTime.now))
+          effectiveTime = Seq(DateRange(OffsetDateTime.now.minusYears(1), OffsetDateTime.now))
         )
-        val effectiveTime = Seq(DateRange(DateTime.lastMonth, DateTime.nextMonth))
+        val effectiveTime = Seq(DateRange(OffsetDateTime.now.minusMonths(1), OffsetDateTime.now.plusMonths(1)))
         (mockCategoryRepository get _).when(parent.id.get).returns(OptionT.pure(parent))
 
         categoryValidationInterpreter.withinParentTimePeriod(
@@ -83,12 +84,14 @@ class CategoryValidationInterpreterSpec extends AnyFreeSpec with Matchers with M
       "should return Right(()) when in parent time period" in {
         val parent = fakeCategoryWithId.copy(
           id = fakeCategoryWithId.parentId,
-          effectiveTime = Seq(DateRange(DateTime.lastYear, DateTime.now))
+          effectiveTime = Seq(DateRange(OffsetDateTime.now.minusYears(1), OffsetDateTime.now))
         )
         (mockCategoryRepository get _).when(parent.id.get).returns(OptionT.pure(parent))
 
         categoryValidationInterpreter.withinParentTimePeriod(
-          fakeCategoryWithId.copy(effectiveTime = Seq(DateRange(DateTime.lastMonth, DateTime.lastWeek)))
+          fakeCategoryWithId.copy(effectiveTime = Seq(
+            DateRange(OffsetDateTime.now.minusMonths(1), OffsetDateTime.now.minusWeeks(1))
+          ))
         ).value shouldEqual EitherT.rightT[IdMonad, DoesNotExist](()).value
       }
       "should return Right(()) when parent does not exist" in {
@@ -129,28 +132,49 @@ class CategoryValidationInterpreterSpec extends AnyFreeSpec with Matchers with M
       "should return Left(BudgetEffectiveTimeNotWithinCategory) for first budget not in category time period" in {
         val budget0 = Budget(
           Seq(
-            DateRange(DateTime.parse("2020-01-01T00:00:00.00Z"), DateTime.parse("2020-01-31T00:00:00.00Z")),
-            DateRange(DateTime.parse("2020-02-01T00:00:00.00Z"), DateTime.parse("2020-02-28T00:00:00.00Z"))
+            DateRange(
+              OffsetDateTime.parse("2020-01-01T00:00:00.00Z"),
+              OffsetDateTime.parse("2020-01-31T00:00:00.00Z")
+            ),
+            DateRange(
+              OffsetDateTime.parse("2020-02-01T00:00:00.00Z"),
+              OffsetDateTime.parse("2020-02-28T00:00:00.00Z")
+            )
           ),
           Usd(60)
         )
         val badBudget0 = Budget(
           Seq(
-            DateRange(DateTime.parse("2020-03-01T00:00:00.00Z"), DateTime.parse("2020-03-31T00:00:00.00Z")),
-            DateRange(DateTime.parse("2020-04-01T00:00:00.00Z"), DateTime.parse("2020-04-30T00:00:00.00Z"))
+            DateRange(
+              OffsetDateTime.parse("2020-03-01T00:00:00.00Z"),
+              OffsetDateTime.parse("2020-03-31T00:00:00.00Z")
+            ),
+            DateRange(
+              OffsetDateTime.parse("2020-04-01T00:00:00.00Z"),
+              OffsetDateTime.parse("2020-04-30T00:00:00.00Z")
+            )
           ),
           Usd(60)
         )
         val badBudget1 = Budget(
           Seq(
-            DateRange(DateTime.parse("2020-05-01T00:00:00.00Z"), DateTime.parse("2020-05-31T00:00:00.00Z")),
-            DateRange(DateTime.parse("2020-06-01T00:00:00.00Z"), DateTime.parse("2020-06-30T00:00:00.00Z"))
+            DateRange(
+              OffsetDateTime.parse("2020-05-01T00:00:00.00Z"),
+              OffsetDateTime.parse("2020-05-31T00:00:00.00Z")
+            ),
+            DateRange(
+              OffsetDateTime.parse("2020-06-01T00:00:00.00Z"),
+              OffsetDateTime.parse("2020-06-30T00:00:00.00Z")
+            )
           ),
           Usd(60)
         )
         val cat = fakeCategoryWithId.copy(
           effectiveTime = Seq(
-            DateRange(DateTime.parse("2020-01-01T00:00:00.00Z"), DateTime.parse("2020-03-31T00:00:00.00Z"))
+            DateRange(
+              OffsetDateTime.parse("2020-01-01T00:00:00.00Z"),
+              OffsetDateTime.parse("2020-03-31T00:00:00.00Z")
+            )
           ),
           budget = Seq(budget0, badBudget0, badBudget1)
         )
@@ -162,28 +186,49 @@ class CategoryValidationInterpreterSpec extends AnyFreeSpec with Matchers with M
       "should return Right(()) when all budgets in category time period" in {
         val budget0 = Budget(
           Seq(
-            DateRange(DateTime.parse("2020-01-01T00:00:00.00Z"), DateTime.parse("2020-01-31T00:00:00.00Z")),
-            DateRange(DateTime.parse("2020-02-01T00:00:00.00Z"), DateTime.parse("2020-02-28T00:00:00.00Z"))
+            DateRange(
+              OffsetDateTime.parse("2020-01-01T00:00:00.00Z"),
+              OffsetDateTime.parse("2020-01-31T00:00:00.00Z")
+            ),
+            DateRange(
+              OffsetDateTime.parse("2020-02-01T00:00:00.00Z"),
+              OffsetDateTime.parse("2020-02-28T00:00:00.00Z")
+            )
           ),
           Usd(60)
         )
         val budget1 = Budget(
           Seq(
-            DateRange(DateTime.parse("2020-03-01T00:00:00.00Z"), DateTime.parse("2020-03-31T00:00:00.00Z")),
-            DateRange(DateTime.parse("2020-04-01T00:00:00.00Z"), DateTime.parse("2020-04-30T00:00:00.00Z"))
+            DateRange(
+              OffsetDateTime.parse("2020-03-01T00:00:00.00Z"),
+              OffsetDateTime.parse("2020-03-31T00:00:00.00Z")
+            ),
+            DateRange(
+              OffsetDateTime.parse("2020-04-01T00:00:00.00Z"),
+              OffsetDateTime.parse("2020-04-30T00:00:00.00Z")
+            )
           ),
           Usd(60)
         )
         val budget2 = Budget(
           Seq(
-            DateRange(DateTime.parse("2020-05-01T00:00:00.00Z"), DateTime.parse("2020-05-31T00:00:00.00Z")),
-            DateRange(DateTime.parse("2020-06-01T00:00:00.00Z"), DateTime.parse("2020-06-30T00:00:00.00Z"))
+            DateRange(
+              OffsetDateTime.parse("2020-05-01T00:00:00.00Z"),
+              OffsetDateTime.parse("2020-05-31T00:00:00.00Z")
+            ),
+            DateRange(
+              OffsetDateTime.parse("2020-06-01T00:00:00.00Z"),
+              OffsetDateTime.parse("2020-06-30T00:00:00.00Z")
+            )
           ),
           Usd(60)
         )
         val cat = fakeCategoryWithId.copy(
           effectiveTime = Seq(
-            DateRange(DateTime.parse("2020-01-01T00:00:00.00Z"), DateTime.parse("2020-12-31T00:00:00.00Z"))
+            DateRange(
+              OffsetDateTime.parse("2020-01-01T00:00:00.00Z"),
+              OffsetDateTime.parse("2020-12-31T00:00:00.00Z")
+            )
           ),
           budget = Seq(budget0, budget1, budget2)
         )
@@ -194,8 +239,14 @@ class CategoryValidationInterpreterSpec extends AnyFreeSpec with Matchers with M
     "transactionsWithinBudgetTime" - {
       val budget = Budget(
         Seq(
-          DateRange(DateTime.parse("2020-01-01T00:00:00.00Z"), DateTime.parse("2020-01-31T00:00:00.00Z")),
-          DateRange(DateTime.parse("2020-02-01T00:00:00.00Z"), DateTime.parse("2020-02-28T00:00:00.00Z"))
+          DateRange(
+            OffsetDateTime.parse("2020-01-01T00:00:00.00Z"),
+            OffsetDateTime.parse("2020-01-31T00:00:00.00Z")
+          ),
+          DateRange(
+            OffsetDateTime.parse("2020-02-01T00:00:00.00Z"),
+            OffsetDateTime.parse("2020-02-28T00:00:00.00Z")
+          )
         ),
         Usd(13)
       )

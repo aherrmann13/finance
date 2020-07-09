@@ -1,5 +1,7 @@
 package com.finance.business.services
 
+import java.time.OffsetDateTime
+
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import cats.{Id => IdMonad}
@@ -9,7 +11,6 @@ import com.finance.business.repository.TransactionRepository
 import com.finance.business.repository.query.TransactionQuery
 import com.finance.business.validation.TransactionValidationAlgebra
 import com.finance.business.validation.errors._
-import com.github.nscala_time.time.Imports._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
@@ -24,12 +25,12 @@ class TransactionServiceSpec extends AnyFreeSpec with Matchers with MockFactory 
   private val transaction = Transaction(
     Some(transactionId),
     Description("Description"),
-    DateTime.now,
+    OffsetDateTime.now,
     Id(6),
     Seq(
-      PaybackAmount(Id(8), Id(7), Usd(5.6), Description("AmountDescription0"), DateTime.now),
-      CategoryAmount(Id(9), Id(7), Usd(32), Description("AmountDescription1"), DateTime.now),
-      CategoryAmount(Id(10), Id(7), Usd(32), Description("AmountDescription2"), DateTime.now)
+      PaybackAmount(Id(8), Id(7), Usd(5.6), Description("AmountDescription0"), OffsetDateTime.now),
+      CategoryAmount(Id(9), Id(7), Usd(32), Description("AmountDescription1"), OffsetDateTime.now),
+      CategoryAmount(Id(10), Id(7), Usd(32), Description("AmountDescription2"), OffsetDateTime.now)
     )
   )
   "TransactionService" - {
@@ -113,7 +114,7 @@ class TransactionServiceSpec extends AnyFreeSpec with Matchers with MockFactory 
         service.create(transaction) shouldEqual returnVal
       }
       "should return Left(DateNotInEffectiveTime) from validation algebra reportingDateWithinBudgetTime" in {
-        val returnVal = EitherT.leftT[IdMonad, Unit](DateNotInEffectiveTime(DateTime.now, Seq.empty))
+        val returnVal = EitherT.leftT[IdMonad, Unit](DateNotInEffectiveTime(OffsetDateTime.now, Seq.empty))
         (mockValidationAlgebra idIsNone _) when transaction returns EitherT.rightT[IdMonad, IdMustBeNone](())
         (mockValidationAlgebra descriptionIsValid _) when transaction returns
           EitherT.rightT[IdMonad, DescriptionTooLong](())
@@ -226,7 +227,7 @@ class TransactionServiceSpec extends AnyFreeSpec with Matchers with MockFactory 
         service.update(transaction) shouldEqual returnVal
       }
       "should return Left(DateNotInEffectiveTime) from validation algebra reportingDateWithinBudgetTime" in {
-        val returnVal = EitherT.leftT[IdMonad, Unit](DateNotInEffectiveTime(DateTime.now, Seq.empty))
+        val returnVal = EitherT.leftT[IdMonad, Unit](DateNotInEffectiveTime(OffsetDateTime.now, Seq.empty))
         (mockValidationAlgebra exists _) when transaction returns EitherT.rightT[IdMonad, DoesNotExist](())
         (mockValidationAlgebra descriptionIsValid _) when transaction returns
           EitherT.rightT[IdMonad, DescriptionTooLong](())

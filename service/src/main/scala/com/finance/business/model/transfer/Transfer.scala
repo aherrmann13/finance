@@ -1,14 +1,15 @@
 package com.finance.business.model.transfer
 
+import java.time.OffsetDateTime
+
 import com.finance.business.model.base.Model
 import com.finance.business.model.types._
-import com.github.nscala_time.time.Imports._
 
 case class Transfer(
     id: Option[Id],
     from: Id,
-    fromDate: DateTime,
+    fromDate: OffsetDateTime,
     to: Id,
-    toDate: DateTime,
+    toDate: OffsetDateTime,
     amount: Usd
 ) extends Model
