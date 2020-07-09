@@ -9,7 +9,7 @@ object CategoryOps {
     def within(otherRanges: Seq[DateRange]): Boolean =
       otherRanges.exists { otherRange =>
         (otherRange.start.isBefore(range.start) || otherRange.start.isEqual(range.start)) &&
-          (otherRange.end.isAfter(range.end) || otherRange.end.isEqual(range.end))
+        (otherRange.end.isAfter(range.end) || otherRange.end.isEqual(range.end))
       }
 
     def contains(time: OffsetDateTime): Boolean =

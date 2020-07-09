@@ -8,7 +8,12 @@ import com.finance.business.repository.AccountRepository
 import com.finance.business.services.AccountService
 import com.finance.business.validation.AccountValidationAlgebra
 import com.finance.business.validation.errors.ValidationError
-import com.finance.service.endpoints.account.{CreateAccountResponse, DeleteAccountResponse, GetAllAccountsResponse, UpdateAccountResponse}
+import com.finance.service.endpoints.account.{
+  CreateAccountResponse,
+  DeleteAccountResponse,
+  GetAllAccountsResponse,
+  UpdateAccountResponse
+}
 import com.finance.service.endpoints.definitions.{Account, Error}
 import com.finance.service.handlers.AccountHandlerImpl
 import org.scalamock.scalatest.MockFactory
@@ -20,8 +25,8 @@ class AccountHandlerImplSpec extends AnyFreeSpec with Matchers with MockFactory 
 
   // https://github.com/paulbutcher/ScalaMock/issues/56
   // theoretically this is solved but still throws errors
-  private class AccountServiceTest extends
-    AccountService[IdMonad](stub[AccountValidationAlgebra[IdMonad]], stub[AccountRepository[IdMonad]])
+  private class AccountServiceTest
+      extends AccountService[IdMonad](stub[AccountValidationAlgebra[IdMonad]], stub[AccountRepository[IdMonad]])
   private val mockAccountService = stub[AccountServiceTest]
 
   private val handler = new AccountHandlerImpl(mockAccountService)

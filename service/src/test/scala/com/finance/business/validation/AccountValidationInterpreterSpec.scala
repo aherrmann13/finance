@@ -96,19 +96,25 @@ class AccountValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mo
       "if account type is Brokerage" - {
         "should return Left(BrokerageCantHaveTransactions) if there are transactions with account id" in {
           (mockTransactionRepository anyWithAccountId _).when(fakeAccountWithId.id.get).returns(true.pure[IdMonad])
-          accountValidationInterpreter.accountTypeIsValid(fakeAccountWithId.copy(accountType = Brokerage)).value shouldEqual
+          accountValidationInterpreter
+            .accountTypeIsValid(fakeAccountWithId.copy(accountType = Brokerage))
+            .value shouldEqual
             EitherT.leftT[IdMonad, Unit](BrokerageCantHaveTransactions).value
         }
         "should return Left(BrokerageCantHavePaybacks) if there are paybacks with account id" in {
           (mockTransactionRepository anyWithAccountId _).when(fakeAccountWithId.id.get).returns(false.pure[IdMonad])
           (mockPaybackRepository anyWithAccountId _).when(fakeAccountWithId.id.get).returns(true.pure[IdMonad])
-          accountValidationInterpreter.accountTypeIsValid(fakeAccountWithId.copy(accountType = Brokerage)).value shouldEqual
+          accountValidationInterpreter
+            .accountTypeIsValid(fakeAccountWithId.copy(accountType = Brokerage))
+            .value shouldEqual
             EitherT.leftT[IdMonad, Unit](BrokerageCantHavePaybacks).value
         }
         "should return Right(()) if there are are no transactions or paybacks with account id" in {
           (mockTransactionRepository anyWithAccountId _).when(fakeAccountWithId.id.get).returns(false.pure[IdMonad])
           (mockPaybackRepository anyWithAccountId _).when(fakeAccountWithId.id.get).returns(false.pure[IdMonad])
-          accountValidationInterpreter.accountTypeIsValid(fakeAccountWithId.copy(accountType = Brokerage)).value shouldEqual
+          accountValidationInterpreter
+            .accountTypeIsValid(fakeAccountWithId.copy(accountType = Brokerage))
+            .value shouldEqual
             EitherT.rightT[IdMonad, AccountTypeInvalid](()).value
         }
         "should return Right(()) when account id is None" in {

@@ -9,11 +9,11 @@ import com.finance.business.repository.query.TransferQuery
 import com.finance.business.validation.TransferValidationAlgebra
 import com.finance.business.validation.errors.ValidationError
 
-class TransferService[F[_] : Monad](
+class TransferService[F[_]: Monad](
   validator: TransferValidationAlgebra[F],
   repository: TransferRepository[F]
 ) extends CommandService[F, Transfer]
-  with QueryService[F, Transfer] {
+    with QueryService[F, Transfer] {
   override def create(model: Transfer): EitherT[F, ValidationError, Transfer] =
     for {
       _ <- validator idIsNone model

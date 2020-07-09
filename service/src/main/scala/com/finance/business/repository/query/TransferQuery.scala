@@ -9,5 +9,5 @@ case class TransferQuery(
   from: Option[OffsetDateTime] = None,
   accountIds: Set[Id] = Set.empty,
   lessThan: Option[Usd] = None,
-  greaterThan:  Option[Usd] = None
+  greaterThan: Option[Usd] = None
 )

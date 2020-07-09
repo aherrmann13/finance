@@ -9,7 +9,6 @@ import com.finance.business.model.types.{DateRange, Description, Id, Name, Usd}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
 
-
 class TransactionOpsSpec extends AnyFreeSpec with Matchers {
   private val budget0 = Budget(
     Seq(
@@ -70,14 +69,20 @@ class TransactionOpsSpec extends AnyFreeSpec with Matchers {
         )
         Seq.empty[CategoryAmount].categoryValues(dateRange, Seq(cat0, cat1)) shouldEqual
           Seq(
-            CategoryAmountSpent(cat0, Seq(
-              BudgetAmountSpent(budget0.effectiveTime, Usd(0), Usd(0), budget0.amount),
-              BudgetAmountSpent(budget1.effectiveTime, Usd(0), Usd(0), budget1.amount)
-            )),
-            CategoryAmountSpent(cat1, Seq(
-              BudgetAmountSpent(budget2.effectiveTime, Usd(0), Usd(0), budget2.amount),
-              BudgetAmountSpent(budget3.effectiveTime, Usd(0), Usd(0), budget3.amount)
-            ))
+            CategoryAmountSpent(
+              cat0,
+              Seq(
+                BudgetAmountSpent(budget0.effectiveTime, Usd(0), Usd(0), budget0.amount),
+                BudgetAmountSpent(budget1.effectiveTime, Usd(0), Usd(0), budget1.amount)
+              )
+            ),
+            CategoryAmountSpent(
+              cat1,
+              Seq(
+                BudgetAmountSpent(budget2.effectiveTime, Usd(0), Usd(0), budget2.amount),
+                BudgetAmountSpent(budget3.effectiveTime, Usd(0), Usd(0), budget3.amount)
+              )
+            )
           )
       }
       "should put amounts inside date range in budget date range as 'in'" in {
@@ -97,14 +102,20 @@ class TransactionOpsSpec extends AnyFreeSpec with Matchers {
 
         Seq(amt0, amt1, amt2, amt3, amt4).categoryValues(dateRange, Seq(cat0, cat1)) shouldEqual
           Seq(
-            CategoryAmountSpent(cat0, Seq(
-              BudgetAmountSpent(budget0.effectiveTime, Usd(130), Usd(0), budget0.amount),
-              BudgetAmountSpent(budget1.effectiveTime, Usd(20), Usd(0), budget1.amount)
-            )),
-            CategoryAmountSpent(cat1, Seq(
-              BudgetAmountSpent(budget2.effectiveTime, Usd(90), Usd(0), budget2.amount),
-              BudgetAmountSpent(budget3.effectiveTime, Usd(0), Usd(0), budget3.amount)
-            ))
+            CategoryAmountSpent(
+              cat0,
+              Seq(
+                BudgetAmountSpent(budget0.effectiveTime, Usd(130), Usd(0), budget0.amount),
+                BudgetAmountSpent(budget1.effectiveTime, Usd(20), Usd(0), budget1.amount)
+              )
+            ),
+            CategoryAmountSpent(
+              cat1,
+              Seq(
+                BudgetAmountSpent(budget2.effectiveTime, Usd(90), Usd(0), budget2.amount),
+                BudgetAmountSpent(budget3.effectiveTime, Usd(0), Usd(0), budget3.amount)
+              )
+            )
           )
       }
       "should put amounts outside date range in budget date range as 'out'" in {
@@ -124,14 +135,20 @@ class TransactionOpsSpec extends AnyFreeSpec with Matchers {
 
         Seq(amt0, amt1, amt2, amt3, amt4).categoryValues(dateRange, Seq(cat0, cat1)) shouldEqual
           Seq(
-            CategoryAmountSpent(cat0, Seq(
-              BudgetAmountSpent(budget0.effectiveTime, Usd(0), Usd(130), budget0.amount),
-              BudgetAmountSpent(budget1.effectiveTime, Usd(0), Usd(20), budget1.amount)
-            )),
-            CategoryAmountSpent(cat1, Seq(
-              BudgetAmountSpent(budget2.effectiveTime, Usd(0), Usd(90), budget2.amount),
-              BudgetAmountSpent(budget3.effectiveTime, Usd(0), Usd(0), budget3.amount)
-            ))
+            CategoryAmountSpent(
+              cat0,
+              Seq(
+                BudgetAmountSpent(budget0.effectiveTime, Usd(0), Usd(130), budget0.amount),
+                BudgetAmountSpent(budget1.effectiveTime, Usd(0), Usd(20), budget1.amount)
+              )
+            ),
+            CategoryAmountSpent(
+              cat1,
+              Seq(
+                BudgetAmountSpent(budget2.effectiveTime, Usd(0), Usd(90), budget2.amount),
+                BudgetAmountSpent(budget3.effectiveTime, Usd(0), Usd(0), budget3.amount)
+              )
+            )
           )
       }
       "should ignore amounts outside date range outside budget date range" in {
@@ -152,14 +169,20 @@ class TransactionOpsSpec extends AnyFreeSpec with Matchers {
 
         Seq(amt0, amt1, amt2, amt3, amt4).categoryValues(dateRange, Seq(cat0, cat1)) shouldEqual
           Seq(
-            CategoryAmountSpent(cat0, Seq(
-              BudgetAmountSpent(budget0.effectiveTime, Usd(0), Usd(0), budget0.amount),
-              BudgetAmountSpent(budget1.effectiveTime, Usd(0), Usd(0), budget1.amount)
-            )),
-            CategoryAmountSpent(cat1, Seq(
-              BudgetAmountSpent(budget2.effectiveTime, Usd(0), Usd(0), budget2.amount),
-              BudgetAmountSpent(budget3.effectiveTime, Usd(0), Usd(0), budget3.amount)
-            ))
+            CategoryAmountSpent(
+              cat0,
+              Seq(
+                BudgetAmountSpent(budget0.effectiveTime, Usd(0), Usd(0), budget0.amount),
+                BudgetAmountSpent(budget1.effectiveTime, Usd(0), Usd(0), budget1.amount)
+              )
+            ),
+            CategoryAmountSpent(
+              cat1,
+              Seq(
+                BudgetAmountSpent(budget2.effectiveTime, Usd(0), Usd(0), budget2.amount),
+                BudgetAmountSpent(budget3.effectiveTime, Usd(0), Usd(0), budget3.amount)
+              )
+            )
           )
       }
       "should include amount in multiple budgets with containing date ranges" in {
@@ -191,10 +214,13 @@ class TransactionOpsSpec extends AnyFreeSpec with Matchers {
 
         Seq(amt0, amt1, amt2).categoryValues(dateRange, Seq(cat2)) shouldEqual
           Seq(
-            CategoryAmountSpent(cat2, Seq(
-              BudgetAmountSpent(budget4.effectiveTime, Usd(70), Usd(0), budget4.amount),
-              BudgetAmountSpent(budget5.effectiveTime, Usd(80), Usd(0), budget5.amount)
-            ))
+            CategoryAmountSpent(
+              cat2,
+              Seq(
+                BudgetAmountSpent(budget4.effectiveTime, Usd(70), Usd(0), budget4.amount),
+                BudgetAmountSpent(budget5.effectiveTime, Usd(80), Usd(0), budget5.amount)
+              )
+            )
           )
       }
       "should use empty BudgetAmountSpent if category id is None" in {
@@ -205,18 +231,27 @@ class TransactionOpsSpec extends AnyFreeSpec with Matchers {
         )
         Seq.empty[CategoryAmount].categoryValues(dateRange, Seq(cat0, cat1, cat2)) shouldEqual
           Seq(
-            CategoryAmountSpent(cat0, Seq(
-              BudgetAmountSpent(budget0.effectiveTime, Usd(0), Usd(0), budget0.amount),
-              BudgetAmountSpent(budget1.effectiveTime, Usd(0), Usd(0), budget1.amount)
-            )),
-            CategoryAmountSpent(cat1, Seq(
-              BudgetAmountSpent(budget2.effectiveTime, Usd(0), Usd(0), budget2.amount),
-              BudgetAmountSpent(budget3.effectiveTime, Usd(0), Usd(0), budget3.amount)
-            )),
-            CategoryAmountSpent(cat2, Seq(
-              BudgetAmountSpent(budget2.effectiveTime, Usd(0), Usd(0), budget2.amount),
-              BudgetAmountSpent(budget3.effectiveTime, Usd(0), Usd(0), budget3.amount)
-            ))
+            CategoryAmountSpent(
+              cat0,
+              Seq(
+                BudgetAmountSpent(budget0.effectiveTime, Usd(0), Usd(0), budget0.amount),
+                BudgetAmountSpent(budget1.effectiveTime, Usd(0), Usd(0), budget1.amount)
+              )
+            ),
+            CategoryAmountSpent(
+              cat1,
+              Seq(
+                BudgetAmountSpent(budget2.effectiveTime, Usd(0), Usd(0), budget2.amount),
+                BudgetAmountSpent(budget3.effectiveTime, Usd(0), Usd(0), budget3.amount)
+              )
+            ),
+            CategoryAmountSpent(
+              cat2,
+              Seq(
+                BudgetAmountSpent(budget2.effectiveTime, Usd(0), Usd(0), budget2.amount),
+                BudgetAmountSpent(budget3.effectiveTime, Usd(0), Usd(0), budget3.amount)
+              )
+            )
           )
       }
     }

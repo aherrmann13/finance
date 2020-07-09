@@ -64,7 +64,8 @@ class AssetValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mock
           EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Account"), fakeAssetWithId.accountId)).value
       }
       "should return Right(()) when repository contains Account" in {
-        (mockAccountRepository get _).when(fakeAssetWithId.accountId)
+        (mockAccountRepository get _)
+          .when(fakeAssetWithId.accountId)
           .returns(OptionT.pure(Account(Some(Id(4)), Name("Name"), Description("Description"), Bank, Usd(50))))
         assetValidationInterpreter.accountIdExists(fakeAssetWithId).value shouldEqual
           EitherT.rightT[IdMonad, DoesNotExist](()).value

@@ -29,12 +29,12 @@ object CategoryService {
 
 }
 
-class CategoryService[F[_] : Monad](
+class CategoryService[F[_]: Monad](
   validator: CategoryValidationAlgebra[F],
   repository: CategoryRepository[F],
   transactionRepository: TransactionRepository[F]
 ) extends CommandService[F, Category]
-  with QueryService[F, Category] {
+    with QueryService[F, Category] {
 
   import CategoryService._
 

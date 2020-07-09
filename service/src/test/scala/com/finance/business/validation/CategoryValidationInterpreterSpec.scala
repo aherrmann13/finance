@@ -75,11 +75,15 @@ class CategoryValidationInterpreterSpec extends AnyFreeSpec with Matchers with M
         val effectiveTime = Seq(DateRange(OffsetDateTime.now.minusMonths(1), OffsetDateTime.now.plusMonths(1)))
         (mockCategoryRepository get _).when(parent.id.get).returns(OptionT.pure(parent))
 
-        categoryValidationInterpreter.withinParentTimePeriod(
-          fakeCategoryWithId.copy(effectiveTime = effectiveTime)
-        ).value shouldEqual EitherT.leftT[IdMonad, Unit](
-          CategoryEffectiveTimeNotWithinParent(effectiveTime, parent.effectiveTime)
-        ).value
+        categoryValidationInterpreter
+          .withinParentTimePeriod(
+            fakeCategoryWithId.copy(effectiveTime = effectiveTime)
+          )
+          .value shouldEqual EitherT
+          .leftT[IdMonad, Unit](
+            CategoryEffectiveTimeNotWithinParent(effectiveTime, parent.effectiveTime)
+          )
+          .value
       }
       "should return Right(()) when in parent time period" in {
         val parent = fakeCategoryWithId.copy(
@@ -88,11 +92,15 @@ class CategoryValidationInterpreterSpec extends AnyFreeSpec with Matchers with M
         )
         (mockCategoryRepository get _).when(parent.id.get).returns(OptionT.pure(parent))
 
-        categoryValidationInterpreter.withinParentTimePeriod(
-          fakeCategoryWithId.copy(effectiveTime = Seq(
-            DateRange(OffsetDateTime.now.minusMonths(1), OffsetDateTime.now.minusWeeks(1))
-          ))
-        ).value shouldEqual EitherT.rightT[IdMonad, DoesNotExist](()).value
+        categoryValidationInterpreter
+          .withinParentTimePeriod(
+            fakeCategoryWithId.copy(effectiveTime =
+              Seq(
+                DateRange(OffsetDateTime.now.minusMonths(1), OffsetDateTime.now.minusWeeks(1))
+              )
+            )
+          )
+          .value shouldEqual EitherT.rightT[IdMonad, DoesNotExist](()).value
       }
       "should return Right(()) when parent does not exist" in {
         (mockCategoryRepository get _).when(fakeCategoryWithId.parentId.get).returns(OptionT.none)
@@ -179,9 +187,11 @@ class CategoryValidationInterpreterSpec extends AnyFreeSpec with Matchers with M
           budget = Seq(budget0, badBudget0, badBudget1)
         )
         categoryValidationInterpreter.budgetWithinCategoryTime(cat).value shouldEqual
-          EitherT.leftT[IdMonad, Unit](
-            BudgetEffectiveTimeNotWithinCategory(badBudget0.effectiveTime, cat.effectiveTime)
-          ).value
+          EitherT
+            .leftT[IdMonad, Unit](
+              BudgetEffectiveTimeNotWithinCategory(badBudget0.effectiveTime, cat.effectiveTime)
+            )
+            .value
       }
       "should return Right(()) when all budgets in category time period" in {
         val budget0 = Budget(
@@ -255,20 +265,26 @@ class CategoryValidationInterpreterSpec extends AnyFreeSpec with Matchers with M
           .when(fakeCategoryWithId.id.get, budget.effectiveTime)
           .returns(true.pure[IdMonad])
 
-        categoryValidationInterpreter.transactionsWithinBudgetTime(
-          fakeCategoryWithId.copy(budget = Seq(budget))
-        ).value shouldEqual EitherT.leftT[IdMonad, Unit](
-          TransactionNotWithinBudgetEffectiveTime(budget.effectiveTime)
-        ).value
+        categoryValidationInterpreter
+          .transactionsWithinBudgetTime(
+            fakeCategoryWithId.copy(budget = Seq(budget))
+          )
+          .value shouldEqual EitherT
+          .leftT[IdMonad, Unit](
+            TransactionNotWithinBudgetEffectiveTime(budget.effectiveTime)
+          )
+          .value
       }
       "should return Right(()) when all transactions in category time" in {
         (mockTransactionRepository.anyOutsideRanges _)
           .when(fakeCategoryWithId.id.get, budget.effectiveTime)
           .returns(false.pure[IdMonad])
 
-        categoryValidationInterpreter.transactionsWithinBudgetTime(
-          fakeCategoryWithId.copy(budget = Seq(budget))
-        ).value shouldEqual EitherT.rightT[IdMonad, TransactionNotWithinBudgetEffectiveTime](()).value
+        categoryValidationInterpreter
+          .transactionsWithinBudgetTime(
+            fakeCategoryWithId.copy(budget = Seq(budget))
+          )
+          .value shouldEqual EitherT.rightT[IdMonad, TransactionNotWithinBudgetEffectiveTime](()).value
       }
       "should return Right(()) when category id is none" in {
 

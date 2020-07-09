@@ -14,8 +14,8 @@ object PaybackValidationInterpreter {
 }
 
 class PaybackValidationInterpreter[F[_]: Monad](
-    paybackRepository: PaybackRepository[F],
-    transactionRepository: TransactionRepository[F]
+  paybackRepository: PaybackRepository[F],
+  transactionRepository: TransactionRepository[F]
 ) extends PaybackValidationAlgebra[F] {
   import PaybackValidationInterpreter._
 

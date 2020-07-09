@@ -15,26 +15,28 @@ object AssetValidationInterpreter {
   }
 
   case class StockActionValidator(currentUnits: BigDecimal) extends AnyVal {
-    def +(action: StockAction): StockActionValidator = action match {
-      case Buy(_, units, _, _) => copy(currentUnits = currentUnits + units)
-      case LifoSell(_, units, _, _) => copy(currentUnits = currentUnits - units)
-      case FifoSell(_, units, _, _) => copy(currentUnits = currentUnits - units)
-      case StockDividend(_, units, _, _) => copy(currentUnits = currentUnits + units)
-      case CashDividend(_, _, _, _) => this
-    }
+    def +(action: StockAction): StockActionValidator =
+      action match {
+        case Buy(_, units, _, _) => copy(currentUnits = currentUnits + units)
+        case LifoSell(_, units, _, _) => copy(currentUnits = currentUnits - units)
+        case FifoSell(_, units, _, _) => copy(currentUnits = currentUnits - units)
+        case StockDividend(_, units, _, _) => copy(currentUnits = currentUnits + units)
+        case CashDividend(_, _, _, _) => this
+      }
 
-    def ?(action: StockAction): Option[StockActionsInvalid] = action match {
-      case Buy(_, _, _, _) => None
-      case LifoSell(_, units, _, _) => Option.unless(currentUnits >= units)(SellingMoreThanCurrentlyHave(action))
-      case FifoSell(_, units, _, _) => Option.unless(currentUnits >= units)(SellingMoreThanCurrentlyHave(action))
-      case StockDividend(_, units, _, _) => Option.unless(currentUnits >= units)(NoStockToPayDividend(action))
-      case CashDividend(_, units, _, _) => Option.unless(currentUnits >= units)(NoStockToPayDividend(action))
-    }
+    def ?(action: StockAction): Option[StockActionsInvalid] =
+      action match {
+        case Buy(_, _, _, _) => None
+        case LifoSell(_, units, _, _) => Option.unless(currentUnits >= units)(SellingMoreThanCurrentlyHave(action))
+        case FifoSell(_, units, _, _) => Option.unless(currentUnits >= units)(SellingMoreThanCurrentlyHave(action))
+        case StockDividend(_, units, _, _) => Option.unless(currentUnits >= units)(NoStockToPayDividend(action))
+        case CashDividend(_, units, _, _) => Option.unless(currentUnits >= units)(NoStockToPayDividend(action))
+      }
   }
 
 }
 
-class AssetValidationInterpreter[F[_] : Monad](
+class AssetValidationInterpreter[F[_]: Monad](
   assetRepository: AssetRepository[F],
   accountRepository: AccountRepository[F]
 ) extends AssetValidationAlgebra[F] {
@@ -57,5 +59,5 @@ class AssetValidationInterpreter[F[_] : Monad](
         acc flatMap { v =>
           EitherT.fromOption[F](v ? a, v + a).swap
         }
-    } map(_ => ())
+    } map (_ => ())
 }

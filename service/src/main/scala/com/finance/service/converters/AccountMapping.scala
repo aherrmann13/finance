@@ -15,19 +15,21 @@ object AccountMapping {
     case Bank => AccountType.members.Bank
     case Brokerage => AccountType.members.Brokerage
   }
-  implicit val accountRequestMapping: Mapping[Account, AccountModel] = (a: Account) => AccountModel(
-    id = Some(Id(a.id)),
-    name = Name(a.name),
-    description = Description(a.description),
-    accountType = a.accountType.mapTo[AccountTypeModel],
-    initialAmount = Usd(a.initialAmount)
-  )
+  implicit val accountRequestMapping: Mapping[Account, AccountModel] = (a: Account) =>
+    AccountModel(
+      id = Some(Id(a.id)),
+      name = Name(a.name),
+      description = Description(a.description),
+      accountType = a.accountType.mapTo[AccountTypeModel],
+      initialAmount = Usd(a.initialAmount)
+    )
 
-  implicit val accountResponseMapping: Mapping[AccountModel, Account] = (a: AccountModel) => Account(
-    id = a.id.map(_.value).getOrElse(-1), // TODO: map to -1?  feels 'optional'
-    name = a.name.value,
-    description = a.description.value,
-    accountType = a.accountType.mapTo[Account.AccountType],
-    initialAmount = a.initialAmount.value
-  )
+  implicit val accountResponseMapping: Mapping[AccountModel, Account] = (a: AccountModel) =>
+    Account(
+      id = a.id.map(_.value).getOrElse(-1), // TODO: map to -1?  feels 'optional'
+      name = a.name.value,
+      description = a.description.value,
+      accountType = a.accountType.mapTo[Account.AccountType],
+      initialAmount = a.initialAmount.value
+    )
 }

@@ -8,11 +8,11 @@ import com.finance.business.repository.AccountRepository
 import com.finance.business.validation.AccountValidationAlgebra
 import com.finance.business.validation.errors.ValidationError
 
-class AccountService[F[_] : Monad](
+class AccountService[F[_]: Monad](
   validator: AccountValidationAlgebra[F],
   repository: AccountRepository[F]
 ) extends CommandService[F, Account]
-  with QueryService[F, Account] {
+    with QueryService[F, Account] {
   override def create(model: Account): EitherT[F, ValidationError, Account] =
     for {
       _ <- validator idIsNone model

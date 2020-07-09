@@ -31,7 +31,6 @@ class RecordServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
   private val fakeTransfer = Transfer(Some(Id(4)), Id(5), OffsetDateTime.now, Id(6), OffsetDateTime.now, Usd(50))
   private val fakeTransaction = Transaction(Some(Id(2)), Description("desc"), OffsetDateTime.now, Id(3), Seq.empty)
 
-
   private val query = RecordQuery(
     from = Some(OffsetDateTime.parse("2020-01-01T00:00:00Z")),
     to = Some(OffsetDateTime.parse("2020-02-01T00:00:00Z")),
@@ -45,7 +44,8 @@ class RecordServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         val s1 = fakeStock.copy(ticker = "b")
         val s2 = fakeStock.copy(ticker = "b")
 
-        (mockAssetRepository.getStocks(_: StockQuery))
+        (mockAssetRepository
+          .getStocks(_: StockQuery))
           .when(StockQuery(to = query.to, from = query.from, accountIds = query.accountIds))
           .returns(Seq(s0, s1, s2))
         (mockTransferRepository.get(_: TransferQuery)).when(*).returns(Seq.empty)
@@ -59,7 +59,8 @@ class RecordServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         val f2 = fakeTransfer.copy(id = Some(Id(8)))
 
         (mockAssetRepository.getStocks(_: StockQuery)).when(*).returns(Seq.empty)
-        (mockTransferRepository.get(_: TransferQuery))
+        (mockTransferRepository
+          .get(_: TransferQuery))
           .when(TransferQuery(to = query.to, from = query.from, accountIds = query.accountIds))
           .returns(Seq(f0, f1, f2))
         (mockTransactionRepository.get(_: TransactionQuery)).when(*).returns(Seq.empty)
@@ -73,7 +74,8 @@ class RecordServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
         (mockAssetRepository.getStocks(_: StockQuery)).when(*).returns(Seq.empty)
         (mockTransferRepository.get(_: TransferQuery)).when(*).returns(Seq.empty)
-        (mockTransactionRepository.get(_: TransactionQuery))
+        (mockTransactionRepository
+          .get(_: TransactionQuery))
           .when(TransactionQuery(to = query.to, from = query.from, accountIds = query.accountIds))
           .returns(Seq(a0, a1, a2))
 
@@ -90,13 +92,16 @@ class RecordServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         val a1 = fakeTransaction.copy(id = Some(Id(7)))
         val a2 = fakeTransaction.copy(id = Some(Id(8)))
 
-        (mockAssetRepository.getStocks(_: StockQuery))
+        (mockAssetRepository
+          .getStocks(_: StockQuery))
           .when(StockQuery(to = query.to, from = query.from, accountIds = query.accountIds))
           .returns(Seq(s0, s1, s2))
-        (mockTransferRepository.get(_: TransferQuery))
+        (mockTransferRepository
+          .get(_: TransferQuery))
           .when(TransferQuery(to = query.to, from = query.from, accountIds = query.accountIds))
           .returns(Seq(f0, f1, f2))
-        (mockTransactionRepository.get(_: TransactionQuery))
+        (mockTransactionRepository
+          .get(_: TransactionQuery))
           .when(TransactionQuery(to = query.to, from = query.from, accountIds = query.accountIds))
           .returns(Seq(a0, a1, a2))
 

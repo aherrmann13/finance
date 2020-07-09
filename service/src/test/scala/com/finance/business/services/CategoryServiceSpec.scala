@@ -23,7 +23,8 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
   private val service = new CategoryService(mockValidationAlgebra, mockRepository, mockTransactionRepository)
 
   private val categoryId = Id(5)
-  private val category = Category(Some(categoryId), None, Name("Name"), Description("Description"), Seq.empty, Seq.empty)
+  private val category =
+    Category(Some(categoryId), None, Name("Name"), Description("Description"), Seq.empty, Seq.empty)
 
   "CategoryService" - {
     "create" - {
@@ -255,7 +256,8 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         (mockRepository.getAll _).expects().returns(Seq(category.copy(budget = Seq(budget0, budget1))).pure[IdMonad])
 
         mockTransactionRepository.getCategoryAmountsInRange _ expects DateRange(
-          budget1.effectiveTime.head.start, budget0.effectiveTime(1).end
+          budget1.effectiveTime.head.start,
+          budget0.effectiveTime(1).end
         ) returns Seq.empty[CategoryAmount].pure[IdMonad]
 
         service.getAmountSpentInRange(
@@ -314,16 +316,20 @@ class CategoryServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         val amt3 = amt0.copy(amount = Usd(40), reportingDate = OffsetDateTime.parse("2020-03-15T00:00:00Z"))
 
         mockTransactionRepository.getCategoryAmountsInRange _ expects DateRange(
-          budget0.effectiveTime.head.start, budget1.effectiveTime.head.end
+          budget0.effectiveTime.head.start,
+          budget1.effectiveTime.head.end
         ) returns Seq(amt0, amt1, amt2, amt3).pure[IdMonad]
 
         service.getAmountSpentInRange(
           DateRange(OffsetDateTime.parse("2020-01-14T00:00:00Z"), OffsetDateTime.parse("2020-02-17T00:00:00Z"))
         ) shouldEqual Seq(
-          CategoryAmountSpent(cat, Seq(
-            BudgetAmountSpent(budget0.effectiveTime, Usd(20), Usd(10), budget0.amount),
-            BudgetAmountSpent(budget1.effectiveTime, Usd(30), Usd(0), budget1.amount)
-          ))
+          CategoryAmountSpent(
+            cat,
+            Seq(
+              BudgetAmountSpent(budget0.effectiveTime, Usd(20), Usd(10), budget0.amount),
+              BudgetAmountSpent(budget1.effectiveTime, Usd(30), Usd(0), budget1.amount)
+            )
+          )
         )
       }
     }

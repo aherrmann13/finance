@@ -6,5 +6,3 @@ sealed trait StockActionsInvalid extends ValidationError
 
 case class NoStockToPayDividend(action: StockAction) extends StockActionsInvalid
 case class SellingMoreThanCurrentlyHave(action: StockAction) extends StockActionsInvalid
-
-

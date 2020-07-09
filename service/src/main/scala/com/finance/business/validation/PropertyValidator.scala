@@ -14,27 +14,27 @@ private[validation] object PropertyValidator {
   private val MaxNameLength = 128
   private val MaxDescLength = 512
 
-  def idIsNone[F[_] : Applicative, M: HasId : NamedModel](m: M): EitherT[F, IdMustBeNone, Unit] =
+  def idIsNone[F[_]: Applicative, M: HasId: NamedModel](m: M): EitherT[F, IdMustBeNone, Unit] =
     EitherT.cond(m.id.isEmpty, (), IdMustBeNone(NamedModel[M].modelName))
 
-  def exists[F[_] : Applicative, M: NamedModel](
+  def exists[F[_]: Applicative, M: NamedModel](
     id: Option[Id],
     doesExist: Id => OptionT[F, M]
   ): EitherT[F, DoesNotExist, Unit] =
     id.map(exists(_, doesExist)) getOrElse EitherT.leftT(DoesNotExist(NamedModel[M].modelName))
 
-
-  def exists[F[_] : Applicative, M: NamedModel](id: Id, doesExist: Id => OptionT[F, M]): EitherT[F, DoesNotExist, Unit] =
+  def exists[F[_]: Applicative, M: NamedModel](id: Id, doesExist: Id => OptionT[F, M]): EitherT[F, DoesNotExist, Unit] =
     doesExist(id).toRight(DoesNotExist(NamedModel[M].modelName, id)).as(())
 
-  def nameIsValid[F[_] : Applicative, M: HasName : NamedModel](m: M): EitherT[F, NameTooLong, Unit] =
+  def nameIsValid[F[_]: Applicative, M: HasName: NamedModel](m: M): EitherT[F, NameTooLong, Unit] =
     EitherT.cond(m.name.value.length <= MaxNameLength, (), NameTooLong(NamedModel[M].modelName, m.name))
 
-  def descriptionIsValid[F[_] : Applicative, M: HasDescription : NamedModel](
+  def descriptionIsValid[F[_]: Applicative, M: HasDescription: NamedModel](
     m: M
   ): EitherT[F, DescriptionTooLong, Unit] =
     EitherT.cond(
       m.description.value.length <= MaxDescLength,
       (),
-      DescriptionTooLong(NamedModel[M].modelName, m.description))
+      DescriptionTooLong(NamedModel[M].modelName, m.description)
+    )
 }

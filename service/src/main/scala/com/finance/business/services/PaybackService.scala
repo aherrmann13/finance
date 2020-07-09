@@ -9,12 +9,12 @@ import com.finance.business.repository.{PaybackRepository, TransactionRepository
 import com.finance.business.validation.PaybackValidationAlgebra
 import com.finance.business.validation.errors.ValidationError
 
-class PaybackService[F[_] : Monad](
+class PaybackService[F[_]: Monad](
   validator: PaybackValidationAlgebra[F],
   repository: PaybackRepository[F],
   transactionRepository: TransactionRepository[F]
 ) extends CommandService[F, Payback]
-  with QueryService[F, Payback] {
+    with QueryService[F, Payback] {
   override def create(model: Payback): EitherT[F, ValidationError, Payback] =
     for {
       _ <- validator idIsNone model
@@ -53,7 +53,5 @@ class PaybackService[F[_] : Monad](
     }
 
   def getPaybackBalanceSummary: F[Usd] =
-    transactionRepository.getAllPaybacks map { paybacks =>
-      Usd(paybacks.map(_.amount.value).sum)
-    }
+    transactionRepository.getAllPaybacks map { paybacks => Usd(paybacks.map(_.amount.value).sum) }
 }

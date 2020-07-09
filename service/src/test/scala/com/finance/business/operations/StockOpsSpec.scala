@@ -64,8 +64,9 @@ class StockOpsSpec extends AnyFreeSpec with Matchers {
             (fakeStock.copy(actions = cashDividends) withPrice fakeStockPriceAsOf).quantity shouldEqual 0
           }
           "combines all buys and sells" in {
-            (fakeStock.copy(actions = buys ++ sells ++ stockDividends ++ cashDividends) withPrice fakeStockPriceAsOf)
-              .quantity shouldEqual buySum + (sellSum * -1) + stockDividendSum
+            (fakeStock.copy(actions =
+              buys ++ sells ++ stockDividends ++ cashDividends
+            ) withPrice fakeStockPriceAsOf).quantity shouldEqual buySum + (sellSum * -1) + stockDividendSum
           }
         }
         "calculates days change" in {
@@ -86,7 +87,8 @@ class StockOpsSpec extends AnyFreeSpec with Matchers {
           (fakeStock.copy(actions = buys) withPrice fakeStockPriceAsOf).daysGain shouldEqual
             Usd(
               (fakeStockPriceAsOf.current.value * buys.map(_.units).sum) -
-                (fakeStockPriceAsOf.open.value * buys.map(_.units).sum))
+                (fakeStockPriceAsOf.open.value * buys.map(_.units).sum)
+            )
         }
         "calculates price paid" - {
           val buys = Seq(
@@ -314,19 +316,31 @@ class StockOpsSpec extends AnyFreeSpec with Matchers {
 
           val fakeStockWithAmt = fakeStock.copy(actions = Seq(buy0, buy1, buy2, dividend0, lifoSell0, dividend1))
           fakeStockWithAmt.asLifecycle shouldEqual Seq(
-            StockPurchaseLifecycle(fakeStockWithAmt, buy0, Seq(
-              dividend0.copy(units = 6, amount = Usd(12)),
-              dividend1.copy(units = 20, amount = Usd(10))
-            )),
-            StockPurchaseLifecycle(fakeStockWithAmt, buy1, Seq(
-              dividend0.copy(units = 9, amount = Usd(18)),
-              dividend1.copy(units = 30, amount = Usd(15))
-            )),
-            StockPurchaseLifecycle(fakeStockWithAmt, buy2, Seq(
-              dividend0.copy(units = 15, amount = Usd(30)),
-              lifoSell0,
-              dividend1.copy(units = 20, amount = Usd(10))
-            ))
+            StockPurchaseLifecycle(
+              fakeStockWithAmt,
+              buy0,
+              Seq(
+                dividend0.copy(units = 6, amount = Usd(12)),
+                dividend1.copy(units = 20, amount = Usd(10))
+              )
+            ),
+            StockPurchaseLifecycle(
+              fakeStockWithAmt,
+              buy1,
+              Seq(
+                dividend0.copy(units = 9, amount = Usd(18)),
+                dividend1.copy(units = 30, amount = Usd(15))
+              )
+            ),
+            StockPurchaseLifecycle(
+              fakeStockWithAmt,
+              buy2,
+              Seq(
+                dividend0.copy(units = 15, amount = Usd(30)),
+                lifoSell0,
+                dividend1.copy(units = 20, amount = Usd(10))
+              )
+            )
           )
         }
         "should return cash dividend split between lifecycles with more shares from stock dividend" in {
@@ -339,16 +353,28 @@ class StockOpsSpec extends AnyFreeSpec with Matchers {
 
           val fakeStockWithAmt = fakeStock.copy(actions = Seq(buy0, buy1, buy2, dividend0, dividend1))
           fakeStockWithAmt.asLifecycle shouldEqual Seq(
-            StockPurchaseLifecycle(fakeStockWithAmt, buy0, Seq(
-              dividend0,
-              dividend1.copy(units = 50, amount = Usd(100))
-            )),
-            StockPurchaseLifecycle(fakeStockWithAmt, buy1, Seq(
-              dividend1.copy(units = 30, amount = Usd(60))
-            )),
-            StockPurchaseLifecycle(fakeStockWithAmt, buy2, Seq(
-              dividend1.copy(units = 50, amount = Usd(100))
-            ))
+            StockPurchaseLifecycle(
+              fakeStockWithAmt,
+              buy0,
+              Seq(
+                dividend0,
+                dividend1.copy(units = 50, amount = Usd(100))
+              )
+            ),
+            StockPurchaseLifecycle(
+              fakeStockWithAmt,
+              buy1,
+              Seq(
+                dividend1.copy(units = 30, amount = Usd(60))
+              )
+            ),
+            StockPurchaseLifecycle(
+              fakeStockWithAmt,
+              buy2,
+              Seq(
+                dividend1.copy(units = 50, amount = Usd(100))
+              )
+            )
           )
         }
         "should not return cash dividend if all stocks have been sold" in {
@@ -388,19 +414,31 @@ class StockOpsSpec extends AnyFreeSpec with Matchers {
 
           val fakeStockWithAmt = fakeStock.copy(actions = Seq(buy0, buy1, buy2, dividend0, lifoSell0, dividend1))
           fakeStockWithAmt.asLifecycle shouldEqual Seq(
-            StockPurchaseLifecycle(fakeStockWithAmt, buy0, Seq(
-              dividend0.copy(units = 6, amount = Usd(12)),
-              dividend1.copy(units = 13, amount = Usd(6.5))
-            )),
-            StockPurchaseLifecycle(fakeStockWithAmt, buy1, Seq(
-              dividend0.copy(units = 9, amount = Usd(18)),
-              dividend1.copy(units = 19.5, amount = Usd(9.75))
-            )),
-            StockPurchaseLifecycle(fakeStockWithAmt, buy2, Seq(
-              dividend0.copy(units = 15, amount = Usd(30)),
-              lifoSell0,
-              dividend1.copy(units = 17.5, amount = Usd(8.75))
-            ))
+            StockPurchaseLifecycle(
+              fakeStockWithAmt,
+              buy0,
+              Seq(
+                dividend0.copy(units = 6, amount = Usd(12)),
+                dividend1.copy(units = 13, amount = Usd(6.5))
+              )
+            ),
+            StockPurchaseLifecycle(
+              fakeStockWithAmt,
+              buy1,
+              Seq(
+                dividend0.copy(units = 9, amount = Usd(18)),
+                dividend1.copy(units = 19.5, amount = Usd(9.75))
+              )
+            ),
+            StockPurchaseLifecycle(
+              fakeStockWithAmt,
+              buy2,
+              Seq(
+                dividend0.copy(units = 15, amount = Usd(30)),
+                lifoSell0,
+                dividend1.copy(units = 17.5, amount = Usd(8.75))
+              )
+            )
           )
         }
         "should return stock dividend split between lifecycles with more shares from stock dividend" in {
@@ -413,16 +451,28 @@ class StockOpsSpec extends AnyFreeSpec with Matchers {
 
           val fakeStockWithAmt = fakeStock.copy(actions = Seq(buy0, buy1, buy2, dividend0, dividend1))
           fakeStockWithAmt.asLifecycle shouldEqual Seq(
-            StockPurchaseLifecycle(fakeStockWithAmt, buy0, Seq(
-              dividend0,
-              dividend1.copy(units = 50, amount = Usd(100))
-            )),
-            StockPurchaseLifecycle(fakeStockWithAmt, buy1, Seq(
-              dividend1.copy(units = 30, amount = Usd(60))
-            )),
-            StockPurchaseLifecycle(fakeStockWithAmt, buy2, Seq(
-              dividend1.copy(units = 50, amount = Usd(100))
-            ))
+            StockPurchaseLifecycle(
+              fakeStockWithAmt,
+              buy0,
+              Seq(
+                dividend0,
+                dividend1.copy(units = 50, amount = Usd(100))
+              )
+            ),
+            StockPurchaseLifecycle(
+              fakeStockWithAmt,
+              buy1,
+              Seq(
+                dividend1.copy(units = 30, amount = Usd(60))
+              )
+            ),
+            StockPurchaseLifecycle(
+              fakeStockWithAmt,
+              buy2,
+              Seq(
+                dividend1.copy(units = 50, amount = Usd(100))
+              )
+            )
           )
         }
         "should not return stock dividend if all stocks have been sold" in {
@@ -469,7 +519,8 @@ class StockOpsSpec extends AnyFreeSpec with Matchers {
           lifecycle.copy(lifecycle = Seq(buy)).unitsRemaining shouldEqual 50
         }
         "should return units minus sells plus stock dividend ignoring cash dividends and buys" in {
-          lifecycle.copy(lifecycle = Seq(fifoSell, lifoSell, cashDividend, stockDividend, buy))
+          lifecycle
+            .copy(lifecycle = Seq(fifoSell, lifoSell, cashDividend, stockDividend, buy))
             .unitsRemaining shouldEqual 75
         }
       }
@@ -482,7 +533,7 @@ class StockOpsSpec extends AnyFreeSpec with Matchers {
               StockDividend(OffsetDateTime.now, 2, Usd(70), Usd(140)),
               CashDividend(OffsetDateTime.now, 2, Usd(70), Usd(140)),
               LifoSell(OffsetDateTime.now, 5, Usd(70), Usd(350)),
-              FifoSell(OffsetDateTime.now, 5, Usd(80), Usd(400)),
+              FifoSell(OffsetDateTime.now, 5, Usd(80), Usd(400))
             )
           ) valueWithPrice Usd(80) shouldEqual Usd(1050)
         }
@@ -493,14 +544,14 @@ class StockOpsSpec extends AnyFreeSpec with Matchers {
         "should return value of current stock at the given price" in {
           Seq(
             Buy(OffsetDateTime.now, 10, Usd(60), Usd(605)),
-            Buy(OffsetDateTime.now, 10, Usd(60), Usd(605)),
+            Buy(OffsetDateTime.now, 10, Usd(60), Usd(605))
           ) valueWithPrice Usd(40) shouldEqual Usd(800)
         }
         "should return value of what was sold regardless of the given price" in {
           Seq(
             Buy(OffsetDateTime.now, 10, Usd(60), Usd(605)),
             LifoSell(OffsetDateTime.now, 5, Usd(70), Usd(350)),
-            FifoSell(OffsetDateTime.now, 5, Usd(80), Usd(400)),
+            FifoSell(OffsetDateTime.now, 5, Usd(80), Usd(400))
           ) valueWithPrice Usd(40) shouldEqual Usd(750)
         }
         "should return value of cash dividend as the amount of the dividend" in {

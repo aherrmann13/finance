@@ -52,7 +52,8 @@ object StockOps {
       stock.actions
         .sortBy(_.date)
         .foldLeft(Seq.empty[LifecycleStatus])((current, action) => append(current, action))
-        .sortBy(_.value.buy.date).map(_.value)
+        .sortBy(_.value.buy.date)
+        .map(_.value)
 
     // TODO: clean up
     private def append(lifecycles: Seq[LifecycleStatus], action: StockAction): Seq[LifecycleStatus] =
@@ -66,7 +67,8 @@ object StockOps {
                 .copy(lifecycle = currentLifecycle.value.lifecycle :+ split._1)
               append(lifecycles.filterNot(_ eq currentLifecycle) :+ Closed(modifiedLifecycle), split._2)
             } else {
-              val modifiedLifecycle = currentLifecycle.value.copy(lifecycle = currentLifecycle.value.lifecycle :+ action)
+              val modifiedLifecycle =
+                currentLifecycle.value.copy(lifecycle = currentLifecycle.value.lifecycle :+ action)
               lifecycles.filterNot(_ eq currentLifecycle) :+ LifecycleStatus(modifiedLifecycle)
             }
           } getOrElse lifecycles

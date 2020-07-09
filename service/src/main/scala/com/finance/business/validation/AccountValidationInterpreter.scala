@@ -14,10 +14,10 @@ object AccountValidationInterpreter {
 }
 
 class AccountValidationInterpreter[F[_]: Monad](
-    accountRepository: AccountRepository[F],
-    transactionRepository: TransactionRepository[F],
-    assetRepository: AssetRepository[F],
-    paybackRepository: PaybackRepository[F]
+  accountRepository: AccountRepository[F],
+  transactionRepository: TransactionRepository[F],
+  assetRepository: AssetRepository[F],
+  paybackRepository: PaybackRepository[F]
 ) extends AccountValidationAlgebra[F] {
   import AccountValidationInterpreter._
 
@@ -35,10 +35,11 @@ class AccountValidationInterpreter[F[_]: Monad](
 
   override def accountTypeIsValid(account: Account): EitherT[F, AccountTypeInvalid, Unit] =
     account.id match {
-      case Some(id) if account.accountType == Brokerage => for {
-        _ <- hasNoTransactions[AccountTypeInvalid](id, BrokerageCantHaveTransactions)
-        _ <- hasNoPaybacks[AccountTypeInvalid](id, BrokerageCantHavePaybacks)
-      } yield EitherT.rightT[F, AccountTypeInvalid](())
+      case Some(id) if account.accountType == Brokerage =>
+        for {
+          _ <- hasNoTransactions[AccountTypeInvalid](id, BrokerageCantHaveTransactions)
+          _ <- hasNoPaybacks[AccountTypeInvalid](id, BrokerageCantHavePaybacks)
+        } yield EitherT.rightT[F, AccountTypeInvalid](())
       case Some(id) if account.accountType == Bank => hasNoAssets[AccountTypeInvalid](id, BankCantHaveAssets)
       case None => EitherT.rightT[F, AccountTypeInvalid](())
     }

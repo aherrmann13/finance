@@ -11,4 +11,3 @@ object Mapping {
     def mapTo[B](implicit tc: Mapping[A, B]): B = tc.mapTo(a)
   }
 }
-

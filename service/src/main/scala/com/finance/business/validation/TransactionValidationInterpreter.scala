@@ -13,7 +13,7 @@ import com.finance.business.operations.CategoryOps._
 import com.finance.business.repository._
 import com.finance.business.validation.errors._
 
-class TransactionValidationInterpreter[F[_] : Monad](
+class TransactionValidationInterpreter[F[_]: Monad](
   transactionRepository: TransactionRepository[F],
   sourceRepository: SourceRepository[F],
   accountRepository: AccountRepository[F],
@@ -37,35 +37,47 @@ class TransactionValidationInterpreter[F[_] : Monad](
     transaction.amounts.toList.traverse(PropertyValidator.descriptionIsValid[F, Amount](_)).as(())
 
   override def categoryIdsExist(transaction: Transaction): EitherT[F, DoesNotExist, Unit] =
-    transaction.amounts.collect {
-      case c: CategoryAmount => c
-    }.toList.traverse { catAmt =>
-      PropertyValidator.exists(catAmt.categoryId, categoryRepository.get)
-    }.as(())
+    transaction.amounts
+      .collect {
+        case c: CategoryAmount => c
+      }
+      .toList
+      .traverse { catAmt =>
+        PropertyValidator.exists(catAmt.categoryId, categoryRepository.get)
+      }
+      .as(())
 
   override def paybackIdsExists(transaction: Transaction): EitherT[F, DoesNotExist, Unit] =
-    transaction.amounts.collect {
-      case p: PaybackAmount => p
-    }.toList.traverse { paybackAmt =>
-      PropertyValidator.exists(paybackAmt.paybackId, paybackRepository.get)
-    }.as(())
+    transaction.amounts
+      .collect {
+        case p: PaybackAmount => p
+      }
+      .toList
+      .traverse { paybackAmt =>
+        PropertyValidator.exists(paybackAmt.paybackId, paybackRepository.get)
+      }
+      .as(())
 
   override def sourceIdsExists(transaction: Transaction): EitherT[F, DoesNotExist, Unit] =
     transaction.amounts.toList.traverse(a => PropertyValidator.exists(a.sourceId, sourceRepository.get)).as(())
 
   // TODO: clean this up
   override def reportingDateWithinBudgetTime(transaction: Transaction): EitherT[F, DateNotInEffectiveTime, Unit] =
-    transaction.amounts.collect {
-      case c: CategoryAmount => c
-    }.toList.traverse { catAmt =>
-      EitherT {
-        categoryRepository.get(catAmt.categoryId) map { category =>
-          Either.cond(
-            category.budget.flatMap(_.effectiveTime).exists(_ contains catAmt.reportingDate),
-            (),
-            DateNotInEffectiveTime(catAmt.reportingDate, category.budget.flatMap(_.effectiveTime))
-          )
-        } getOrElse Right(())
+    transaction.amounts
+      .collect {
+        case c: CategoryAmount => c
       }
-    }.as(())
+      .toList
+      .traverse { catAmt =>
+        EitherT {
+          categoryRepository.get(catAmt.categoryId) map { category =>
+            Either.cond(
+              category.budget.flatMap(_.effectiveTime).exists(_ contains catAmt.reportingDate),
+              (),
+              DateNotInEffectiveTime(catAmt.reportingDate, category.budget.flatMap(_.effectiveTime))
+            )
+          } getOrElse Right(())
+        }
+      }
+      .as(())
 }

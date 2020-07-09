@@ -50,7 +50,9 @@ class AccountServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       "should return Right(()) and saves model when validation passes" in {
         (mockValidationAlgebra idIsNone _) when account returns EitherT.rightT[IdMonad, IdMustBeNone](())
         (mockValidationAlgebra nameIsValid _) when account returns EitherT.rightT[IdMonad, NameTooLong](())
-        (mockValidationAlgebra descriptionIsValid _) when account returns EitherT.rightT[IdMonad, DescriptionTooLong](())
+        (mockValidationAlgebra descriptionIsValid _) when account returns EitherT.rightT[IdMonad, DescriptionTooLong](
+          ()
+        )
         (mockRepository create _) expects account returns account.pure[IdMonad]
 
         service.create(account) shouldEqual EitherT.rightT[IdMonad, ValidationError](account)
@@ -85,7 +87,9 @@ class AccountServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         val returnVal = EitherT.leftT[IdMonad, Unit][AccountTypeInvalid](BankCantHaveAssets)
         (mockValidationAlgebra exists _) when account returns EitherT.rightT[IdMonad, DoesNotExist](())
         (mockValidationAlgebra nameIsValid _) when account returns EitherT.rightT[IdMonad, NameTooLong](())
-        (mockValidationAlgebra descriptionIsValid _) when account returns EitherT.rightT[IdMonad, DescriptionTooLong](())
+        (mockValidationAlgebra descriptionIsValid _) when account returns EitherT.rightT[IdMonad, DescriptionTooLong](
+          ()
+        )
         (mockValidationAlgebra accountTypeIsValid _) when account returns returnVal
         (mockRepository update _) expects account never
 
@@ -94,8 +98,12 @@ class AccountServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       "should return Right(()) and updates model when validation passes" in {
         (mockValidationAlgebra exists _) when account returns EitherT.rightT[IdMonad, DoesNotExist](())
         (mockValidationAlgebra nameIsValid _) when account returns EitherT.rightT[IdMonad, NameTooLong](())
-        (mockValidationAlgebra descriptionIsValid _) when account returns EitherT.rightT[IdMonad, DescriptionTooLong](())
-        (mockValidationAlgebra accountTypeIsValid _) when account returns EitherT.rightT[IdMonad, AccountTypeInvalid](())
+        (mockValidationAlgebra descriptionIsValid _) when account returns EitherT.rightT[IdMonad, DescriptionTooLong](
+          ()
+        )
+        (mockValidationAlgebra accountTypeIsValid _) when account returns EitherT.rightT[IdMonad, AccountTypeInvalid](
+          ()
+        )
         (mockRepository update _) expects account returns account.pure[IdMonad]
 
         service.update(account) shouldEqual EitherT.rightT[IdMonad, ValidationError](account)

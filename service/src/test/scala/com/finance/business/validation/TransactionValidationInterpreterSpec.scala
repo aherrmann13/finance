@@ -80,13 +80,15 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
       "should return Left(DescriptionIsTooLong) when description is too long" in {
         val desc = Description((0 to 512).map(_ => "a").fold("")(_ + _))
         transactionValidationInterpreter
-          .descriptionIsValid(fakeTransactionWithId.copy(description = desc)).value shouldEqual
+          .descriptionIsValid(fakeTransactionWithId.copy(description = desc))
+          .value shouldEqual
           EitherT.leftT[IdMonad, Unit](DescriptionTooLong(transactionName, desc)).value
       }
       "should return Right(()) when description is correct length" in {
         val desc = Description((0 to 511).map(_ => "a").fold("")(_ + _))
         transactionValidationInterpreter
-          .descriptionIsValid(fakeTransactionWithId.copy(description = desc)).value shouldEqual
+          .descriptionIsValid(fakeTransactionWithId.copy(description = desc))
+          .value shouldEqual
           EitherT.rightT[IdMonad, DescriptionTooLong](()).value
       }
     }
@@ -114,21 +116,24 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
           CategoryAmount(Id(7), Id(6), Usd(1.6), desc1, OffsetDateTime.now)
         )
 
-        transactionValidationInterpreter.amountDescAreValid(
-          fakeTransactionWithId.copy(amounts = amounts)).value shouldEqual
+        transactionValidationInterpreter
+          .amountDescAreValid(fakeTransactionWithId.copy(amounts = amounts))
+          .value shouldEqual
           EitherT.leftT[IdMonad, Unit](DescriptionTooLong(amountName, desc0)).value
       }
       "should return Right(()) when descriptions are correct length" in {
         val desc = Description((0 to 511).map(_ => "a").fold("")(_ + _))
 
         val amounts = fakeTransactionWithId.amounts.map {
-          case c@CategoryAmount(_, _, _, _, _) => c.copy(description = desc)
-          case c@PaybackAmount(_, _, _, _, _) => c.copy(description = desc)
+          case c @ CategoryAmount(_, _, _, _, _) => c.copy(description = desc)
+          case c @ PaybackAmount(_, _, _, _, _) => c.copy(description = desc)
         }
 
-        transactionValidationInterpreter.amountDescAreValid(
-          fakeTransactionWithId.copy(amounts = amounts)
-        ).value shouldEqual EitherT.rightT[IdMonad, DescriptionTooLong](()).value
+        transactionValidationInterpreter
+          .amountDescAreValid(
+            fakeTransactionWithId.copy(amounts = amounts)
+          )
+          .value shouldEqual EitherT.rightT[IdMonad, DescriptionTooLong](()).value
       }
     }
     "categoryIdsExist" - {
@@ -144,7 +149,8 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
         (mockCategoryRepository get _).when(categoryId0).returns(OptionT.none)
         (mockCategoryRepository get _).when(categoryId1).returns(OptionT.none)
 
-        transactionValidationInterpreter.categoryIdsExist(fakeTransactionWithId.copy(amounts = amounts))
+        transactionValidationInterpreter
+          .categoryIdsExist(fakeTransactionWithId.copy(amounts = amounts))
           .value shouldEqual EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Category"), categoryId0)).value
       }
       "should return Right(()) when category ids exist" in {
@@ -161,7 +167,8 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
         (mockCategoryRepository get _).when(categoryId0).returns(OptionT.pure(category))
         (mockCategoryRepository get _).when(categoryId1).returns(OptionT.pure(category))
 
-        transactionValidationInterpreter.categoryIdsExist(fakeTransactionWithId.copy(amounts = amounts))
+        transactionValidationInterpreter
+          .categoryIdsExist(fakeTransactionWithId.copy(amounts = amounts))
           .value shouldEqual EitherT.rightT[IdMonad, DoesNotExist](()).value
       }
     }
@@ -178,7 +185,8 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
         (mockPaybackRepository get _).when(paybackId0).returns(OptionT.none)
         (mockPaybackRepository get _).when(paybackId1).returns(OptionT.none)
 
-        transactionValidationInterpreter.paybackIdsExists(fakeTransactionWithId.copy(amounts = amounts))
+        transactionValidationInterpreter
+          .paybackIdsExists(fakeTransactionWithId.copy(amounts = amounts))
           .value shouldEqual EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Payback"), paybackId0)).value
       }
       "should return Right(()) when category ids exist" in {
@@ -195,7 +203,8 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
         (mockPaybackRepository get _).when(paybackId0).returns(OptionT.pure(payback))
         (mockPaybackRepository get _).when(paybackId1).returns(OptionT.pure(payback))
 
-        transactionValidationInterpreter.paybackIdsExists(fakeTransactionWithId.copy(amounts = amounts))
+        transactionValidationInterpreter
+          .paybackIdsExists(fakeTransactionWithId.copy(amounts = amounts))
           .value shouldEqual EitherT.rightT[IdMonad, DoesNotExist](()).value
       }
     }
@@ -214,7 +223,8 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
         (mockSourceRepository get _).when(amountId1).returns(OptionT.none)
         (mockSourceRepository get _).when(amountId2).returns(OptionT.none)
 
-        transactionValidationInterpreter.sourceIdsExists(fakeTransactionWithId.copy(amounts = amounts))
+        transactionValidationInterpreter
+          .sourceIdsExists(fakeTransactionWithId.copy(amounts = amounts))
           .value shouldEqual EitherT.leftT[IdMonad, Unit](DoesNotExist(ModelName("Source"), amountId1)).value
       }
       "should return Right(()) when source exists" in {
@@ -225,7 +235,8 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
         )
         amounts.foreach(a => (mockSourceRepository.get _).when(a.sourceId).returns(OptionT.pure(source)))
 
-        transactionValidationInterpreter.sourceIdsExists(fakeTransactionWithId.copy(amounts = amounts))
+        transactionValidationInterpreter
+          .sourceIdsExists(fakeTransactionWithId.copy(amounts = amounts))
           .value shouldEqual EitherT.rightT[IdMonad, DoesNotExist](()).value
       }
     }
@@ -258,11 +269,15 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
           badAmount
         )
 
-        transactionValidationInterpreter.reportingDateWithinBudgetTime(
-          fakeTransactionWithId.copy(amounts = amounts)
-        ).value shouldEqual EitherT.leftT[IdMonad, Unit](
-          DateNotInEffectiveTime(badAmount.reportingDate, category.budget.flatMap(_.effectiveTime))
-        ).value
+        transactionValidationInterpreter
+          .reportingDateWithinBudgetTime(
+            fakeTransactionWithId.copy(amounts = amounts)
+          )
+          .value shouldEqual EitherT
+          .leftT[IdMonad, Unit](
+            DateNotInEffectiveTime(badAmount.reportingDate, category.budget.flatMap(_.effectiveTime))
+          )
+          .value
       }
       "should return Right(()) for PaybackAmount" in {
         val amounts = Seq(
@@ -272,7 +287,8 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
         )
 
         transactionValidationInterpreter
-          .reportingDateWithinBudgetTime(fakeTransactionWithId.copy(amounts = amounts)).value shouldEqual
+          .reportingDateWithinBudgetTime(fakeTransactionWithId.copy(amounts = amounts))
+          .value shouldEqual
           EitherT.rightT[IdMonad, DateNotInEffectiveTime](()).value
       }
       "should return Right(()) for CategoryAmount with category effectiveTime Always" in {
@@ -289,7 +305,8 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
         }
 
         transactionValidationInterpreter
-          .reportingDateWithinBudgetTime(fakeTransactionWithId.copy(amounts = amounts)).value shouldEqual
+          .reportingDateWithinBudgetTime(fakeTransactionWithId.copy(amounts = amounts))
+          .value shouldEqual
           EitherT.rightT[IdMonad, DateNotInEffectiveTime](()).value
       }
       "should return Right(()) for CategoryAmount with non existent category id" in {
@@ -299,10 +316,11 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
           CategoryAmount(Id(8), Id(5), Usd(14.6), Description("amountDesc0"), OffsetDateTime.now.plusYears(1))
         )
 
-        amounts.foreach { amount => (mockCategoryRepository get _).when(amount.categoryId).returns(OptionT.none) }
+        amounts.foreach(amount => (mockCategoryRepository get _).when(amount.categoryId).returns(OptionT.none))
 
         transactionValidationInterpreter
-          .reportingDateWithinBudgetTime(fakeTransactionWithId.copy(amounts = amounts)).value shouldEqual
+          .reportingDateWithinBudgetTime(fakeTransactionWithId.copy(amounts = amounts))
+          .value shouldEqual
           EitherT.rightT[IdMonad, DateNotInEffectiveTime](()).value
       }
       "should return Right(()) for CategoryAmount with reportingDate within category effectiveTime" in {
@@ -316,7 +334,8 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
         (mockCategoryRepository get _).when(catAmount.categoryId).returns(OptionT.some(category))
 
         transactionValidationInterpreter
-          .reportingDateWithinBudgetTime(fakeTransactionWithId.copy(amounts = Seq(catAmount))).value shouldEqual
+          .reportingDateWithinBudgetTime(fakeTransactionWithId.copy(amounts = Seq(catAmount)))
+          .value shouldEqual
           EitherT.rightT[IdMonad, DateNotInEffectiveTime](()).value
       }
       "should return Right(()) for CategoryAmount with reportingDate on edge of category effectiveTime" in {
@@ -330,7 +349,8 @@ class TransactionValidationInterpreterSpec extends AnyFreeSpec with Matchers wit
         (mockCategoryRepository get _).when(catAmount.categoryId).returns(OptionT.some(category))
 
         transactionValidationInterpreter
-          .reportingDateWithinBudgetTime(fakeTransactionWithId.copy(amounts = Seq(catAmount))).value shouldEqual
+          .reportingDateWithinBudgetTime(fakeTransactionWithId.copy(amounts = Seq(catAmount)))
+          .value shouldEqual
           EitherT.rightT[IdMonad, DateNotInEffectiveTime](()).value
       }
     }

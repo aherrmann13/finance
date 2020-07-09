@@ -7,6 +7,10 @@
 | `clean`   | deletes all generated files in target dir |  
 | `compile` | compiles all main sources |  
 | `test`    | compiles and runs all tests  |  
+| `scalafmtCheck` | checks to see if all files in main/ are formatted correctly |
+| `test:scalafmtCheck` | checks to see if all files in test/ are formatted correctly |
+| `scalafmt` | formats all files in main/ |
+| `test:scalafmt` | formats all files in test/ |
 | `coverageReport` | generate coverage reports |
 
 #### libraries used
@@ -19,9 +23,9 @@
 [sbt-guardrail](https://github.com/twilio/sbt-guardrail)  
 [sbt-scalafmt](https://github.com/scalameta/sbt-scalafmt)  
 [sbt-scoverage](https://github.com/scoverage/sbt-scoverage)  
+[scalafmt](https://github.com/scalameta/scalafmt)  (in `.scalafmt.conf`)  
 [scalamock](https://github.com/paulbutcher/ScalaMock)    
 [scalatest](https://github.com/scalatest/scalatest)  
-
 #### notes
 
 <details>

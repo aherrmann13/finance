@@ -14,8 +14,8 @@ object SourceValidationInterpreter {
 }
 
 class SourceValidationInterpreter[F[_]: Monad](
-    sourceRepository: SourceRepository[F],
-    transactionRepository: TransactionRepository[F]
+  sourceRepository: SourceRepository[F],
+  transactionRepository: TransactionRepository[F]
 ) extends SourceValidationAlgebra[F] {
   import SourceValidationInterpreter._
 

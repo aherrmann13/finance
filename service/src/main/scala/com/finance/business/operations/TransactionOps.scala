@@ -10,15 +10,17 @@ object TransactionOps {
   // TODO: cleanup
   implicit class CategoryAmountSeqOperations(amounts: Seq[CategoryAmount]) {
     def categoryValues(range: DateRange, categories: Seq[Category]): Seq[CategoryAmountSpent] = {
-      val amountByCat = amounts.groupBy { _.categoryId }
+      val amountByCat = amounts.groupBy(_.categoryId)
 
       categories.map { category =>
         CategoryAmountSpent(
           category,
           category.budget.map { budget =>
-            category.id.map { id =>
-              budgetValue(budget, range, amountByCat.getOrElse(id, Seq.empty))
-            }.getOrElse(BudgetAmountSpent(budget.effectiveTime, Usd(0), Usd(0), budget.amount))
+            category.id
+              .map { id =>
+                budgetValue(budget, range, amountByCat.getOrElse(id, Seq.empty))
+              }
+              .getOrElse(BudgetAmountSpent(budget.effectiveTime, Usd(0), Usd(0), budget.amount))
           }
         )
       }

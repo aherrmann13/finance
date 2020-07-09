@@ -20,7 +20,6 @@ class PaybackServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
   private val mockRepository = mock[PaybackRepository[IdMonad]]
   private val mockTransactionRepository = mock[TransactionRepository[IdMonad]]
 
-
   private val service = new PaybackService[IdMonad](mockValidationAlgebra, mockRepository, mockTransactionRepository)
 
   private val paybackId = Id(5)
@@ -55,7 +54,9 @@ class PaybackServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       "should return Right(()) and saves model when validation passes" in {
         (mockValidationAlgebra idIsNone _) when payback returns EitherT.rightT[IdMonad, IdMustBeNone](())
         (mockValidationAlgebra nameIsValid _) when payback returns EitherT.rightT[IdMonad, NameTooLong](())
-        (mockValidationAlgebra descriptionIsValid _) when payback returns EitherT.rightT[IdMonad, DescriptionTooLong](())
+        (mockValidationAlgebra descriptionIsValid _) when payback returns EitherT.rightT[IdMonad, DescriptionTooLong](
+          ()
+        )
         (mockRepository create _) expects payback returns payback.pure[IdMonad]
 
         service.create(payback) shouldEqual EitherT.rightT[IdMonad, ValidationError](payback)
@@ -89,7 +90,9 @@ class PaybackServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       "should return Right(()) and saves model when validation passes" in {
         (mockValidationAlgebra exists _) when payback returns EitherT.rightT[IdMonad, DoesNotExist](())
         (mockValidationAlgebra nameIsValid _) when payback returns EitherT.rightT[IdMonad, NameTooLong](())
-        (mockValidationAlgebra descriptionIsValid _) when payback returns EitherT.rightT[IdMonad, DescriptionTooLong](())
+        (mockValidationAlgebra descriptionIsValid _) when payback returns EitherT.rightT[IdMonad, DescriptionTooLong](
+          ()
+        )
         (mockRepository update _) expects payback returns payback.pure[IdMonad]
 
         service.update(payback) shouldEqual EitherT.rightT[IdMonad, ValidationError](payback)
@@ -188,9 +191,11 @@ class PaybackServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         val paybackAmount2 = PaybackAmount(paybackId, Id(5), Usd(34), Description("desc"), OffsetDateTime.now)
         val paybackAmount3 = PaybackAmount(paybackId, Id(5), Usd(865), Description("desc"), OffsetDateTime.now)
 
-        (mockTransactionRepository.getAllPaybacks _).expects().returns(
-          Seq(paybackAmount0, paybackAmount1, paybackAmount2, paybackAmount3).pure[IdMonad]
-        )
+        (mockTransactionRepository.getAllPaybacks _)
+          .expects()
+          .returns(
+            Seq(paybackAmount0, paybackAmount1, paybackAmount2, paybackAmount3).pure[IdMonad]
+          )
 
         service.getPaybackBalanceSummary shouldEqual Usd(945)
       }

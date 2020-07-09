@@ -32,7 +32,7 @@ object ReportingService {
     Order.by[(DateRange, Id), (Int, OffsetDateTime, OffsetDateTime)](t => (t._2.value, t._1.start, t._1.end))
 }
 
-class ReportingService[F[_] : Monad](
+class ReportingService[F[_]: Monad](
   accountRepository: AccountRepository[F],
   transactionRepository: TransactionRepository[F],
   assetRepository: AssetRepository[F],
@@ -49,8 +49,13 @@ class ReportingService[F[_] : Monad](
         stockPriceRetriever.call(stock.ticker).map(p => stock.actions valueWithPrice p.current)
       }
       existingAccountValue = Usd(accounts.map(_.initialAmount.value).sum)
-      transactionValue = transactions.flatMap(_.amounts).collect { case c: CategoryAmount => c }.map(_.amount)
-        .reduceOption((x, y) => Usd(x.value + y.value)).getOrElse(Usd(0))
+      transactionValue =
+        transactions
+          .flatMap(_.amounts)
+          .collect { case c: CategoryAmount => c }
+          .map(_.amount)
+          .reduceOption((x, y) => Usd(x.value + y.value))
+          .getOrElse(Usd(0))
       stockValue = stockValues.reduceOption((x, y) => Usd(x.value + y.value)).getOrElse(Usd(0))
     } yield Usd(existingAccountValue.value + transactionValue.value + stockValue.value)
 
@@ -66,14 +71,16 @@ class ReportingService[F[_] : Monad](
 
   private def getTransactionAmounts(query: AccountValueQuery): F[Seq[AccountValue]] =
     query.dateRanges.toList.flatTraverse { dateRange =>
-      transactionRepository.get(
-        TransactionQuery(
-          from = Some(dateRange.start),
-          to = Some(dateRange.end),
-          accountIds = query.accountIds,
-          useReportingDate = query.useReportingDate
+      transactionRepository
+        .get(
+          TransactionQuery(
+            from = Some(dateRange.start),
+            to = Some(dateRange.end),
+            accountIds = query.accountIds,
+            useReportingDate = query.useReportingDate
+          )
         )
-      ).map(_.toList)
+        .map(_.toList)
     } map { transactions =>
       for {
         range <- query.dateRanges
@@ -85,27 +92,37 @@ class ReportingService[F[_] : Monad](
     }
 
   private def getStockAmounts(query: AccountValueQuery): F[Seq[AccountValue]] =
-    query.countAssetGrowthInPurchaseMonth.getOrElse(false).pure[F].ifM(
-      ifTrue = getStockValueWithAssetGrowthInPurchaseMonth(query),
-      ifFalse = getStockAmountValueAtMonthEnd(query)
-    )
+    query.countAssetGrowthInPurchaseMonth
+      .getOrElse(false)
+      .pure[F]
+      .ifM(
+        ifTrue = getStockValueWithAssetGrowthInPurchaseMonth(query),
+        ifFalse = getStockAmountValueAtMonthEnd(query)
+      )
 
   private def getStockValueWithAssetGrowthInPurchaseMonth(query: AccountValueQuery): F[Seq[AccountValue]] =
     assetRepository.getAllStocks flatMap { stocks =>
-      stocks.flatMap { stock =>
-        stock.asLifecycle
-      }.filter { lifecycle =>
-        query.dateRanges.exists(range => range.contains(lifecycle.buy.date))
-      }.toList.traverse { lifecycle =>
-        stockPriceRetriever.call(lifecycle.stock.ticker).map((_, lifecycle))
-      }
+      stocks
+        .flatMap { stock =>
+          stock.asLifecycle
+        }
+        .filter { lifecycle =>
+          query.dateRanges.exists(range => range.contains(lifecycle.buy.date))
+        }
+        .toList
+        .traverse { lifecycle =>
+          stockPriceRetriever.call(lifecycle.stock.ticker).map((_, lifecycle))
+        }
     } map { lifecyclesWithPrice =>
       for {
         range <- query.dateRanges
         acctId <- query.accountIds
         lifecycles = lifecyclesWithPrice.filter(lf => lf._2.stock.accountId == acctId && range.contains(lf._2.buy.date))
-        price = lifecycles.map(lf => lf._2 valueWithPrice lf._1.current)
-          .reduceOption((x, y) => Usd(x.value + y.value)).getOrElse(Usd(0))
+        price =
+          lifecycles
+            .map(lf => lf._2 valueWithPrice lf._1.current)
+            .reduceOption((x, y) => Usd(x.value + y.value))
+            .getOrElse(Usd(0))
       } yield AccountValue(range, acctId, price)
     }
 

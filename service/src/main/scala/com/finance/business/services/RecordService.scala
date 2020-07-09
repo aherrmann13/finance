@@ -10,7 +10,7 @@ import com.finance.business.repository.query.{StockQuery, TransactionQuery, Tran
 import com.finance.business.repository.{AssetRepository, TransactionRepository, TransferRepository}
 import com.finance.business.services.query.RecordQuery
 
-class RecordService[F[_] : Monad](
+class RecordService[F[_]: Monad](
   assetRepository: AssetRepository[F],
   transferRepository: TransferRepository[F],
   transactionRepository: TransactionRepository[F]
@@ -26,23 +26,29 @@ class RecordService[F[_] : Monad](
     } yield stockRecords ++ transferRecords ++ transactionRecords
 
   private def getStocks(query: RecordQuery): F[Seq[Stock]] =
-    assetRepository.getStocks(StockQuery(
-      to = query.to,
-      from = query.from,
-      accountIds = query.accountIds
-    ))
+    assetRepository.getStocks(
+      StockQuery(
+        to = query.to,
+        from = query.from,
+        accountIds = query.accountIds
+      )
+    )
 
   private def getTransfers(query: RecordQuery): F[Seq[Transfer]] =
-    transferRepository.get(TransferQuery(
-      to = query.to,
-      from = query.from,
-      accountIds = query.accountIds
-    ))
+    transferRepository.get(
+      TransferQuery(
+        to = query.to,
+        from = query.from,
+        accountIds = query.accountIds
+      )
+    )
 
   private def getTransactions(query: RecordQuery): F[Seq[Transaction]] =
-    transactionRepository.get(TransactionQuery(
-      to = query.to,
-      from = query.from,
-      accountIds = query.accountIds
-    ))
+    transactionRepository.get(
+      TransactionQuery(
+        to = query.to,
+        from = query.from,
+        accountIds = query.accountIds
+      )
+    )
 }
