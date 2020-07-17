@@ -37,25 +37,19 @@ class TransactionValidationInterpreter[F[_]: Monad](
     transaction.amounts.toList.traverse(PropertyValidator.descriptionIsValid[F, Amount](_)).as(())
 
   override def categoryIdsExist(transaction: Transaction): EitherT[F, DoesNotExist, Unit] =
-    transaction.amounts
-      .collect {
-        case c: CategoryAmount => c
-      }
-      .toList
-      .traverse { catAmt =>
-        PropertyValidator.exists(catAmt.categoryId, categoryRepository.get)
-      }
+    transaction.amounts.collect {
+      case c: CategoryAmount => c
+    }.toList.traverse { catAmt =>
+      PropertyValidator.exists(catAmt.categoryId, categoryRepository.get)
+    }
       .as(())
 
   override def paybackIdsExists(transaction: Transaction): EitherT[F, DoesNotExist, Unit] =
-    transaction.amounts
-      .collect {
-        case p: PaybackAmount => p
-      }
-      .toList
-      .traverse { paybackAmt =>
-        PropertyValidator.exists(paybackAmt.paybackId, paybackRepository.get)
-      }
+    transaction.amounts.collect {
+      case p: PaybackAmount => p
+    }.toList.traverse { paybackAmt =>
+      PropertyValidator.exists(paybackAmt.paybackId, paybackRepository.get)
+    }
       .as(())
 
   override def sourceIdsExists(transaction: Transaction): EitherT[F, DoesNotExist, Unit] =
@@ -63,21 +57,18 @@ class TransactionValidationInterpreter[F[_]: Monad](
 
   // TODO: clean this up
   override def reportingDateWithinBudgetTime(transaction: Transaction): EitherT[F, DateNotInEffectiveTime, Unit] =
-    transaction.amounts
-      .collect {
-        case c: CategoryAmount => c
+    transaction.amounts.collect {
+      case c: CategoryAmount => c
+    }.toList.traverse { catAmt =>
+      EitherT {
+        categoryRepository.get(catAmt.categoryId) map { category =>
+          Either.cond(
+            category.budget.flatMap(_.effectiveTime).exists(_ contains catAmt.reportingDate),
+            (),
+            DateNotInEffectiveTime(catAmt.reportingDate, category.budget.flatMap(_.effectiveTime))
+          )
+        } getOrElse Right(())
       }
-      .toList
-      .traverse { catAmt =>
-        EitherT {
-          categoryRepository.get(catAmt.categoryId) map { category =>
-            Either.cond(
-              category.budget.flatMap(_.effectiveTime).exists(_ contains catAmt.reportingDate),
-              (),
-              DateNotInEffectiveTime(catAmt.reportingDate, category.budget.flatMap(_.effectiveTime))
-            )
-          } getOrElse Right(())
-        }
-      }
+    }
       .as(())
 }

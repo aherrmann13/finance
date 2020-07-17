@@ -16,10 +16,9 @@ object TransactionOps {
         CategoryAmountSpent(
           category,
           category.budget.map { budget =>
-            category.id
-              .map { id =>
-                budgetValue(budget, range, amountByCat.getOrElse(id, Seq.empty))
-              }
+            category.id.map { id =>
+              budgetValue(budget, range, amountByCat.getOrElse(id, Seq.empty))
+            }
               .getOrElse(BudgetAmountSpent(budget.effectiveTime, Usd(0), Usd(0), budget.amount))
           }
         )

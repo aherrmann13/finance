@@ -51,14 +51,13 @@ class CategoryValidationInterpreter[F[_]: Monad](
     PropertyValidator.descriptionIsValid(category)
 
   override def budgetWithinCategoryTime(category: Category): EitherT[F, BudgetEffectiveTimeNotWithinCategory, Unit] =
-    category.budget.toList
-      .traverse { budget =>
-        EitherT.cond[F](
-          budget.effectiveTime.forall(x => x within category.effectiveTime),
-          (),
-          BudgetEffectiveTimeNotWithinCategory(budget.effectiveTime, category.effectiveTime)
-        )
-      }
+    category.budget.toList.traverse { budget =>
+      EitherT.cond[F](
+        budget.effectiveTime.forall(x => x within category.effectiveTime),
+        (),
+        BudgetEffectiveTimeNotWithinCategory(budget.effectiveTime, category.effectiveTime)
+      )
+    }
       .as(())
 
   override def transactionsWithinBudgetTime(

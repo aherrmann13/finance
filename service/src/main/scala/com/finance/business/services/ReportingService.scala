@@ -102,17 +102,13 @@ class ReportingService[F[_]: Monad](
 
   private def getStockValueWithAssetGrowthInPurchaseMonth(query: AccountValueQuery): F[Seq[AccountValue]] =
     assetRepository.getAllStocks flatMap { stocks =>
-      stocks
-        .flatMap { stock =>
-          stock.asLifecycle
-        }
-        .filter { lifecycle =>
-          query.dateRanges.exists(range => range.contains(lifecycle.buy.date))
-        }
-        .toList
-        .traverse { lifecycle =>
-          stockPriceRetriever.call(lifecycle.stock.ticker).map((_, lifecycle))
-        }
+      stocks.flatMap { stock =>
+        stock.asLifecycle
+      }.filter { lifecycle =>
+        query.dateRanges.exists(range => range.contains(lifecycle.buy.date))
+      }.toList.traverse { lifecycle =>
+        stockPriceRetriever.call(lifecycle.stock.ticker).map((_, lifecycle))
+      }
     } map { lifecyclesWithPrice =>
       for {
         range <- query.dateRanges
