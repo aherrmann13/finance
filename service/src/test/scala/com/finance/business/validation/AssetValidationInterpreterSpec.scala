@@ -20,14 +20,9 @@ class AssetValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mock
   private val assetValidationInterpreter =
     new AssetValidationInterpreter[IdMonad](mockAssetRepository, mockAccountRepository)
 
-  private val fakeAssetWithId = new Asset {
-    override val id: Option[Id] = Some(Id(1))
-    override val accountId: Id = Id(15)
-  }
-  private val fakeAccountWithNoId = new Asset {
-    override val id: Option[Id] = None
-    override val accountId: Id = Id(15)
-  }
+  private val fakeAssetWithId = Stock(Some(Id(1)), Id(15), "ticker", Seq.empty)
+  private val fakeAccountWithNoId = Stock(None, Id(15), "ticker", Seq.empty)
+
   private val assetName = ModelName("Asset")
 
   "AssetValidationInterpreter" - {

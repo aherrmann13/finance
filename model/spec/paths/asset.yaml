@@ -1,6 +1,6 @@
 CreateAsset:
   post:
-    operationId: CreateAsset
+    operationId: createAsset
     summary: "create an asset"
     tags:
       - asset
@@ -15,7 +15,7 @@ CreateAsset:
 
 UpdateDeleteAsset:
   put:
-    operationId: UpdateAsset
+    operationId: updateAsset
     summary: "update an asset"
     tags:
       - asset
@@ -26,16 +26,16 @@ UpdateDeleteAsset:
         schema:
           type: integer
           format: int32
-        required: true 
+        required: true
     requestBody:
       $ref: "../requestBodies/asset.yaml#/UpdateAssetRequest"
     responses:
       200:
         $ref: "../responses/asset.yaml#/UpdateAssetResponse"
       400:
-        $ref: "../responses/common.yaml#/Error" 
+        $ref: "../responses/common.yaml#/Error"
   delete:
-    operationId: DeleteAsset
+    operationId: deleteAsset
     summary: "delete an asset"
     tags:
       - asset
@@ -55,7 +55,7 @@ UpdateDeleteAsset:
 
 GetStockValue:
   get:
-    operationId: GetStockValue
+    operationId: getStockValue
     summary: "get value of stocks"
     tags:
       - asset

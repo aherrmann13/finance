@@ -24,11 +24,9 @@ class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
   private val service = new AssetService[IdMonad](mockValidationAlgebra, mockRepository, mockStockPriceRetriever)
 
+  // leaving these as 'asset' not 'stock' to make it cleaner when another asset type is added
   private val assetId = Id(5)
-  private val asset = new Asset {
-    override val id: Option[Id] = Some(assetId)
-    override val accountId: Id = Id(8)
-  }
+  private val asset = Stock(Some(assetId), Id(19), "ticker", Seq.empty)
 
   "AssetService" - {
     "create" - {
@@ -74,6 +72,8 @@ class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       "should return Right(()) and saves model when validation passes" in {
         (mockValidationAlgebra idIsNone _) when asset returns EitherT.rightT[IdMonad, IdMustBeNone](())
         (mockValidationAlgebra accountIdExists _) when asset returns EitherT.rightT[IdMonad, DoesNotExist](())
+        (mockValidationAlgebra stockActionsAreValid _) when asset returns
+          EitherT.rightT[IdMonad, StockActionsInvalid](())
         (mockRepository create _) expects asset returns asset.pure[IdMonad]
 
         service.create(asset) shouldEqual EitherT.rightT[IdMonad, ValidationError](asset)
@@ -122,6 +122,8 @@ class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       "should return Right(()) and updates model when validation passes" in {
         (mockValidationAlgebra exists _) when asset returns EitherT.rightT[IdMonad, DoesNotExist](())
         (mockValidationAlgebra accountIdExists _) when asset returns EitherT.rightT[IdMonad, DoesNotExist](())
+        (mockValidationAlgebra stockActionsAreValid _) when asset returns
+          EitherT.rightT[IdMonad, StockActionsInvalid](())
         (mockRepository update _) expects asset returns asset.pure[IdMonad]
 
         service.update(asset) shouldEqual EitherT.rightT[IdMonad, ValidationError](asset)

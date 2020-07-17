@@ -1,4 +1,4 @@
-package com.finance.service.handlers
+package com.finance.service.converters
 
 import com.finance.business.model.account.{Bank, Brokerage, Account => AccountModel}
 import com.finance.business.model.types.{Description, Id, Name, Usd}

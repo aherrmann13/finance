@@ -1,4 +1,4 @@
-package com.finance.service.converters
+package com.finance.service.handlers
 
 import cats.data.EitherT
 import cats.{Id => IdMonad}
@@ -15,7 +15,6 @@ import com.finance.service.endpoints.account.{
   UpdateAccountResponse
 }
 import com.finance.service.endpoints.definitions.{Account, Error}
-import com.finance.service.handlers.AccountHandlerImpl
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers

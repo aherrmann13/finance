@@ -23,8 +23,7 @@ class AssetService[F[_]: Monad](
       _ <- validator idIsNone model
       _ <- validator accountIdExists model
       _ <- model match {
-        case stock @ Stock(_, _, _, _) => validator stockActionsAreValid stock
-        case _ => EitherT.rightT[F, ValidationError](())
+        case stock: Stock => validator stockActionsAreValid stock
       }
       saved <- EitherT.liftF(repository create model)
     } yield saved
@@ -34,8 +33,7 @@ class AssetService[F[_]: Monad](
       _ <- validator exists model
       _ <- validator accountIdExists model
       _ <- model match {
-        case stock @ Stock(_, _, _, _) => validator stockActionsAreValid stock
-        case _ => EitherT.rightT[F, ValidationError](())
+        case stock: Stock => validator stockActionsAreValid stock
       }
       saved <- EitherT.liftF(repository update model)
     } yield saved

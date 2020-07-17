@@ -1,9 +1,10 @@
-package com.finance.service.handlers
+package com.finance.service.converters
 
 import com.finance.business.validation.errors.ValidationError
 import com.finance.service.converters.ErrorMapping._
 import com.finance.service.converters.Mapping._
 import com.finance.service.endpoints.definitions.Error
+import com.finance.service.handlers.NullBodyError
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
 

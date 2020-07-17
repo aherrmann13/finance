@@ -9,6 +9,10 @@ Asset:
 Stock:
   type: object
   properties:
+    id:
+      type: integer
+      format: int32
+      readOnly: true
     accountId:
       type: integer
       format: int32
@@ -19,6 +23,7 @@ Stock:
       items:
         $ref: "#/StockAction"
   required:
+    - id
     - accountId
     - ticker
     - actions
@@ -28,10 +33,10 @@ StockAction:
   properties:
     date:
       type: string
-      format: date
+      format: date-time
     type:
       type: string
-      enum: [ Buy, Sell, CashDividend, StockDividend]
+      enum: [Buy, LifoSell, FifoSell, CashDividend, StockDividend]
     units:
       type: number
     unitPrice:
