@@ -12,12 +12,10 @@ Category:
       type: string
     description:
       type: string
-    effectivetime:
+    effectiveTime:
       type: array
       items:
         $ref: "./common.yaml#/DateRange"
-    isLeaf:
-      type: boolean
     budget:
       type: array
       items:
@@ -27,7 +25,6 @@ Category:
     - name
     - description
     - effectiveTime
-    - isLeaf
     - budget
 
 Budget:
@@ -43,7 +40,7 @@ Budget:
     - effectiveTime
     - amount
 
-## TODO: keep this in category? 
+## TODO: keep this in category?
 AmountSpentInRangeQuery:
   type: object
   properties:
@@ -68,7 +65,7 @@ AmountSpentInRange:
       readOnly: true
   required:
     - categories
-    - range 
+    - range
 
 CategoryAmountSpent:
   type: object
@@ -89,7 +86,7 @@ CategoryAmountSpent:
 BudgetAmountSpent:
   type: object
   properties:
-    effectivetime:
+    effectiveTime:
       type: array
       items:
         $ref: "./common.yaml#/DateRange"

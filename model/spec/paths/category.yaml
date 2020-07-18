@@ -1,7 +1,7 @@
 CreateGetCategory:
   post:
-    operationId: CreateCategory
-    summary: "create a category" 
+    operationId: createCategory
+    summary: "create a category"
     tags:
       - category
     x-scala-package: category
@@ -13,7 +13,7 @@ CreateGetCategory:
       400:
         $ref: "../responses/common.yaml#/Error"
   get:
-    operationId: GetAllCategories
+    operationId: getAllCategories
     summary: "get all categories"
     tags:
       - category
@@ -26,7 +26,7 @@ CreateGetCategory:
 
 UpdateDeleteCategory:
   put:
-    operationId: UpdateCategory
+    operationId: updateCategory
     summary: "update a category"
     tags:
       - category
@@ -37,7 +37,7 @@ UpdateDeleteCategory:
         schema:
           type: integer
           format: int32
-        required: true 
+        required: true
     requestBody:
       $ref: "../requestBodies/category.yaml#/UpdateCategoryRequest"
     responses:
@@ -46,7 +46,7 @@ UpdateDeleteCategory:
       400:
         $ref: "../responses/common.yaml#/Error"
   delete:
-    operationId: DeleteCategory
+    operationId: deleteCategory
     summary: "delete a category"
     tags:
       - category
@@ -57,7 +57,7 @@ UpdateDeleteCategory:
         schema:
           type: integer
           format: int32
-        required: true 
+        required: true
     responses:
       200:
         $ref: "../responses/common.yaml#/Empty200"
@@ -66,7 +66,7 @@ UpdateDeleteCategory:
 
 GetAmountSpentInRange:
   get:
-    operationId: GetAmountSpentInRange
+    operationId: getAmountSpentInRange
     summary: "get the total amount spent in each category in the given time period"
     tags:
       - category

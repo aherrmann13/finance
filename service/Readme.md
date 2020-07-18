@@ -50,3 +50,21 @@
     passed in
   </p>
 </details>  
+
+<details>
+  <summary>use of `allOf` in openapi spec generating new models</summary>
+  <p>
+<pre><code>
+prop:
+  allOf:
+    - $ref: "#ObjectType"
+  writeOnly: true
+</code></pre>
+
+this pattern is a hack to get around not being able to have write and read only object properties 
+<a href="https://github.com/OAI/OpenAPI-Specification/issues/1671">github reference</a>
+
+however, this generates a new type <code>Prop</code> in the containing object's definition because guardrail generates
+a new object to combine all items in <code>allOf</code> and does not have a special case for one object
+  </p> 
+</details>  
