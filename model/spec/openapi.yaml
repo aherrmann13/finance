@@ -30,7 +30,7 @@ paths:
   /reporting/accountvalue:
     $ref: "paths/reporting.yaml#/GetAccountValue"
   /reporting/networth:
-    $ref: "paths/reporting.yaml#/GetNetWorth" 
+    $ref: "paths/reporting.yaml#/GetNetWorth"
   /timeperiod:
     $ref: "paths/timeperiod.yaml#/GetTimePeriod"
   /transfer:
@@ -40,7 +40,7 @@ paths:
   /record:
     $ref: "paths/record.yaml#/GetRecord"
   /payback:
-    $ref: "paths/payback.yaml#/CreateGetPayback"
+    $ref: "paths/payback.yaml#/CreatePayback"
   /payback/{id}:
     $ref: "paths/payback.yaml#/UpdateDeletePayback"
   /payback/balance:
@@ -51,7 +51,7 @@ components:
   schemas:
     Category:
       $ref: "schemas/category.yaml#/Category"
-    Budget: 
+    Budget:
       $ref: "schemas/category.yaml#/Budget"
     AmountSpentInRangeQuery:
       $ref: "schemas/category.yaml#/AmountSpentInRangeQuery"
@@ -95,8 +95,6 @@ components:
       $ref: "schemas/record.yaml#/RecordQuery"
     Payback:
       $ref: "schemas/payback.yaml#/Payback"
-    PaybackQuery:
-      $ref: "schemas/payback.yaml#/PaybackQuery"
     PaybackBalanceQuery:
       $ref: "schemas/payback.yaml#/PaybackBalanceQuery"
     PaybackBalance:
@@ -183,8 +181,6 @@ components:
       $ref: "responses/payback.yaml#/CreatePaybackResponse"
     UpdatePaybackResponse:
       $ref: "responses/payback.yaml#/UpdatePaybackResponse"
-    GetPaybacksResponse:
-      $ref: "responses/payback.yaml#/GetPaybacksResponse"
     GetPaybackBalanceResponse:
       $ref: "responses/payback.yaml#/GetPaybackBalanceResponse"
     GetPaybackBalanceSummaryResponse:

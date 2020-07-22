@@ -1,6 +1,6 @@
-CreateGetPayback:
+CreatePayback:
   post:
-    operationId: CreatePayback
+    operationId: createPayback
     summary: "create a payback"
     tags:
       - payback
@@ -12,26 +12,10 @@ CreateGetPayback:
         $ref: "../responses/payback.yaml#/CreatePaybackResponse"
       400:
         $ref: "../responses/common.yaml#/Error"
-  get:
-    operationId: GetPaybacks
-    summary: "get paybacks matching query"
-    tags:
-      - payback
-    x-scala-package: payback
-    parameters:
-      - in: query
-        name: filter
-        schema:
-          $ref: "../schemas/payback.yaml#/PaybackQuery"
-    responses:
-      200:
-        $ref: "../responses/payback.yaml#/GetPaybacksResponse"
-      400:
-        $ref: "../responses/common.yaml#/Error"
 
 UpdateDeletePayback:
   put:
-    operationId:  UpdatePayback
+    operationId: updatePayback
     summary: "update a payback"
     tags:
       - payback
@@ -51,7 +35,7 @@ UpdateDeletePayback:
       400:
         $ref: "../responses/common.yaml#/Error"
   delete:
-    operationId:  DeletePayback
+    operationId: deletePayback
     summary: "delete a payback"
     tags:
       - payback
@@ -71,7 +55,7 @@ UpdateDeletePayback:
 
 GetPaybackBalance:
   get:
-    operationId: GetPaybackBalance
+    operationId: getPaybackBalance
     summary: "gets balance of all paybacks"
     tags:
       - payback
@@ -90,7 +74,7 @@ GetPaybackBalance:
 
 GetPaybackBalanceSummary:
   get:
-    operationId: GetPaybackBalanceSummary
+    operationId: getPaybackBalanceSummary
     summary: "gets the outstanding total of all paybacks"
     tags:
       - payback

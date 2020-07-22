@@ -3,7 +3,12 @@ package com.finance.service.converters
 import java.time.{LocalTime, OffsetDateTime, ZoneOffset}
 
 import com.finance.business.model.types.{DateRange => DateRangeModel}
-import com.finance.service.endpoints.definitions.{AmountSpentInRange, AmountSpentInRangeQuery, DateRange}
+import com.finance.service.endpoints.definitions.{
+  AmountSpentInRange,
+  AmountSpentInRangeQuery,
+  DateRange,
+  PaybackBalanceQuery
+}
 
 object CommonMapping {
   implicit val dateRangeRequestMapping: Mapping[DateRange, DateRangeModel] = (a: DateRange) =>
@@ -14,6 +19,13 @@ object CommonMapping {
 
   implicit val amountSpentInRangeQueryRangeRequestMapping: Mapping[AmountSpentInRangeQuery.Range, DateRangeModel] =
     (a: AmountSpentInRangeQuery.Range) =>
+      DateRangeModel(
+        OffsetDateTime.of(a.start, LocalTime.MIN, ZoneOffset.UTC),
+        OffsetDateTime.of(a.end, LocalTime.MIN, ZoneOffset.UTC)
+      )
+
+  implicit val paybackBalanceQueryRequestMapping: Mapping[PaybackBalanceQuery.Range, DateRangeModel] =
+    (a: PaybackBalanceQuery.Range) =>
       DateRangeModel(
         OffsetDateTime.of(a.start, LocalTime.MIN, ZoneOffset.UTC),
         OffsetDateTime.of(a.end, LocalTime.MIN, ZoneOffset.UTC)

@@ -5,7 +5,12 @@ import java.time.{LocalDate, OffsetDateTime}
 import com.finance.business.model.types.{DateRange => DateRangeModel}
 import com.finance.service.converters.CommonMapping._
 import com.finance.service.converters.Mapping._
-import com.finance.service.endpoints.definitions.{AmountSpentInRange, AmountSpentInRangeQuery, DateRange}
+import com.finance.service.endpoints.definitions.{
+  AmountSpentInRange,
+  AmountSpentInRangeQuery,
+  DateRange,
+  PaybackBalanceQuery
+}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -24,6 +29,17 @@ class CommonMappingSpec extends AnyFreeSpec with Matchers {
       }
       "map amount spent in range query range request to date range model" in {
         AmountSpentInRangeQuery
+          .Range(
+            LocalDate.of(2020, 1, 1),
+            LocalDate.of(2020, 2, 1)
+          )
+          .mapTo[DateRangeModel] shouldEqual DateRangeModel(
+          OffsetDateTime.parse("2020-01-01T00:00:00.00Z"),
+          OffsetDateTime.parse("2020-02-01T00:00:00.00Z")
+        )
+      }
+      "map payback balance query range request to date range model" in {
+        PaybackBalanceQuery
           .Range(
             LocalDate.of(2020, 1, 1),
             LocalDate.of(2020, 2, 1)
