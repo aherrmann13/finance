@@ -1,6 +1,6 @@
 GetRecord:
   get:
-    operationId: GetRecord
+    operationId: getRecord
     summary: "get all transactions, transfers, and assets matching the query"
     tags:
       - transaction
