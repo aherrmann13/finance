@@ -6,6 +6,7 @@ import com.finance.business.model.types.{DateRange => DateRangeModel}
 import com.finance.service.converters.CommonMapping._
 import com.finance.service.converters.Mapping._
 import com.finance.service.endpoints.definitions.{
+  AccountValue,
   AmountSpentInRange,
   AmountSpentInRangeQuery,
   DateRange,
@@ -64,6 +65,16 @@ class CommonMappingSpec extends AnyFreeSpec with Matchers {
           OffsetDateTime.parse("2020-01-01T00:00:00.00Z"),
           OffsetDateTime.parse("2020-02-01T00:00:00.00Z")
         ).mapTo[AmountSpentInRange.Range] shouldEqual AmountSpentInRange.Range(
+          LocalDate.of(2020, 1, 1),
+          LocalDate.of(2020, 2, 1)
+        )
+      }
+
+      "map date range model to account value date range response" in {
+        DateRangeModel(
+          OffsetDateTime.parse("2020-01-01T00:00:00.00Z"),
+          OffsetDateTime.parse("2020-02-01T00:00:00.00Z")
+        ).mapTo[AccountValue.DateRange] shouldEqual AccountValue.DateRange(
           LocalDate.of(2020, 1, 1),
           LocalDate.of(2020, 2, 1)
         )

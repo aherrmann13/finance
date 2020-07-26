@@ -1,6 +1,6 @@
 GetAccountValue:
   get:
-    operationId: GetAccountValue
+    operationId: getAccountValue
     summary: "gets the value of the specified accounts"
     tags:
       - reporting
@@ -16,9 +16,9 @@ GetAccountValue:
       400:
         $ref: "../responses/common.yaml#/Error"
 
-GetNetWorth: 
+GetNetWorth:
   get:
-    operationId: GetNetWorth
+    operationId: getNetWorth
     summary: "gets the users net worth"
     tags:
       - reporting

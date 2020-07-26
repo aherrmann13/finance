@@ -5,23 +5,22 @@ AccountValue:
       type: integer
       format: int32
       readOnly: true
-    effectiveTime:
-      type: array
-      items:
-        $ref: "./common.yaml#/DateRange"
+    dateRange:
+      allOf:
+        - $ref: "./common.yaml#/DateRange"
       readOnly: true
     value:
       type: number
       readOnly: true
   required:
     - accountId
-    - timePeriodId
+    - dateRange
     - value
 
 AccountValueQuery:
   type: object
   properties:
-    effectiveTime:
+    dateRanges:
       type: array
       items:
         $ref: "./common.yaml#/DateRange"
@@ -35,7 +34,9 @@ AccountValueQuery:
     useReportingDate:
       type: boolean
       writeOnly: true
-# TODO: rename
     countAssetGrowthInPurchaseMonth:
       type: boolean
       writeOnly: true
+  required:
+    - dateRanges
+    - accountIds

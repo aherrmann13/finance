@@ -4,6 +4,7 @@ import java.time.{LocalTime, OffsetDateTime, ZoneOffset}
 
 import com.finance.business.model.types.{DateRange => DateRangeModel}
 import com.finance.service.endpoints.definitions.{
+  AccountValue,
   AmountSpentInRange,
   AmountSpentInRangeQuery,
   DateRange,
@@ -36,4 +37,7 @@ object CommonMapping {
 
   implicit val amountSpentInRangeRangeResponseMapping: Mapping[DateRangeModel, AmountSpentInRange.Range] =
     (a: DateRangeModel) => AmountSpentInRange.Range(a.start.toLocalDate, a.end.toLocalDate)
+
+  implicit val accountValueDateRangeResponseMapping: Mapping[DateRangeModel, AccountValue.DateRange] =
+    (a: DateRangeModel) => AccountValue.DateRange(a.start.toLocalDate, a.end.toLocalDate)
 }
