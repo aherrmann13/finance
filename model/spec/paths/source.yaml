@@ -1,6 +1,6 @@
 CreateGetSource:
   post:
-    operationId: CreateSource
+    operationId: createSource
     summary: "create a source"
     tags:
       - source
@@ -13,7 +13,7 @@ CreateGetSource:
       400:
         $ref: "../responses/common.yaml#/Error"
   get:
-    operationId: GetSources
+    operationId: getSources
     summary: "get sources matching query"
     tags:
       - source
@@ -27,11 +27,11 @@ CreateGetSource:
       200:
         $ref: "../responses/source.yaml#/GetSourcesResponse"
       400:
-        $ref: "../responses/common.yaml#/Error" 
+        $ref: "../responses/common.yaml#/Error"
 
 UpdateDeleteSource:
   put:
-    operationId: UpdateSource
+    operationId: updateSource
     summary: "update a source"
     tags:
       - source
@@ -51,7 +51,7 @@ UpdateDeleteSource:
       400:
         $ref: "../responses/common.yaml#/Error"
   delete:
-    operationId: DeleteSource
+    operationId: deleteSource
     summary: "delete a source"
     tags:
       - source
