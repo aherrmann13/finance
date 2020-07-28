@@ -31,8 +31,6 @@ paths:
     $ref: "paths/reporting.yaml#/GetAccountValue"
   /reporting/networth:
     $ref: "paths/reporting.yaml#/GetNetWorth"
-  /timeperiod:
-    $ref: "paths/timeperiod.yaml#/GetTimePeriod"
   /transfer:
     $ref: "paths/transfer.yaml#/CreateTransfer"
   /transfer/{id}:
@@ -83,10 +81,6 @@ components:
       $ref: "schemas/reporting.yaml#/AccountValue"
     AccountValueQuery:
       $ref: "schemas/reporting.yaml#/AccountValueQuery"
-    TimePeriod:
-      $ref: "schemas/timeperiod.yaml#/TimePeriod"
-    TimePeriodQuery:
-      $ref: "schemas/timeperiod.yaml#/TimePeriodQuery"
     Transfer:
       $ref: "schemas/transfer.yaml#/Transfer"
     Record:
@@ -169,8 +163,6 @@ components:
       $ref: "responses/reporting.yaml#/GetAccountValueResponse"
     GetNetWorthResponse:
       $ref: "responses/reporting.yaml#/GetNetWorthResponse"
-    GetTimePeriodsResponse:
-      $ref: "responses/timeperiod.yaml#/GetTimePeriodsResponse"
     CreateTransferResponse:
       $ref: "responses/transfer.yaml#/CreateTransferResponse"
     UpdateTransferResponse:

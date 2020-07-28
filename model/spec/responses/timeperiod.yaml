@@ -1,8 +1,0 @@
-GetTimePeriodsResponse:
-  description: ""
-  content:
-    application/json:
-      schema:
-        type: array
-        items:
-          $ref: "../schemas/timeperiod.yaml#/TimePeriod"
