@@ -5,24 +5,21 @@ Transaction:
       type: integer
       format: int32
       readOnly: true
-    amount:
+    amounts:
       type: array
-      items: 
+      items:
         $ref: "#/Amount"
     description:
       type: string
     transactionDate:
       type: string
       format: date
-    sourceId:
-      type: integer
-      format: int32
     accountId:
       type: integer
       format: int32
   required:
     - id
-    - amount
+    - amounts
     - description
     - transactionDate
     - sourceId
@@ -36,7 +33,10 @@ Amount:
       format: int32
     type:
       type: string
-      enum: [ Payback, Category ] 
+      enum: [Payback, Category]
+    sourceId:
+      type: integer
+      format: int32
     amount:
       type: number
     description:
@@ -45,7 +45,9 @@ Amount:
       type: string
       format: date
   required:
-    - categoryId
+    - relationId
+    - type
+    - sourceId
     - amount
     - description
     - reportingDate

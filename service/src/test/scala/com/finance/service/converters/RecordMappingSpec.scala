@@ -3,12 +3,13 @@ package com.finance.service.converters
 import java.time.{LocalDate, LocalTime, OffsetDateTime, ZoneOffset}
 
 import com.finance.business.model.asset.{Stock => StockModel}
-import com.finance.business.model.record.{AssetRecord, Record => RecordModel}
-import com.finance.business.model.types.Id
+import com.finance.business.model.record.{AssetRecord, TransactionRecord, Record => RecordModel}
+import com.finance.business.model.transaction.{Transaction => TransactionModel}
+import com.finance.business.model.types.{Description, Id}
 import com.finance.business.services.query.{RecordQuery => RecordQueryModel}
 import com.finance.service.converters.Mapping._
 import com.finance.service.converters.RecordMapping._
-import com.finance.service.endpoints.definitions.{Asset, Record, RecordQuery, Stock}
+import com.finance.service.endpoints.definitions.{Asset, Record, RecordQuery, Stock, Transaction}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -42,7 +43,19 @@ class RecordMappingSpec extends AnyFreeSpec with Matchers {
               transaction = None
             )
         }
-        // TODO: transfer and transaction here when done
+        "when transaction model" in {
+          val date = OffsetDateTime.now
+          val record: RecordModel =
+            TransactionRecord(TransactionModel(Some(Id(5)), Description("desc"), date, Id(6), Seq.empty))
+
+          record.mapTo[Record] shouldEqual
+            Record(
+              asset = None,
+              transfer = None,
+              transaction = Some(Transaction(5, Vector.empty, "desc", date.toLocalDate, 6))
+            )
+        }
+        // TODO: transfer here when done
       }
     }
   }

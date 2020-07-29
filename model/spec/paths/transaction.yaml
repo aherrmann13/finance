@@ -1,6 +1,6 @@
 CreateTransaction:
   post:
-    operationId: CreateTransaction
+    operationId: createTransaction
     summary: "create a transaction"
     tags:
       - transaction
@@ -15,9 +15,9 @@ CreateTransaction:
 
 UpdateDeleteTransaction:
   put:
-    operationId: UpdateTransaction
+    operationId: updateTransaction
     summary: "update a transaction"
-    tags: 
+    tags:
       - transaction
     x-scala-package: transaction
     parameters:
@@ -35,7 +35,7 @@ UpdateDeleteTransaction:
       400:
         $ref: "../responses/common.yaml#/Error"
   delete:
-    operationId: DeleteTransaction
+    operationId: deleteTransaction
     summary: "delete a transaction"
     tags:
       - transaction
