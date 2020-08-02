@@ -1,6 +1,6 @@
 CreateTransfer:
   post:
-    operationId: CreateTransfer
+    operationId: createTransfer
     summary: "create a transfer"
     tags:
       - transfer
@@ -15,7 +15,7 @@ CreateTransfer:
 
 UpdateDeleteTransfer:
   put:
-    operationId: UpdateTransfer
+    operationId: updateTransfer
     summary: "update a transfer"
     tags:
       - transfer
@@ -35,7 +35,7 @@ UpdateDeleteTransfer:
       400:
         $ref: "../responses/common.yaml#/Error"
   delete:
-    operationId: DeleteTransfer
+    operationId: deleteTransfer
     summary: "delete a transfer"
     tags:
       - transfer
@@ -51,5 +51,4 @@ UpdateDeleteTransfer:
       200:
         $ref: "../responses/common.yaml#/Empty200"
       400:
-        $ref: "../responses/common.yaml#/Error" 
-
+        $ref: "../responses/common.yaml#/Error"

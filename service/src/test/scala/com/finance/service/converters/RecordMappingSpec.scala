@@ -3,13 +3,14 @@ package com.finance.service.converters
 import java.time.{LocalDate, LocalTime, OffsetDateTime, ZoneOffset}
 
 import com.finance.business.model.asset.{Stock => StockModel}
-import com.finance.business.model.record.{AssetRecord, TransactionRecord, Record => RecordModel}
+import com.finance.business.model.record.{AssetRecord, TransactionRecord, TransferRecord, Record => RecordModel}
 import com.finance.business.model.transaction.{Transaction => TransactionModel}
-import com.finance.business.model.types.{Description, Id}
+import com.finance.business.model.transfer.{Transfer => TransferModel}
+import com.finance.business.model.types.{Description, Id, Usd}
 import com.finance.business.services.query.{RecordQuery => RecordQueryModel}
 import com.finance.service.converters.Mapping._
 import com.finance.service.converters.RecordMapping._
-import com.finance.service.endpoints.definitions.{Asset, Record, RecordQuery, Stock, Transaction}
+import com.finance.service.endpoints.definitions.{Asset, Record, RecordQuery, Stock, Transaction, Transfer}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -55,7 +56,27 @@ class RecordMappingSpec extends AnyFreeSpec with Matchers {
               transaction = Some(Transaction(5, Vector.empty, "desc", date.toLocalDate, 6))
             )
         }
-        // TODO: transfer here when done
+        "when transfer model" in {
+          val date = OffsetDateTime.now
+          val record: RecordModel =
+            TransferRecord(
+              TransferModel(
+                id = Some(Id(6)),
+                from = Id(7),
+                fromDate = date,
+                to = Id(8),
+                toDate = date,
+                amount = Usd(150)
+              )
+            )
+
+          record.mapTo[Record] shouldEqual
+            Record(
+              asset = None,
+              transfer = Some(Transfer(6, 7, date.toLocalDate, 8, date.toLocalDate, 150)),
+              transaction = None
+            )
+        }
       }
     }
   }
