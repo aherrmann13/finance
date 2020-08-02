@@ -7,7 +7,6 @@ import com.finance.business.model.types.Id
 import com.finance.business.repository.{AssetRepository, TransactionRepository, TransferRepository}
 import com.finance.business.services.RecordService
 import com.finance.business.services.query.{RecordQuery => RecordQueryModel}
-import com.finance.business.validation.errors.ValidationError
 import com.finance.service.endpoints.definitions.{Asset, Record, RecordQuery, Stock}
 import com.finance.service.endpoints.record.GetRecordResponse
 import org.scalamock.scalatest.MockFactory

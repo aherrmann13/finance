@@ -54,17 +54,17 @@ class AccountHandlerImplSpec extends AnyFreeSpec with Matchers with MockFactory 
     }
     "updateAccount" - {
       val id = 8
-      "should return CreateAccountResponse.BadRequest on error in service" in {
+      "should return UpdateAccountResponse.BadRequest on error in service" in {
         (mockAccountService.update _).when(accountModel.copy(id = Some(Id(id)))).returns(EitherT.leftT(TestError))
 
         handler.updateAccount(UpdateAccountResponse)(id, Some(account)) shouldEqual
           UpdateAccountResponse.BadRequest(Error(Some("unknown error occurred")))
       }
-      "should return CreateAccountResponse.BadRequest on null body" in {
+      "should return UpdateAccountResponse.BadRequest on null body" in {
         handler.updateAccount(UpdateAccountResponse)(id, None) shouldEqual
           UpdateAccountResponse.BadRequest(Error(Some("body is null")))
       }
-      "should return CreateAccountResponse.Ok with account on successful update in service" in {
+      "should return UpdateAccountResponse.Ok with account on successful update in service" in {
         (mockAccountService.update _).when(accountModel.copy(id = Some(Id(id)))).returns(EitherT.rightT(accountModel))
 
         handler.updateAccount(UpdateAccountResponse)(id, Some(account)) shouldEqual
@@ -73,13 +73,13 @@ class AccountHandlerImplSpec extends AnyFreeSpec with Matchers with MockFactory 
     }
     "deleteAccount" - {
       val id = 1
-      "should return CreateAccountResponse.BadRequest on error in service" in {
+      "should return DeleteAccountResponse.BadRequest on error in service" in {
         (mockAccountService.delete _).when(Id(id)).returns(EitherT.leftT(TestError))
 
         handler.deleteAccount(DeleteAccountResponse)(id) shouldEqual
           DeleteAccountResponse.BadRequest(Error(Some("unknown error occurred")))
       }
-      "should return CreateAccountResponse.Ok on successful delete" in {
+      "should return DeleteAccountResponse.Ok on successful delete" in {
         (mockAccountService.delete _).when(Id(id)).returns(EitherT.rightT(()))
 
         handler.deleteAccount(DeleteAccountResponse)(id) shouldEqual
