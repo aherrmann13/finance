@@ -47,13 +47,25 @@ class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       }
       "if asset is stock" - {
         val stock = Stock(Some(Id(2)), Id(19), "ticker", Seq.empty)
+        "should return Left(StockActionsOutOfOrder) from validation algebra stockActionsAreInOrder" in {
+          val returnVal = EitherT.leftT[IdMonad, Unit][StockActionsOutOfOrder](
+            StockActionsOutOfOrder(FifoSell(OffsetDateTime.now, 6, Usd(12.0), Usd(15.0)))
+          )
+          (mockValidationAlgebra idIsNone _) when stock returns EitherT.rightT[IdMonad, IdMustBeNone](())
+          (mockValidationAlgebra accountIdExists _) when stock returns EitherT.rightT[IdMonad, DoesNotExist](())
+          (mockValidationAlgebra stockActionsAreInOrder _) when stock returns returnVal
+          (mockRepository create _) expects stock never
 
+          service.create(stock) shouldEqual returnVal
+        }
         "should return Left(StockActionsInvalid) from validation algebra stockActionsAreValid" in {
           val returnVal = EitherT.leftT[IdMonad, Unit][StockActionsInvalid](
             SellingMoreThanCurrentlyHave(FifoSell(OffsetDateTime.now, 6, Usd(12.0), Usd(15.0)))
           )
           (mockValidationAlgebra idIsNone _) when stock returns EitherT.rightT[IdMonad, IdMustBeNone](())
           (mockValidationAlgebra accountIdExists _) when stock returns EitherT.rightT[IdMonad, DoesNotExist](())
+          (mockValidationAlgebra stockActionsAreInOrder _) when stock returns
+            EitherT.rightT[IdMonad, StockActionsOutOfOrder](())
           (mockValidationAlgebra stockActionsAreValid _) when stock returns returnVal
           (mockRepository create _) expects stock never
 
@@ -62,6 +74,8 @@ class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         "should return Right(()) and saves model when validation passes" in {
           (mockValidationAlgebra idIsNone _) when stock returns EitherT.rightT[IdMonad, IdMustBeNone](())
           (mockValidationAlgebra accountIdExists _) when stock returns EitherT.rightT[IdMonad, DoesNotExist](())
+          (mockValidationAlgebra stockActionsAreInOrder _) when stock returns
+            EitherT.rightT[IdMonad, StockActionsOutOfOrder](())
           (mockValidationAlgebra stockActionsAreValid _) when stock returns
             EitherT.rightT[IdMonad, StockActionsInvalid](())
           (mockRepository create _) expects stock returns stock.pure[IdMonad]
@@ -72,6 +86,8 @@ class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       "should return Right(()) and saves model when validation passes" in {
         (mockValidationAlgebra idIsNone _) when asset returns EitherT.rightT[IdMonad, IdMustBeNone](())
         (mockValidationAlgebra accountIdExists _) when asset returns EitherT.rightT[IdMonad, DoesNotExist](())
+        (mockValidationAlgebra stockActionsAreInOrder _) when asset returns
+          EitherT.rightT[IdMonad, StockActionsOutOfOrder](())
         (mockValidationAlgebra stockActionsAreValid _) when asset returns
           EitherT.rightT[IdMonad, StockActionsInvalid](())
         (mockRepository create _) expects asset returns asset.pure[IdMonad]
@@ -97,13 +113,25 @@ class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       }
       "if asset is stock" - {
         val stock = Stock(Some(Id(2)), Id(11), "ticker", Seq.empty)
+        "should return Left(StockActionsOutOfOrder) from validation algebra stockActionsAreInOrder" in {
+          val returnVal = EitherT.leftT[IdMonad, Unit][StockActionsOutOfOrder](
+            StockActionsOutOfOrder(FifoSell(OffsetDateTime.now, 6, Usd(12.0), Usd(15.0)))
+          )
+          (mockValidationAlgebra exists _) when stock returns EitherT.rightT[IdMonad, DoesNotExist](())
+          (mockValidationAlgebra accountIdExists _) when stock returns EitherT.rightT[IdMonad, DoesNotExist](())
+          (mockValidationAlgebra stockActionsAreInOrder _) when stock returns returnVal
+          (mockRepository update _) expects stock never
 
+          service.update(stock) shouldEqual returnVal
+        }
         "should return Left(StockActionsInvalid) from validation algebra stockActionsAreValid" in {
           val returnVal = EitherT.leftT[IdMonad, Unit][StockActionsInvalid](
             SellingMoreThanCurrentlyHave(FifoSell(OffsetDateTime.now, 6, Usd(12.0), Usd(15.0)))
           )
           (mockValidationAlgebra exists _) when stock returns EitherT.rightT[IdMonad, DoesNotExist](())
           (mockValidationAlgebra accountIdExists _) when stock returns EitherT.rightT[IdMonad, DoesNotExist](())
+          (mockValidationAlgebra stockActionsAreInOrder _) when stock returns
+            EitherT.rightT[IdMonad, StockActionsOutOfOrder](())
           (mockValidationAlgebra stockActionsAreValid _) when stock returns returnVal
           (mockRepository update _) expects stock never
 
@@ -112,6 +140,8 @@ class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         "should return Right(()) and saves model when validation passes" in {
           (mockValidationAlgebra exists _) when stock returns EitherT.rightT[IdMonad, DoesNotExist](())
           (mockValidationAlgebra accountIdExists _) when stock returns EitherT.rightT[IdMonad, DoesNotExist](())
+          (mockValidationAlgebra stockActionsAreInOrder _) when stock returns
+            EitherT.rightT[IdMonad, StockActionsOutOfOrder](())
           (mockValidationAlgebra stockActionsAreValid _) when stock returns
             EitherT.rightT[IdMonad, StockActionsInvalid](())
           (mockRepository update _) expects stock returns stock.pure[IdMonad]
@@ -122,6 +152,8 @@ class AssetServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
       "should return Right(()) and updates model when validation passes" in {
         (mockValidationAlgebra exists _) when asset returns EitherT.rightT[IdMonad, DoesNotExist](())
         (mockValidationAlgebra accountIdExists _) when asset returns EitherT.rightT[IdMonad, DoesNotExist](())
+        (mockValidationAlgebra stockActionsAreInOrder _) when asset returns
+          EitherT.rightT[IdMonad, StockActionsOutOfOrder](())
         (mockValidationAlgebra stockActionsAreValid _) when asset returns
           EitherT.rightT[IdMonad, StockActionsInvalid](())
         (mockRepository update _) expects asset returns asset.pure[IdMonad]

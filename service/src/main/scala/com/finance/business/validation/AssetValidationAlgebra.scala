@@ -12,4 +12,7 @@ trait AssetValidationAlgebra[F[_]] {
   def accountIdExists(asset: Asset): EitherT[F, DoesNotExist, Unit]
 
   def stockActionsAreValid(stock: Stock): EitherT[F, StockActionsInvalid, Unit]
+
+  def stockActionsAreInOrder(stock: Stock): EitherT[F, StockActionsOutOfOrder, Unit]
+
 }

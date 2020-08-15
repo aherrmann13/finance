@@ -2,6 +2,7 @@ package com.finance.business.validation
 
 import cats.Monad
 import cats.data.EitherT
+import cats.implicits._
 import com.finance.business.model.account.implicits._
 import com.finance.business.model.asset._
 import com.finance.business.model.asset.implicits._
@@ -59,5 +60,11 @@ class AssetValidationInterpreter[F[_]: Monad](
         acc flatMap { v =>
           EitherT.fromOption[F](v ? a, v + a).swap
         }
+    } map (_ => ())
+
+  override def stockActionsAreInOrder(stock: Stock): EitherT[F, StockActionsOutOfOrder, Unit] =
+    stock.actions.sliding(2).toList.traverse {
+      case Seq(x, y) => EitherT.cond[F](!y.date.isBefore(x.date), (), StockActionsOutOfOrder(y))
+      case _ => EitherT.rightT[F, StockActionsOutOfOrder](())
     } map (_ => ())
 }

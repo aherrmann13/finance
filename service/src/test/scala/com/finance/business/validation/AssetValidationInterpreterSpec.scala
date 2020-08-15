@@ -132,5 +132,54 @@ class AssetValidationInterpreterSpec extends AnyFreeSpec with Matchers with Mock
           EitherT.rightT[IdMonad, StockActionsInvalid](()).value
       }
     }
+
+    "stockActionsAreInOrder" - {
+      val fakeStock = Stock(Some(Id(2)), Id(17), "ticker", Seq.empty)
+
+      "should return Left(StockActionsOutOfOrder) when actions are not from earliest to latest" in {
+        val action0 = Buy(OffsetDateTime.now, 6, Usd(12.0), Usd(15.0))
+        val badAction = action0.copy(date = action0.date.minusDays(1))
+        val action1 = action0.copy(date = action0.date.plusDays(1))
+
+        assetValidationInterpreter
+          .stockActionsAreInOrder(fakeStock.copy(actions = Seq(action0, badAction, action1)))
+          .value shouldEqual
+          EitherT.leftT[IdMonad, Unit](StockActionsOutOfOrder(badAction)).value
+      }
+      "should return Right(()) when actions are from earliest to latest" in {
+        val action0 = Buy(OffsetDateTime.now, 6, Usd(12.0), Usd(15.0))
+        val action1 = action0.copy(date = action0.date.plusDays(1))
+        val action2 = action0.copy(date = action0.date.plusDays(2))
+
+        assetValidationInterpreter
+          .stockActionsAreInOrder(fakeStock.copy(actions = Seq(action0, action1, action2)))
+          .value shouldEqual
+          EitherT.rightT[IdMonad, StockActionsOutOfOrder](()).value
+      }
+      "should return Right(()) when actions are from earliest to latest with equal dates" in {
+        val action0 = Buy(OffsetDateTime.now, 6, Usd(12.0), Usd(15.0))
+        val action1 = action0.copy(date = action0.date)
+        val action2 = action0.copy(date = action0.date)
+
+        assetValidationInterpreter
+          .stockActionsAreInOrder(fakeStock.copy(actions = Seq(action0, action1, action2)))
+          .value shouldEqual
+          EitherT.rightT[IdMonad, StockActionsOutOfOrder](()).value
+      }
+      "should return Right(()) when actions are list with one element" in {
+        val action0 = Buy(OffsetDateTime.now, 6, Usd(12.0), Usd(15.0))
+
+        assetValidationInterpreter
+          .stockActionsAreInOrder(fakeStock.copy(actions = Seq(action0)))
+          .value shouldEqual
+          EitherT.rightT[IdMonad, StockActionsOutOfOrder](()).value
+      }
+      "should return Right(()) when actions are empty list" in {
+        assetValidationInterpreter
+          .stockActionsAreInOrder(fakeStock)
+          .value shouldEqual
+          EitherT.rightT[IdMonad, StockActionsOutOfOrder](()).value
+      }
+    }
   }
 }
