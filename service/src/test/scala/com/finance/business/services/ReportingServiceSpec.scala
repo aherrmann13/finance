@@ -10,7 +10,7 @@ import com.finance.business.model.reporting.AccountValue
 import com.finance.business.model.transaction.{CategoryAmount, PaybackAmount, Transaction}
 import com.finance.business.model.types._
 import com.finance.business.remotecalls.StockPriceRetriever
-import com.finance.business.repository.query.TransactionQuery
+import com.finance.business.repository.query.{StockQuery, TransactionQuery}
 import com.finance.business.repository.{AccountRepository, AssetRepository, TransactionRepository}
 import com.finance.business.services.query.AccountValueQuery
 import org.scalamock.scalatest.MockFactory
@@ -43,6 +43,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
   private val fakeTransaction =
     Transaction(Some(Id(2)), Description("desc"), OffsetDateTime.now, Id(3), Seq(fakeAmount))
   private val fakeStock = Stock(Some(Id(2)), Id(3), "ticker", Seq(Buy(OffsetDateTime.now, 12, Usd(60), Usd(65))))
+  private val date = OffsetDateTime.now
 
   // TODO: compare `Seq` better (order independent but exact same elements)
   "ReportingService" - {
@@ -53,10 +54,10 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         val a2 = fakeAccount.copy(id = Some(Id(5)), initialAmount = Usd(70))
 
         (mockAccountRepository.getAll _).when().returns(Seq(a0, a1, a2))
-        (mockTransactionRepository.getAll _).when().returns(Seq.empty)
-        (mockAssetRepository.getAllStocks _).when().returns(Seq.empty)
+        (mockTransactionRepository.get(_: TransactionQuery)).when(TransactionQuery(to = Some(date))).returns(Seq.empty)
+        (mockAssetRepository.getStocks _).when(StockQuery(to = Some(date))).returns(Seq.empty)
 
-        service.getNetWorth shouldEqual Usd(180)
+        service.getNetWorth(date) shouldEqual Usd(180)
       }
       "should return value of all transactions" in {
         val t0 = fakeTransaction.copy(amounts =
@@ -81,10 +82,13 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         )
 
         (mockAccountRepository.getAll _).when().returns(Seq.empty)
-        (mockTransactionRepository.getAll _).when().returns(Seq(t0, t1, t2))
-        (mockAssetRepository.getAllStocks _).when().returns(Seq.empty)
+        (mockTransactionRepository
+          .get(_: TransactionQuery))
+          .when(TransactionQuery(to = Some(date)))
+          .returns(Seq(t0, t1, t2))
+        (mockAssetRepository.getStocks _).when(StockQuery(to = Some(date))).returns(Seq.empty)
 
-        service.getNetWorth shouldEqual Usd(635)
+        service.getNetWorth(date) shouldEqual Usd(635)
       }
       "should return value of all stocks" in {
         val s0 = fakeStock.copy(
@@ -103,18 +107,16 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         )
 
         (mockAccountRepository.getAll _).when().returns(Seq.empty)
-        (mockTransactionRepository.getAll _).when().returns(Seq.empty)
-        (mockAssetRepository.getAllStocks _).when().returns(Seq(s0, s1))
-        (mockStockPriceRetriever
-          .call(_: String))
-          .when(s0.ticker)
+        (mockTransactionRepository.get(_: TransactionQuery)).when(TransactionQuery(to = Some(date))).returns(Seq.empty)
+        (mockAssetRepository.getStocks _).when(StockQuery(to = Some(date))).returns(Seq(s0, s1))
+        (mockStockPriceRetriever.call _)
+          .when(s0.ticker, date)
           .returns(StockPriceAsOf(Usd(6), Usd(10), OffsetDateTime.now))
-        (mockStockPriceRetriever
-          .call(_: String))
-          .when(s1.ticker)
+        (mockStockPriceRetriever.call _)
+          .when(s1.ticker, date)
           .returns(StockPriceAsOf(Usd(6), Usd(8), OffsetDateTime.now))
 
-        service.getNetWorth shouldEqual Usd(244)
+        service.getNetWorth(date) shouldEqual Usd(244)
       }
       "should return value of accounts stocks and transactions" in {
         val a0 = fakeAccount.copy(id = Some(Id(5)), initialAmount = Usd(50))
@@ -158,18 +160,19 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
         )
 
         (mockAccountRepository.getAll _).when().returns(Seq(a0, a1, a2))
-        (mockTransactionRepository.getAll _).when().returns(Seq(t0, t1, t2))
-        (mockAssetRepository.getAllStocks _).when().returns(Seq(s0, s1))
-        (mockStockPriceRetriever
-          .call(_: String))
-          .when(s0.ticker)
+        (mockTransactionRepository
+          .get(_: TransactionQuery))
+          .when(TransactionQuery(to = Some(date)))
+          .returns(Seq(t0, t1, t2))
+        (mockAssetRepository.getStocks _).when(StockQuery(to = Some(date))).returns(Seq(s0, s1))
+        (mockStockPriceRetriever.call _)
+          .when(s0.ticker, date)
           .returns(StockPriceAsOf(Usd(6), Usd(10), OffsetDateTime.now))
-        (mockStockPriceRetriever
-          .call(_: String))
-          .when(s1.ticker)
+        (mockStockPriceRetriever.call _)
+          .when(s1.ticker, date)
           .returns(StockPriceAsOf(Usd(6), Usd(8), OffsetDateTime.now))
 
-        service.getNetWorth shouldEqual Usd(1059)
+        service.getNetWorth(date) shouldEqual Usd(1059)
       }
     }
     "getAccountValue" - {
@@ -189,7 +192,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
           .returns(Seq.empty)
         (mockAssetRepository.getAllStocks _).when().returns(Seq.empty)
 
-        val result: Seq[AccountValue] = service.getAccountValue(q)
+        val result: Seq[AccountValue] = service.getAccountValue(q, date)
         result should have size 2
         result should contain(AccountValue(January, t0.accountId, Usd(20)))
         result should contain(AccountValue(February, t0.accountId, Usd(0)))
@@ -211,7 +214,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
             .returns(Seq.empty)
           (mockAssetRepository.getAllStocks _).when().returns(Seq.empty)
 
-          val result: Seq[AccountValue] = service.getAccountValue(q)
+          val result: Seq[AccountValue] = service.getAccountValue(q, date)
           result should have size 2
           result should contain(AccountValue(January, t0.accountId, Usd(20)))
           result should contain(AccountValue(February, t0.accountId, Usd(0)))
@@ -235,7 +238,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
             .returns(Seq(t0))
           (mockAssetRepository.getAllStocks _).when().returns(Seq.empty)
 
-          val result: Seq[AccountValue] = service.getAccountValue(q)
+          val result: Seq[AccountValue] = service.getAccountValue(q, date)
           result should have size 1
           result should contain(AccountValue(January, t0.accountId, Usd(40)))
         }
@@ -258,7 +261,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
             .returns(Seq(t2, t3))
           (mockAssetRepository.getAllStocks _).when().returns(Seq.empty)
 
-          val result: Seq[AccountValue] = service.getAccountValue(q)
+          val result: Seq[AccountValue] = service.getAccountValue(q, date)
           result should have size 2
           result should contain(AccountValue(January, t0.accountId, Usd(40)))
           result should contain(AccountValue(February, t0.accountId, Usd(40)))
@@ -290,7 +293,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
             .returns(Seq(t2, t3))
           (mockAssetRepository.getAllStocks _).when().returns(Seq.empty)
 
-          val result: Seq[AccountValue] = service.getAccountValue(q)
+          val result: Seq[AccountValue] = service.getAccountValue(q, date)
           result should have size 2
           result should contain(AccountValue(q.dateRanges.head, t0.accountId, Usd(60)))
           result should contain(AccountValue(q.dateRanges(1), t0.accountId, Usd(60)))
@@ -318,7 +321,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
             .returns(Seq(t2, t3))
           (mockAssetRepository.getAllStocks _).when().returns(Seq.empty)
 
-          val result: Seq[AccountValue] = service.getAccountValue(q)
+          val result: Seq[AccountValue] = service.getAccountValue(q, date)
           result should have size 6
           result should contain(AccountValue(January, Id(2), Usd(20)))
           result should contain(AccountValue(January, Id(3), Usd(20)))
@@ -341,7 +344,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
             .returns(Seq.empty)
           (mockAssetRepository.getAllStocks _).when().returns(Seq.empty)
 
-          val result: Seq[AccountValue] = service.getAccountValue(q)
+          val result: Seq[AccountValue] = service.getAccountValue(q, date)
           result should have size 6
           result should contain(AccountValue(January, Id(2), Usd(0)))
           result should contain(AccountValue(January, Id(3), Usd(0)))
@@ -375,7 +378,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
             .returns(Seq(t2, t3))
           (mockAssetRepository.getAllStocks _).when().returns(Seq.empty)
 
-          val result: Seq[AccountValue] = service.getAccountValue(q)
+          val result: Seq[AccountValue] = service.getAccountValue(q, date)
           result should have size 2
           result should contain(AccountValue(January, t0.accountId, Usd(260)))
           result should contain(AccountValue(February, t1.accountId, Usd(260)))
@@ -400,7 +403,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
             .returns(Seq.empty)
           (mockAssetRepository.getAllStocks _).when().returns(Seq.empty)
 
-          val result: Seq[AccountValue] = service.getAccountValue(q)
+          val result: Seq[AccountValue] = service.getAccountValue(q, date)
           result should have size 2
           result should contain(AccountValue(January, t0.accountId, Usd(20)))
           result should contain(AccountValue(February, t0.accountId, Usd(0)))
@@ -426,7 +429,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
             .returns(Seq.empty)
           (mockAssetRepository.getAllStocks _).when().returns(Seq.empty)
 
-          val result: Seq[AccountValue] = service.getAccountValue(q)
+          val result: Seq[AccountValue] = service.getAccountValue(q, date)
           result should have size 2
           result should contain(AccountValue(January, t0.accountId, Usd(20)))
           result should contain(AccountValue(February, t0.accountId, Usd(0)))
@@ -464,7 +467,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
             .returns(Seq(t2))
           (mockAssetRepository.getAllStocks _).when().returns(Seq.empty)
 
-          val result: Seq[AccountValue] = service.getAccountValue(q)
+          val result: Seq[AccountValue] = service.getAccountValue(q, date)
           result should have size 2
           result should contain(AccountValue(January, t0.accountId, Usd(80)))
           result should contain(AccountValue(February, t0.accountId, Usd(40)))
@@ -510,7 +513,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
             .returns(Seq(t2))
           (mockAssetRepository.getAllStocks _).when().returns(Seq.empty)
 
-          val result: Seq[AccountValue] = service.getAccountValue(q)
+          val result: Seq[AccountValue] = service.getAccountValue(q, date)
           result should have size 2
           result should contain(AccountValue(q.dateRanges.head, t0.accountId, Usd(100)))
           result should contain(AccountValue(q.dateRanges(1), t0.accountId, Usd(80)))
@@ -551,7 +554,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
             .returns(Seq(t2))
           (mockAssetRepository.getAllStocks _).when().returns(Seq.empty)
 
-          val result: Seq[AccountValue] = service.getAccountValue(q)
+          val result: Seq[AccountValue] = service.getAccountValue(q, date)
           result should have size 4
           result should contain(AccountValue(January, Id(3), Usd(40)))
           result should contain(AccountValue(January, Id(4), Usd(40)))
@@ -572,7 +575,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
             .returns(Seq.empty)
           (mockAssetRepository.getAllStocks _).when().returns(Seq.empty)
 
-          val result: Seq[AccountValue] = service.getAccountValue(q)
+          val result: Seq[AccountValue] = service.getAccountValue(q, date)
           result should have size 6
           result should contain(AccountValue(January, Id(2), Usd(0)))
           result should contain(AccountValue(January, Id(3), Usd(0)))
@@ -624,7 +627,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
             .returns(priceWithDate._2.pure[IdMonad])
         }
 
-        val result: Seq[AccountValue] = service.getAccountValue(q)
+        val result: Seq[AccountValue] = service.getAccountValue(q, date)
         result should have size 2
         // math by hand as inlining the math is a little verbose
         // s0 = 20 stocks, value is 500, 440, 460, 700 at each date -> delta of -60 and 240
@@ -675,7 +678,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
               .returns(priceWithDate._2.pure[IdMonad])
           }
 
-          val result: Seq[AccountValue] = service.getAccountValue(q)
+          val result: Seq[AccountValue] = service.getAccountValue(q, date)
           result should have size 2
           // math by hand as inlining the math is a little verbose
           // s0 = 20 stocks, value is 500, 440, 460, 700 at each date -> delta of -60 and 240
@@ -730,7 +733,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
               .returns(priceWithDate._2.pure[IdMonad])
           }
 
-          val result: Seq[AccountValue] = service.getAccountValue(q)
+          val result: Seq[AccountValue] = service.getAccountValue(q, date)
           result should have size 2
           // math by hand as inlining the math is a little verbose
           // s0 = 20 @ 21/share = 420, 30 @ 23/share = 690, 30 @ 25/share = 750, 20 @ 27/share = 540 (and 10 sold @ 155)
@@ -784,7 +787,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
               .returns(priceWithDate._2.pure[IdMonad])
           }
 
-          val result: Seq[AccountValue] = service.getAccountValue(q)
+          val result: Seq[AccountValue] = service.getAccountValue(q, date)
           result should have size 6
           // math by hand as inlining the math is a little verbose
           // s0 = 10 @ 10/share = 100, 10 @ 20/share = 200, 10 @ 30/share = 300, 10 @ 40/share = 400 in acct 3
@@ -830,11 +833,11 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
           (mockTransactionRepository.get(_: TransactionQuery)).when(*).returns(Seq.empty)
           (mockAssetRepository.getAllStocks _).when().returns(Seq(s0, s1, s2))
-          (mockStockPriceRetriever.call(_: String)).when(s0.ticker).returns(s0Price.pure[IdMonad])
-          (mockStockPriceRetriever.call(_: String)).when(s1.ticker).returns(s1Price.pure[IdMonad])
-          (mockStockPriceRetriever.call(_: String)).when(s2.ticker).returns(s2Price.pure[IdMonad])
+          (mockStockPriceRetriever.call _).when(s0.ticker, date).returns(s0Price.pure[IdMonad])
+          (mockStockPriceRetriever.call _).when(s1.ticker, date).returns(s1Price.pure[IdMonad])
+          (mockStockPriceRetriever.call _).when(s2.ticker, date).returns(s2Price.pure[IdMonad])
 
-          val result: Seq[AccountValue] = service.getAccountValue(q)
+          val result: Seq[AccountValue] = service.getAccountValue(q, date)
           result should have size 2
           // math by hand as inlining the math is a little verbose
           // s0 = 10 stocks, 4 sold for a total of 100, current price is 30/unit gives 280
@@ -866,9 +869,9 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
           (mockTransactionRepository.get(_: TransactionQuery)).when(*).returns(Seq.empty)
           (mockAssetRepository.getAllStocks _).when().returns(Seq(s0, s1))
-          (mockStockPriceRetriever.call(_: String)).when(s0.ticker).returns(s0Price.pure[IdMonad])
-          (mockStockPriceRetriever.call(_: String)).when(s1.ticker).returns(s1Price.pure[IdMonad])
-          val result: Seq[AccountValue] = service.getAccountValue(q)
+          (mockStockPriceRetriever.call _).when(s0.ticker, date).returns(s0Price.pure[IdMonad])
+          (mockStockPriceRetriever.call _).when(s1.ticker, date).returns(s1Price.pure[IdMonad])
+          val result: Seq[AccountValue] = service.getAccountValue(q, date)
           result should have size 2
           // math by hand as inlining the math is a little verbose
           // s0 = 10 stocks, 4 sold for a total of 100, current price is 30/unit gives 280
@@ -909,9 +912,9 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
           (mockTransactionRepository.get(_: TransactionQuery)).when(*).returns(Seq.empty)
           (mockAssetRepository.getAllStocks _).when().returns(Seq(s0, s1))
-          (mockStockPriceRetriever.call(_: String)).when(s0.ticker).returns(s0Price.pure[IdMonad])
-          (mockStockPriceRetriever.call(_: String)).when(s1.ticker).returns(s1Price.pure[IdMonad])
-          val result: Seq[AccountValue] = service.getAccountValue(q)
+          (mockStockPriceRetriever.call _).when(s0.ticker, date).returns(s0Price.pure[IdMonad])
+          (mockStockPriceRetriever.call _).when(s1.ticker, date).returns(s1Price.pure[IdMonad])
+          val result: Seq[AccountValue] = service.getAccountValue(q, date)
           result should have size 2
           // math by hand as inlining the math is a little verbose
           // s0 = 10 stocks, 4 sold for a total of 100, current price is 30/unit gives 280
@@ -953,11 +956,11 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
 
           (mockTransactionRepository.get(_: TransactionQuery)).when(*).returns(Seq.empty)
           (mockAssetRepository.getAllStocks _).when().returns(Seq(s0, s1, s2))
-          (mockStockPriceRetriever.call(_: String)).when(s0.ticker).returns(s0Price.pure[IdMonad])
-          (mockStockPriceRetriever.call(_: String)).when(s1.ticker).returns(s1Price.pure[IdMonad])
-          (mockStockPriceRetriever.call(_: String)).when(s2.ticker).returns(s2Price.pure[IdMonad])
+          (mockStockPriceRetriever.call _).when(s0.ticker, date).returns(s0Price.pure[IdMonad])
+          (mockStockPriceRetriever.call _).when(s1.ticker, date).returns(s1Price.pure[IdMonad])
+          (mockStockPriceRetriever.call _).when(s2.ticker, date).returns(s2Price.pure[IdMonad])
 
-          val result: Seq[AccountValue] = service.getAccountValue(q)
+          val result: Seq[AccountValue] = service.getAccountValue(q, date)
           result should have size 6
           // math by hand as inlining the math is a little verbose
           // s0 = 10 stocks, 4 sold for a total of 100, current price is 30/unit gives 280 in account 4 in jan
@@ -1032,7 +1035,7 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
             .returns(priceWithDate._2.pure[IdMonad])
         }
 
-        val result: Seq[AccountValue] = service.getAccountValue(q)
+        val result: Seq[AccountValue] = service.getAccountValue(q, date)
         result should have size 6
         // math for stocks the same as countAssetGrowthInPurchaseMonth false correct accounts test
         result should contain(AccountValue(January, Id(3), Usd(170)))

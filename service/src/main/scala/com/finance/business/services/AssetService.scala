@@ -1,5 +1,7 @@
 package com.finance.business.services
 
+import java.time.OffsetDateTime
+
 import cats.Monad
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
@@ -55,9 +57,9 @@ class AssetService[F[_]: Monad](
 
   override def getAll: F[Seq[Asset]] = repository.getAll
 
-  def getStockValue: F[Seq[StockValue]] =
+  def getStockValue(asOf: OffsetDateTime): F[Seq[StockValue]] =
     repository.getAllStocks flatMap {
-      _.toList.traverse(stock => stockPriceRetriever.call(stock.ticker) map (stock withPrice _))
+      _.toList.traverse(stock => stockPriceRetriever.call(stock.ticker, asOf) map (stock withPrice _))
     } map {
       _.toSeq
     }

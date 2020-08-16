@@ -25,14 +25,9 @@ import com.finance.service.endpoints.asset.{
   GetStockValueResponse,
   UpdateAssetResponse
 }
-import com.finance.service.endpoints.definitions.StockAction.Type.members.{
-  Buy,
-  CashDividend,
-  FifoSell,
-  LifoSell,
-  StockDividend
-}
+import com.finance.service.endpoints.definitions.StockAction.Type.members._
 import com.finance.service.endpoints.definitions.{Asset, Error, Stock, StockAction, StockValue}
+import com.finance.service.time.TimeProvider
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
@@ -51,11 +46,16 @@ class AssetHandlerImplSpec extends AnyFreeSpec with Matchers with MockFactory {
       )
   private val mockAssetService = stub[AssetServiceTest]
 
-  private val handler = new AssetHandlerImpl(mockAssetService)
+  private val date: IdMonad[OffsetDateTime] = OffsetDateTime.now
+  private implicit def idTimeProviderInstance: TimeProvider[IdMonad] =
+    new TimeProvider[IdMonad] {
+      override def now: IdMonad[OffsetDateTime] = date
+    }
+
+  private val handler = new AssetHandlerImpl[IdMonad](mockAssetService)
 
   private val stock = Stock(5, 6, "ticker", Vector.empty)
   private val stockModel = StockModel(Some(Id(5)), Id(6), "ticker", Seq.empty)
-  private val date = OffsetDateTime.now
   private val stockValue = StockValue(
     stock = Stock(
       5,
@@ -165,7 +165,7 @@ class AssetHandlerImplSpec extends AnyFreeSpec with Matchers with MockFactory {
     }
     "getStockValue" - {
       "should return GetStockValueResponse.Ok with stock value from service" in {
-        (mockAssetService.getStockValue _).when().returns(Seq(stockValueModel, stockValueModel, stockValueModel))
+        (mockAssetService.getStockValue _).when(date).returns(Seq(stockValueModel, stockValueModel, stockValueModel))
 
         handler.getStockValue(GetStockValueResponse)() shouldEqual
           GetStockValueResponse.Ok(Vector(stockValue, stockValue, stockValue))

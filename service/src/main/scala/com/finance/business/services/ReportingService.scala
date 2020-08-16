@@ -11,7 +11,7 @@ import com.finance.business.model.types.{DateRange, Id, Usd}
 import com.finance.business.operations.CategoryOps._
 import com.finance.business.operations.StockOps._
 import com.finance.business.remotecalls.StockPriceRetriever
-import com.finance.business.repository.query.TransactionQuery
+import com.finance.business.repository.query.{StockQuery, TransactionQuery}
 import com.finance.business.repository.{AccountRepository, AssetRepository, TransactionRepository}
 import com.finance.business.services.query.AccountValueQuery
 
@@ -40,13 +40,13 @@ class ReportingService[F[_]: Monad](
 ) {
   import ReportingService._
 
-  def getNetWorth: F[Usd] =
+  def getNetWorth(asOf: OffsetDateTime): F[Usd] =
     for {
       accounts <- accountRepository.getAll
-      transactions <- transactionRepository.getAll
-      stocks <- assetRepository.getAllStocks
+      transactions <- transactionRepository.get(TransactionQuery(to = Some(asOf)))
+      stocks <- assetRepository.getStocks(StockQuery(to = Some(asOf)))
       stockValues <- stocks.toList.traverse { stock =>
-        stockPriceRetriever.call(stock.ticker).map(p => stock.actions valueWithPrice p.current)
+        stockPriceRetriever.call(stock.ticker, asOf).map(p => stock.actions valueWithPrice p.current)
       }
       existingAccountValue = Usd(accounts.map(_.initialAmount.value).sum)
       transactionValue =
@@ -59,10 +59,10 @@ class ReportingService[F[_]: Monad](
       stockValue = stockValues.reduceOption((x, y) => Usd(x.value + y.value)).getOrElse(Usd(0))
     } yield Usd(existingAccountValue.value + transactionValue.value + stockValue.value)
 
-  def getAccountValue(query: AccountValueQuery): F[Seq[AccountValue]] =
+  def getAccountValue(query: AccountValueQuery, currentDateTime: OffsetDateTime): F[Seq[AccountValue]] =
     for {
       transactions <- getTransactionAmounts(query)
-      stocks <- getStockAmounts(query)
+      stocks <- getStockAmounts(query, currentDateTime)
       group = (transactions ++ stocks).toList.groupByNel(v => (v.dateRange, v.accountId))
       merged = group.toSeq.map { entry =>
         AccountValue(entry._1._1, entry._1._2, Usd(entry._2.map(_.value.value).reduce))
@@ -91,23 +91,26 @@ class ReportingService[F[_]: Monad](
       } yield AccountValue(range, acctId, price)
     }
 
-  private def getStockAmounts(query: AccountValueQuery): F[Seq[AccountValue]] =
+  private def getStockAmounts(query: AccountValueQuery, currentDateTime: OffsetDateTime): F[Seq[AccountValue]] =
     query.countAssetGrowthInPurchaseMonth
       .getOrElse(false)
       .pure[F]
       .ifM(
-        ifTrue = getStockValueWithAssetGrowthInPurchaseMonth(query),
+        ifTrue = getStockValueWithAssetGrowthInPurchaseMonth(query, currentDateTime),
         ifFalse = getStockAmountValueAtMonthEnd(query)
       )
 
-  private def getStockValueWithAssetGrowthInPurchaseMonth(query: AccountValueQuery): F[Seq[AccountValue]] =
+  private def getStockValueWithAssetGrowthInPurchaseMonth(
+    query: AccountValueQuery,
+    currentDateTime: OffsetDateTime
+  ): F[Seq[AccountValue]] =
     assetRepository.getAllStocks flatMap { stocks =>
       stocks.flatMap { stock =>
         stock.asLifecycle
       }.filter { lifecycle =>
         query.dateRanges.exists(range => range.contains(lifecycle.buy.date))
       }.toList.traverse { lifecycle =>
-        stockPriceRetriever.call(lifecycle.stock.ticker).map((_, lifecycle))
+        stockPriceRetriever.call(lifecycle.stock.ticker, currentDateTime).map((_, lifecycle))
       }
     } map { lifecyclesWithPrice =>
       for {

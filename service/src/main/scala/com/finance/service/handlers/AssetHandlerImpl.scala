@@ -2,22 +2,17 @@ package com.finance.service.handlers
 
 import cats.Monad
 import cats.implicits._
-import com.finance.business.services.AssetService
 import com.finance.business.model.asset.{Stock => StockModel}
 import com.finance.business.model.types.Id
-import com.finance.service.endpoints.asset.{
-  AssetHandler,
-  CreateAssetResponse,
-  DeleteAssetResponse,
-  GetStockValueResponse,
-  UpdateAssetResponse
-}
-import com.finance.service.endpoints.definitions.{Asset, Error, StockValue}
+import com.finance.business.services.AssetService
 import com.finance.service.converters.AssetMapping._
 import com.finance.service.converters.ErrorMapping._
 import com.finance.service.converters.Mapping._
+import com.finance.service.endpoints.asset._
+import com.finance.service.endpoints.definitions.{Asset, Error, StockValue}
+import com.finance.service.time.TimeProvider
 
-class AssetHandlerImpl[F[_]: Monad](
+class AssetHandlerImpl[F[_]: Monad: TimeProvider](
   assetService: AssetService[F]
 ) extends AssetHandler[F] {
   override def createAsset(respond: CreateAssetResponse.type)(body: Option[Asset]): F[CreateAssetResponse] =
@@ -55,7 +50,9 @@ class AssetHandlerImpl[F[_]: Monad](
       )
 
   override def getStockValue(respond: GetStockValueResponse.type)(): F[GetStockValueResponse] =
-    assetService.getStockValue.map { stocks =>
+    TimeProvider[F].now.flatMap { date =>
+      assetService.getStockValue(date)
+    } map { stocks =>
       GetStockValueResponse.Ok(stocks.map(_.mapTo[StockValue]).toVector)
     }
 }
