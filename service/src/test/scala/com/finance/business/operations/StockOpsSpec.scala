@@ -3,6 +3,7 @@ package com.finance.business.operations
 import java.time.OffsetDateTime
 
 import com.finance.business.model.asset._
+import com.finance.business.model.types.Usd.implicits._
 import com.finance.business.model.types.{Id, Usd}
 import com.finance.business.operations.StockOps._
 import org.scalatest.freespec.AnyFreeSpec
@@ -109,7 +110,7 @@ class StockOpsSpec extends AnyFreeSpec with Matchers {
                 StockDividend(OffsetDateTime.now, 6.9, Usd(1), Usd(1)) :+
                 CashDividend(OffsetDateTime.now, 14.537, Usd(1), Usd(1))
             ) withPrice fakeStockPriceAsOf).pricePaid shouldEqual
-              buys.map(_.amount).reduce((x, y) => Usd(x.value + y.value))
+              buys.map(_.amount).sum
           }
         }
         "calculates total gain" in {

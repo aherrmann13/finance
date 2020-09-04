@@ -2,6 +2,7 @@ package com.finance.business.operations
 
 import com.finance.business.model.asset._
 import com.finance.business.model.types.Usd
+import com.finance.business.model.types.Usd.implicits._
 
 object StockOps {
 
@@ -44,9 +45,7 @@ object StockOps {
     private def getPricePaid: Usd =
       stock.actions collect {
         case Buy(_, _, _, amount) => amount
-      } reduceOption { (x, y) =>
-        Usd(x.value + y.value)
-      } getOrElse Usd(0)
+      } sum
 
     def asLifecycle: Seq[StockPurchaseLifecycle] =
       stock.actions

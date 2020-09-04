@@ -7,6 +7,7 @@ import cats.implicits._
 import cats.kernel.Order
 import com.finance.business.model.reporting.{AccountBalance, AccountValue}
 import com.finance.business.model.transaction.{CategoryAmount, Transaction}
+import com.finance.business.model.types.Usd.implicits._
 import com.finance.business.model.types.{DateRange, Id, Usd}
 import com.finance.business.operations.CategoryOps._
 import com.finance.business.operations.StockOps._
@@ -15,8 +16,11 @@ import com.finance.business.repository.query.{StockQuery, TransactionQuery}
 import com.finance.business.repository.{AccountRepository, AssetRepository, TransactionRepository}
 import com.finance.business.services.query.AccountValueQuery
 
+import scala.Numeric.Implicits._
+
 object ReportingService {
   private case class AccountValueItem(account: Id, date: OffsetDateTime, value: Usd)
+  private case class AccountItem(accountId: Id, dateRange: DateRange)
 
   private def toAccountValueItems(useReportingDate: Boolean, transactions: Seq[Transaction]): Seq[AccountValueItem] =
     for {
@@ -24,13 +28,9 @@ object ReportingService {
       amount <- transaction.amounts.collect { case c: CategoryAmount => c }
       date = if (useReportingDate) amount.reportingDate else transaction.transactionDate
     } yield AccountValueItem(transaction.accountId, date, amount.amount)
-
-  // TODO: right spot for these?
-  // these are here so we can use `groupByNel` to get a non empty in the group by
+  // needed for <= on datetime
   private implicit val dateTimeOrder: Order[OffsetDateTime] = Order.by[OffsetDateTime, Long](_.toInstant.getEpochSecond)
-  private implicit val dateRangeAcctTupleOrder: Order[(DateRange, Id)] =
-    Order.by[(DateRange, Id), (Int, OffsetDateTime, OffsetDateTime)](t => (t._2.value, t._1.start, t._1.end))
-  private implicit val idOrder: Order[Id] = Order.by[Id, Int](_.value)
+
 }
 
 class ReportingService[F[_]: Monad](
@@ -53,21 +53,17 @@ class ReportingService[F[_]: Monad](
       transactionValue =
         transactions
           .flatMap(_.amounts)
-          .collect { case c: CategoryAmount => c }
-          .map(_.amount)
-          .reduceOption((x, y) => Usd(x.value + y.value))
-          .getOrElse(Usd(0))
-      stockValue = stockValues.reduceOption((x, y) => Usd(x.value + y.value)).getOrElse(Usd(0))
-    } yield Usd(existingAccountValue.value + transactionValue.value + stockValue.value)
+          .collect { case c: CategoryAmount => c.amount }
+          .sum
+      stockValue = stockValues.sum
+    } yield existingAccountValue + transactionValue + stockValue
 
   def getAccountValue(query: AccountValueQuery, currentDateTime: OffsetDateTime): F[Seq[AccountValue]] =
     for {
       transactions <- getTransactionAmounts(query)
       stocks <- getStockAmounts(query, currentDateTime)
-      group = (transactions ++ stocks).toList.groupByNel(v => (v.dateRange, v.accountId))
-      merged = group.toSeq.map { entry =>
-        AccountValue(entry._1._1, entry._1._2, Usd(entry._2.map(_.value.value).reduce))
-      }
+      group = (transactions ++ stocks).groupBy(v => AccountItem(v.accountId, v.dateRange))
+      merged = group.map(entry => AccountValue(entry._1.dateRange, entry._1.accountId, entry._2.map(_.value).sum)).toSeq
     } yield merged
 
   def getAccountBalance(accountIds: Set[Id], currentDateTime: OffsetDateTime): F[Seq[AccountBalance]] =
@@ -80,10 +76,7 @@ class ReportingService[F[_]: Monad](
           .call(s.ticker, currentDateTime)
           .map(v => (s.accountId, s.actions valueWithPrice v.current))
       }
-    } yield (transactionValues ++ stockValues).toList
-      .groupByNel(_._1)
-      .map(x => AccountBalance(x._1, x._2.map(_._2).reduce((x: Usd, y: Usd) => Usd(x.value + y.value))))
-      .toList
+    } yield (transactionValues ++ stockValues).groupBy(_._1).map(x => AccountBalance(x._1, x._2.map(_._2).sum)).toList
 
   private def getTransactionAmounts(query: AccountValueQuery): F[Seq[AccountValue]] =
     query.dateRanges.toList.flatTraverse { dateRange =>
@@ -103,7 +96,7 @@ class ReportingService[F[_]: Monad](
         acctId <- query.accountIds
         filteredAmounts = toAccountValueItems(query.useReportingDate.getOrElse(false), transactions)
           .filter(a => a.account == acctId && range.contains(a.date))
-        price = filteredAmounts.map(_.value).reduceOption((x, y) => Usd(x.value + y.value)).getOrElse(Usd(0))
+        price = filteredAmounts.map(_.value).sum
       } yield AccountValue(range, acctId, price)
     }
 
@@ -133,11 +126,7 @@ class ReportingService[F[_]: Monad](
         range <- query.dateRanges
         acctId <- query.accountIds
         lifecycles = lifecyclesWithPrice.filter(lf => lf._2.stock.accountId == acctId && range.contains(lf._2.buy.date))
-        price =
-          lifecycles
-            .map(lf => lf._2 valueWithPrice lf._1.current)
-            .reduceOption((x, y) => Usd(x.value + y.value))
-            .getOrElse(Usd(0))
+        price = lifecycles.map(lf => lf._2 valueWithPrice lf._1.current).sum
       } yield AccountValue(range, acctId, price)
     }
 
