@@ -29,6 +29,8 @@ paths:
     $ref: "paths/asset.yaml#/GetStockValue"
   /reporting/accountvalue:
     $ref: "paths/reporting.yaml#/GetAccountValue"
+  /reporting/accountbalance:
+    $ref: "paths/reporting.yaml#/GetAccountBalance"
   /reporting/networth:
     $ref: "paths/reporting.yaml#/GetNetWorth"
   /transfer:
@@ -81,6 +83,10 @@ components:
       $ref: "schemas/reporting.yaml#/AccountValue"
     AccountValueQuery:
       $ref: "schemas/reporting.yaml#/AccountValueQuery"
+    AccountBalance:
+      $ref: "schemas/reporting.yaml#/AccountBalance"
+    AccountBalanceQuery:
+      $ref: "schemas/reporting.yaml#/AccountBalanceQuery"
     Transfer:
       $ref: "schemas/transfer.yaml#/Transfer"
     Record:
@@ -161,6 +167,8 @@ components:
       $ref: "responses/asset.yaml#/GetStockValueResponse"
     GetAccountValueResponse:
       $ref: "responses/reporting.yaml#/GetAccountValueResponse"
+    GetAccountBalanceResponse:
+      $ref: "responses/reporting.yaml#/GetAccountBalanceResponse"
     GetNetWorthResponse:
       $ref: "responses/reporting.yaml#/GetNetWorthResponse"
     CreateTransferResponse:

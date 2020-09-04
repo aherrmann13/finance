@@ -40,3 +40,29 @@ AccountValueQuery:
   required:
     - dateRanges
     - accountIds
+
+AccountBalance:
+  type: object
+  properties:
+    accountId:
+      type: integer
+      format: int32
+      readOnly: true
+    balance:
+      type: number
+      readOnly: true
+  required:
+    - accountId
+    - balance
+
+AccountBalanceQuery:
+  type: object
+  properties:
+    accountIds:
+      type: array
+      items:
+        type: integer
+        format: int32
+      writeOnly: true
+  required:
+    - accountIds

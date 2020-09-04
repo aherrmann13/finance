@@ -3,14 +3,20 @@ package com.finance.service.handlers
 import java.time.OffsetDateTime
 
 import cats.{Id => IdMonad}
-import com.finance.business.model.reporting.{AccountValue => AccountValueModel}
+import com.finance.business.model.reporting.{AccountBalance => AccountBalanceModel, AccountValue => AccountValueModel}
 import com.finance.business.model.types.{Id, Usd, DateRange => DateRangeModel}
 import com.finance.business.remotecalls.StockPriceRetriever
 import com.finance.business.repository.{AccountRepository, AssetRepository, TransactionRepository}
 import com.finance.business.services.ReportingService
 import com.finance.business.services.query.{AccountValueQuery => AccountValueQueryModel}
-import com.finance.service.endpoints.definitions.{AccountValue, AccountValueQuery, Error}
-import com.finance.service.endpoints.reporting.{GetAccountValueResponse, GetNetWorthResponse}
+import com.finance.service.endpoints.definitions.{
+  AccountBalance,
+  AccountBalanceQuery,
+  AccountValue,
+  AccountValueQuery,
+  Error
+}
+import com.finance.service.endpoints.reporting.{GetAccountBalanceResponse, GetAccountValueResponse, GetNetWorthResponse}
 import com.finance.service.time.TimeProvider
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.freespec.AnyFreeSpec
@@ -68,6 +74,25 @@ class ReportingHandlerImplSpec extends AnyFreeSpec with Matchers with MockFactor
         (mockReportingService.getNetWorth _).when(date).returns(Usd(1000.0))
 
         handler.getNetWorth(GetNetWorthResponse)() shouldEqual GetNetWorthResponse.Ok(1000.0)
+      }
+    }
+    "getAccountBalance" - {
+      "should return CreatePaybackResponse.Ok with values from service called with empty acct ids seq" in {
+        (mockReportingService.getAccountBalance _)
+          .when(Set.empty[Id], date)
+          .returns(Seq(AccountBalanceModel(Id(1), Usd(100)), AccountBalanceModel(Id(2), Usd(200))))
+
+        handler.getAccountBalance(GetAccountBalanceResponse)() shouldEqual
+          GetAccountBalanceResponse.Ok(Vector(AccountBalance(1, 100), AccountBalance(2, 200)))
+      }
+      "should return CreatePaybackResponse.Ok with values from service" in {
+        val query = AccountBalanceQuery(Vector(1, 2))
+        (mockReportingService.getAccountBalance _)
+          .when(Set(Id(1), Id(2)), date)
+          .returns(Seq(AccountBalanceModel(Id(1), Usd(100)), AccountBalanceModel(Id(2), Usd(200))))
+
+        handler.getAccountBalance(GetAccountBalanceResponse)(Some(query)) shouldEqual
+          GetAccountBalanceResponse.Ok(Vector(AccountBalance(1, 100), AccountBalance(2, 200)))
       }
     }
   }

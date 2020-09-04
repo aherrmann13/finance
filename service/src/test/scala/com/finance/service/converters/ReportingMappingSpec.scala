@@ -2,12 +2,18 @@ package com.finance.service.converters
 
 import java.time.{LocalDate, LocalTime, OffsetDateTime, ZoneOffset}
 
-import com.finance.business.model.reporting.{AccountValue => AccountValueModel}
+import com.finance.business.model.reporting.{AccountBalance => AccountBalanceModel, AccountValue => AccountValueModel}
 import com.finance.business.model.types.{Id, Usd, DateRange => DateRangeModel}
 import com.finance.business.services.query.{AccountValueQuery => AccountValueQueryModel}
 import com.finance.service.converters.Mapping._
 import com.finance.service.converters.ReportingMapping._
-import com.finance.service.endpoints.definitions.{AccountValue, AccountValueQuery, DateRange}
+import com.finance.service.endpoints.definitions.{
+  AccountBalance,
+  AccountBalanceQuery,
+  AccountValue,
+  AccountValueQuery,
+  DateRange
+}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -50,6 +56,20 @@ class ReportingMappingSpec extends AnyFreeSpec with Matchers {
           dateRange = AccountValue.DateRange(localDate0, localDate1),
           accountId = 5,
           value = 50.0
+        )
+      }
+      "maps account balance query request to list of account ids" in {
+        AccountBalanceQuery(
+          accountIds = Vector(1, 2, 3, 4)
+        ).mapTo[Set[Id]] shouldEqual Set(Id(1), Id(2), Id(3), Id(4))
+      }
+      "maps account balance model to account balance response" in {
+        AccountBalanceModel(
+          accountId = Id(6),
+          balance = Usd(50)
+        ).mapTo[AccountBalance] shouldEqual AccountBalance(
+          accountId = 6,
+          balance = 50
         )
       }
     }

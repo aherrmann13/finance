@@ -6,7 +6,7 @@ import cats.implicits._
 import cats.{Id => IdMonad}
 import com.finance.business.model.account.{Account, Bank}
 import com.finance.business.model.asset._
-import com.finance.business.model.reporting.AccountValue
+import com.finance.business.model.reporting.{AccountBalance, AccountValue}
 import com.finance.business.model.transaction.{CategoryAmount, PaybackAmount, Transaction}
 import com.finance.business.model.types._
 import com.finance.business.remotecalls.StockPriceRetriever
@@ -173,6 +173,166 @@ class ReportingServiceSpec extends AnyFreeSpec with Matchers with MockFactory {
           .returns(StockPriceAsOf(Usd(6), Usd(8), OffsetDateTime.now))
 
         service.getNetWorth(date) shouldEqual Usd(1059)
+      }
+    }
+    "getAccountBalance" - {
+      "should return balance of transactions by account" in {
+        val t0 = fakeTransaction.copy(
+          amounts = Seq(
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-10T00:00:00Z"), amount = Usd(-30)),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-15T00:00:00Z"), amount = Usd(-60)),
+            PaybackAmount(Id(4), Id(5), Usd(20), Description("desc"), OffsetDateTime.now)
+          ),
+          accountId = Id(fakeTransaction.accountId.value + 1)
+        )
+        val t1 = fakeTransaction.copy(amounts =
+          Seq(
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-10T00:00:00Z"), amount = Usd(400)),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-15T00:00:00Z"), amount = Usd(300))
+          )
+        )
+        val t2 = fakeTransaction.copy(amounts =
+          Seq(
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-02-10T00:00:00Z"), amount = Usd(50)),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-02-15T00:00:00Z"), amount = Usd(-25)),
+            PaybackAmount(Id(4), Id(5), Usd(20), Description("desc"), OffsetDateTime.now)
+          )
+        )
+
+        val accountIds = Set(t0.accountId, t1.accountId)
+        val date = OffsetDateTime.parse("2020-01-01T00:00:00Z")
+
+        (mockTransactionRepository
+          .get(_: TransactionQuery))
+          .when(TransactionQuery(accountIds = accountIds))
+          .returns(Seq(t0, t1, t2))
+        (mockAssetRepository.getStocks _).when(StockQuery(accountIds = accountIds)).returns(Seq.empty)
+
+        val result: Seq[AccountBalance] = service.getAccountBalance(accountIds, date)
+        result should have size 2
+        result should contain(AccountBalance(t0.accountId, Usd(-70)))
+        result should contain(AccountBalance(t1.accountId, Usd(745)))
+      }
+      "should return balance of stock by account" in {
+        val s0 = fakeStock.copy(
+          ticker = "a",
+          actions = Seq(
+            Buy(OffsetDateTime.parse("2019-01-01T00:00:00Z"), 10, Usd(10), Usd(105)),
+            Buy(OffsetDateTime.parse("2019-02-01T00:00:00Z"), 10, Usd(11), Usd(115))
+          ),
+          accountId = Id(fakeTransaction.accountId.value + 1)
+        )
+        val s1 = fakeStock.copy(
+          ticker = "b",
+          actions = Seq(
+            Buy(OffsetDateTime.parse("2019-01-01T00:00:00Z"), 5, Usd(10), Usd(55)),
+            LifoSell(OffsetDateTime.parse("2019-01-01T00:00:00Z"), 2, Usd(10), Usd(20))
+          )
+        )
+        val s2 = fakeStock.copy(
+          ticker = "c",
+          actions = Seq(
+            Buy(OffsetDateTime.parse("2019-01-01T00:00:00Z"), 10, Usd(10), Usd(55))
+          )
+        )
+
+        val accountIds = Set(s0.accountId, s1.accountId)
+        val date = OffsetDateTime.parse("2020-01-01T00:00:00Z")
+
+        (mockTransactionRepository
+          .get(_: TransactionQuery))
+          .when(TransactionQuery(accountIds = accountIds))
+          .returns(Seq.empty)
+        (mockAssetRepository.getStocks _).when(StockQuery(accountIds = accountIds)).returns(Seq(s0, s1, s2))
+
+        (mockStockPriceRetriever.call _)
+          .when(s0.ticker, date)
+          .returns(StockPriceAsOf(Usd(6), Usd(10), OffsetDateTime.now))
+        (mockStockPriceRetriever.call _)
+          .when(s1.ticker, date)
+          .returns(StockPriceAsOf(Usd(6), Usd(8), OffsetDateTime.now))
+        (mockStockPriceRetriever.call _)
+          .when(s2.ticker, date)
+          .returns(StockPriceAsOf(Usd(6), Usd(30), OffsetDateTime.now))
+
+        val result: Seq[AccountBalance] = service.getAccountBalance(accountIds, date)
+        result should have size 2
+        result should contain(AccountBalance(s0.accountId, Usd(200)))
+        result should contain(AccountBalance(s1.accountId, Usd(344)))
+      }
+      "should return balance of transactions and stocks by account" in {
+        val accountId0 = fakeTransaction.accountId
+        val accountId1 = Id(fakeTransaction.accountId.value + 1)
+        val t0 = fakeTransaction.copy(
+          amounts = Seq(
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-10T00:00:00Z"), amount = Usd(-30)),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-15T00:00:00Z"), amount = Usd(-60)),
+            PaybackAmount(Id(4), Id(5), Usd(20), Description("desc"), OffsetDateTime.now)
+          ),
+          accountId = accountId0
+        )
+        val t1 = fakeTransaction.copy(
+          amounts = Seq(
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-10T00:00:00Z"), amount = Usd(400)),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-01-15T00:00:00Z"), amount = Usd(300))
+          ),
+          accountId = accountId1
+        )
+        val t2 = fakeTransaction.copy(
+          amounts = Seq(
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-02-10T00:00:00Z"), amount = Usd(50)),
+            fakeAmount.copy(reportingDate = OffsetDateTime.parse("2020-02-15T00:00:00Z"), amount = Usd(-25)),
+            PaybackAmount(Id(4), Id(5), Usd(20), Description("desc"), OffsetDateTime.now)
+          ),
+          accountId = accountId1
+        )
+        val s0 = fakeStock.copy(
+          ticker = "a",
+          actions = Seq(
+            Buy(OffsetDateTime.parse("2019-01-01T00:00:00Z"), 10, Usd(10), Usd(105)),
+            Buy(OffsetDateTime.parse("2019-02-01T00:00:00Z"), 10, Usd(11), Usd(115))
+          ),
+          accountId = accountId1
+        )
+        val s1 = fakeStock.copy(
+          ticker = "b",
+          actions = Seq(
+            Buy(OffsetDateTime.parse("2019-01-01T00:00:00Z"), 5, Usd(10), Usd(55)),
+            LifoSell(OffsetDateTime.parse("2019-01-01T00:00:00Z"), 2, Usd(10), Usd(20))
+          ),
+          accountId = accountId0
+        )
+        val s2 = fakeStock.copy(
+          ticker = "c",
+          actions = Seq(
+            Buy(OffsetDateTime.parse("2019-01-01T00:00:00Z"), 10, Usd(10), Usd(55))
+          ),
+          accountId = accountId0
+        )
+
+        val accountIds = Set(accountId0, accountId1)
+        val date = OffsetDateTime.parse("2020-01-01T00:00:00Z")
+
+        (mockTransactionRepository
+          .get(_: TransactionQuery))
+          .when(TransactionQuery(accountIds = accountIds))
+          .returns(Seq(t0, t1, t2))
+        (mockAssetRepository.getStocks _).when(StockQuery(accountIds = accountIds)).returns(Seq(s0, s1, s2))
+
+        (mockStockPriceRetriever.call _)
+          .when(s0.ticker, date)
+          .returns(StockPriceAsOf(Usd(6), Usd(10), OffsetDateTime.now))
+        (mockStockPriceRetriever.call _)
+          .when(s1.ticker, date)
+          .returns(StockPriceAsOf(Usd(6), Usd(8), OffsetDateTime.now))
+        (mockStockPriceRetriever.call _)
+          .when(s2.ticker, date)
+          .returns(StockPriceAsOf(Usd(6), Usd(30), OffsetDateTime.now))
+
+        val result: Seq[AccountBalance] = service.getAccountBalance(accountIds, date)
+        result should have size 2
+        result should contain(AccountBalance(s0.accountId, Usd(945)))
+        result should contain(AccountBalance(s1.accountId, Usd(274)))
       }
     }
     "getAccountValue" - {

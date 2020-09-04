@@ -16,6 +16,24 @@ GetAccountValue:
       400:
         $ref: "../responses/common.yaml#/Error"
 
+GetAccountBalance:
+  get:
+    operationId: getAccountBalance
+    summary: "gets the balance of the specified accounts"
+    tags:
+      - reporting
+    x-scala-package: reporting
+    parameters:
+      - in: query
+        name: filter
+        schema:
+          $ref: "../schemas/reporting.yaml#/AccountBalanceQuery"
+    responses:
+      200:
+        $ref: "../responses/reporting.yaml#/GetAccountBalanceResponse"
+      400:
+        $ref: "../responses/common.yaml#/Error"
+
 GetNetWorth:
   get:
     operationId: getNetWorth

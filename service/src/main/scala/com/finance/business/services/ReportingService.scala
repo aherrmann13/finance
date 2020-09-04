@@ -5,7 +5,7 @@ import java.time.OffsetDateTime
 import cats.Monad
 import cats.implicits._
 import cats.kernel.Order
-import com.finance.business.model.reporting.AccountValue
+import com.finance.business.model.reporting.{AccountBalance, AccountValue}
 import com.finance.business.model.transaction.{CategoryAmount, Transaction}
 import com.finance.business.model.types.{DateRange, Id, Usd}
 import com.finance.business.operations.CategoryOps._
@@ -30,6 +30,7 @@ object ReportingService {
   private implicit val dateTimeOrder: Order[OffsetDateTime] = Order.by[OffsetDateTime, Long](_.toInstant.getEpochSecond)
   private implicit val dateRangeAcctTupleOrder: Order[(DateRange, Id)] =
     Order.by[(DateRange, Id), (Int, OffsetDateTime, OffsetDateTime)](t => (t._2.value, t._1.start, t._1.end))
+  private implicit val idOrder: Order[Id] = Order.by[Id, Int](_.value)
 }
 
 class ReportingService[F[_]: Monad](
@@ -68,6 +69,21 @@ class ReportingService[F[_]: Monad](
         AccountValue(entry._1._1, entry._1._2, Usd(entry._2.map(_.value.value).reduce))
       }
     } yield merged
+
+  def getAccountBalance(accountIds: Set[Id], currentDateTime: OffsetDateTime): F[Seq[AccountBalance]] =
+    for {
+      transactions <- transactionRepository.get(TransactionQuery(accountIds = accountIds))
+      stocks <- assetRepository.getStocks(StockQuery(accountIds = accountIds))
+      transactionValues = transactions.map(x => (x.accountId, Usd(x.amounts.map(_.amount.value).sum)))
+      stockValues <- stocks.toList.traverse { s =>
+        stockPriceRetriever
+          .call(s.ticker, currentDateTime)
+          .map(v => (s.accountId, s.actions valueWithPrice v.current))
+      }
+    } yield (transactionValues ++ stockValues).toList
+      .groupByNel(_._1)
+      .map(x => AccountBalance(x._1, x._2.map(_._2).reduce((x: Usd, y: Usd) => Usd(x.value + y.value))))
+      .toList
 
   private def getTransactionAmounts(query: AccountValueQuery): F[Seq[AccountValue]] =
     query.dateRanges.toList.flatTraverse { dateRange =>

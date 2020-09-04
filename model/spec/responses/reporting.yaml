@@ -7,10 +7,18 @@ GetAccountValueResponse:
         items:
           $ref: "../schemas/reporting.yaml#/AccountValue"
 
+GetAccountBalanceResponse:
+  description: ""
+  content:
+    application/json:
+      schema:
+        type: array
+        items:
+          $ref: "../schemas/reporting.yaml#/AccountBalance"
+
 GetNetWorthResponse:
   description: ""
   content:
     application/json:
       schema:
         type: number
-  
