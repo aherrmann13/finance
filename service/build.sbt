@@ -6,7 +6,8 @@ scalaVersion := "2.13.1"
 
 scalacOptions ++= Seq(
   "-language:higherKinds",
-  "-language:postfixOps"
+  "-language:postfixOps",
+  "-Xfatal-warnings"
 )
 
 val CatsVersion = "2.1.0"
