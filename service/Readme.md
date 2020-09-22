@@ -18,6 +18,7 @@
 [cats](https://github.com/typelevel/cats)  
 [cats-effect](https://github.com/typelevel/cats-effect)  
 [circe](https://github.com/circe/circe)  
+[circe-config](https://github.com/circe/circe-config)  
 [http4s](https://github.com/http4s/http4s)  
 [nscala-time](https://github.com/nscala-time/nscala-time)  
 [sbt-guardrail](https://github.com/twilio/sbt-guardrail)  
